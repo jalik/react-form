@@ -28,8 +28,8 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { v4 as uuid } from 'uuid';
 import useFormContext from './useFormContext';
+import { uuid } from './utils';
 
 /**
  * Returns an array item with key and value.

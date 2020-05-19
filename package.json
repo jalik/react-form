@@ -31,8 +31,7 @@
   "main": "dist/index.js",
   "dependencies": {
     "@jalik/deep-extend": "^1.1.6",
-    "prop-types": "^15.7.2",
-    "uuid": "^8.0.0"
+    "prop-types": "^15.7.2"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
