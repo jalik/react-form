@@ -32,7 +32,6 @@
   "dependencies": {
     "@jalik/deep-extend": "^1.1.6",
     "prop-types": "^15.7.2",
-    "react": "^16.13.1",
     "uuid": "^8.0.0"
   },
   "devDependencies": {
@@ -55,5 +54,8 @@
     "gulp-eslint": "^6.0.0",
     "jest": "^26.0.1",
     "typescript": "^3.8.3"
+  },
+  "peerDependencies": {
+    "react": ">=16.8"
   }
 }
