@@ -52,6 +52,7 @@
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^6.0.0",
     "jest": "^26.0.1",
+    "react": "^16.13.1",
     "typescript": "^3.8.3"
   },
   "peerDependencies": {
