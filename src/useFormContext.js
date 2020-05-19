@@ -1,0 +1,81 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2020 Karl STEIN
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+import {
+  createContext,
+  useContext,
+} from 'react';
+
+/**
+ * Throws a not implemented error.
+ * @throws Error
+ */
+function notImplemented() {
+  throw new Error('not implemented');
+}
+
+/**
+ * The default form context.
+ * @type {React.Context}
+ */
+export const FormContext = createContext({
+  changes: {},
+  disabled: false,
+  errors: {},
+  fields: {},
+  modified: false,
+  submitCount: 0,
+  submitError: null,
+  submitted: false,
+  submitting: false,
+  validated: false,
+  values: {},
+  getAttributes: notImplemented,
+  getInitialValue: notImplemented,
+  getValue: notImplemented,
+  handleChange: notImplemented,
+  handleReset: notImplemented,
+  handleSubmit: notImplemented,
+  initValues: notImplemented,
+  register: notImplemented,
+  reset: notImplemented,
+  setError: notImplemented,
+  setErrors: notImplemented,
+  setValue: notImplemented,
+  setValues: notImplemented,
+  submit: notImplemented,
+  unregister: notImplemented,
+  validate: notImplemented,
+});
+
+/**
+ * Returns the form context.
+ * @return {*}
+ */
+function useFormContext() {
+  return useContext(FormContext);
+}
+
+export default useFormContext;
