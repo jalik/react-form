@@ -1,10 +1,10 @@
 # @jalik/react-form
 
-![GitHub package.json version](https://img.shields.io/github/package-json/v/jalik/js-react-form.svg)
-[![Build Status](https://travis-ci.com/jalik/js-react-form.svg?branch=master)](https://travis-ci.com/jalik/js-react-form)
-![GitHub](https://img.shields.io/github/license/jalik/js-react-form.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/jalik/js-react-form.svg)
-[![GitHub issues](https://img.shields.io/github/issues/jalik/js-react-form.svg)](https://github.com/jalik/js-react-form/issues)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/jalik/react-form.svg)
+[![Build Status](https://travis-ci.com/jalik/react-form.svg?branch=master)](https://travis-ci.com/jalik/react-form)
+![GitHub](https://img.shields.io/github/license/jalik/react-form.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/jalik/react-form.svg)
+[![GitHub issues](https://img.shields.io/github/issues/jalik/react-form.svg)](https://github.com/jalik/js-react-form/issues)
 ![npm](https://img.shields.io/npm/dt/@jalik/react-form.svg)
 
 ## Why using this ?
