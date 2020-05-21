@@ -179,7 +179,7 @@ function Field(
 
   // Allows rendering of a custom component.
   if (Component !== null) {
-    return finalOptions.length > 0 ? (
+    return finalOptions.length > 0 || children ? (
       <Component {...finalProps} type={type}>
         {children}
         {finalOptions.map(SelectOption)}
