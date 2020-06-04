@@ -14,10 +14,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jalik/js-react-form.git"
+    "url": "https://github.com/jalik/react-form.git"
   },
   "bugs": {
-    "url": "https://github.com/jalik/js-react-form/issues"
+    "url": "https://github.com/jalik/react-form/issues"
   },
   "scripts": {
     "build": "npx gulp build",
