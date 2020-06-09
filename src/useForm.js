@@ -107,7 +107,7 @@ import {
 function useForm(
   {
     disabled = false,
-    initialValues = {},
+    initialValues,
     invalidClass = 'field-invalid',
     modifiedClass = 'field-modified',
     onInitializeField,
@@ -139,8 +139,8 @@ function useForm(
   const onValidateFieldRef = useRef(onValidateField);
   const onValidateRef = useRef(onValidate);
 
-  // Defines initial state of the form.
-  const initialState = useMemo(() => ({
+  // Defines the form state.
+  const [state, dispatch] = useReducer(formReducer, {
     changes: {},
     // Disables fields if default values are undefined.
     disabled: disabled || typeof initialValues === 'undefined' || initialValues === null,
@@ -148,7 +148,7 @@ function useForm(
     submitCount: 0,
     submitError: null,
     fields: {},
-    initialValues,
+    initialValues: initialValues || {},
     invalidClass,
     modified: false,
     modifiedClass,
@@ -158,11 +158,8 @@ function useForm(
     validateError: null,
     validated: false,
     validating: false,
-    values: clone(initialValues),
-  }), [disabled, initialValues, invalidClass, modifiedClass, validClass]);
-
-  // Defines the form state.
-  const [state, dispatch] = useReducer(formReducer, initialState, undefined);
+    values: clone(initialValues || {}),
+  }, undefined);
 
   // Optimizes cloned variables.
   const clonedChanges = useMemo(() => clone(state.changes), [state.changes]);
@@ -487,13 +484,6 @@ function useForm(
   useEffect(() => {
     onValidateRef.current = onValidate;
   }, [onValidate]);
-
-  // Updates initial values (ex: when values are loaded after form init).
-  useEffect(() => {
-    if (initialValues) {
-      initValues(initialValues);
-    }
-  }, [initValues, initialValues]);
 
   return {
     changes: clonedChanges,
