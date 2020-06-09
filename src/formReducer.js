@@ -30,6 +30,7 @@ import {
 } from './utils';
 
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
+export const ACTION_LOAD_ERROR = 'LOAD_ERROR';
 export const ACTION_REGISTER_FIELD = 'REGISTER_FIELD';
 export const ACTION_RESET = 'RESET';
 export const ACTION_RESET_VALUES = 'RESET_VALUES';
@@ -56,6 +57,7 @@ export const ACTION_VALIDATED = 'VALIDATED';
  *   errors: Object,
  *   fields: Object,
  *   initialValues: Object,
+ *   loadError: Object,
  *   modified: boolean,
  *   submitCount: number,
  *   submitError: Error|null,
@@ -102,6 +104,13 @@ function formReducer(current, action) {
         fields: { ...current.fields, [action.name]: action.options },
         // todo add field to changes if it is registered after form initialization
         // changes: { ...current.changes, [action.name]: current.initialValues !== null },
+      };
+      break;
+
+    case ACTION_LOAD_ERROR:
+      state = {
+        ...current,
+        loadError: action.error,
       };
       break;
 

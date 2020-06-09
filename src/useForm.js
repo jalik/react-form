@@ -32,6 +32,7 @@ import {
 } from 'react';
 import formReducer, {
   ACTION_INIT_VALUES,
+  ACTION_LOAD_ERROR,
   ACTION_REGISTER_FIELD,
   ACTION_RESET,
   ACTION_RESET_VALUES,
@@ -63,6 +64,7 @@ import {
  * @param {string} invalidClass
  * @param {string} modifiedClass
  * @param {function} onInitializeField
+ * @param {function} onLoad
  * @param {function} onSubmit
  * @param {function} onValidate
  * @param {function} onValidateField
@@ -75,6 +77,7 @@ import {
  *   disabled: boolean,
  *   errors: Object,
  *   invalidClass: string,
+ *   loadError: Error,
  *   modified: boolean,
  *   modifiedClass: string,
  *   submitCount: number,
@@ -111,6 +114,7 @@ function useForm(
     invalidClass = 'field-invalid',
     modifiedClass = 'field-modified',
     onInitializeField,
+    onLoad,
     onSubmit,
     onValidate,
     onValidateField,
@@ -126,6 +130,9 @@ function useForm(
   if (typeof onInitializeField !== 'undefined' && typeof onInitializeField !== 'function') {
     throw new Error('onInitializeField must be a function');
   }
+  if (typeof onLoad !== 'undefined' && typeof onLoad !== 'function') {
+    throw new Error('onLoad must be a function');
+  }
   if (typeof onValidate !== 'undefined' && typeof onValidate !== 'function') {
     throw new Error('onValidate must be a function');
   }
@@ -135,6 +142,7 @@ function useForm(
 
   // Defines function references.
   const onInitializeFieldRef = useRef(onInitializeField);
+  const onLoadRef = useRef(onLoad);
   const onSubmitRef = useRef(onSubmit);
   const onValidateFieldRef = useRef(onValidateField);
   const onValidateRef = useRef(onValidate);
@@ -145,13 +153,14 @@ function useForm(
     // Disables fields if default values are undefined.
     disabled: disabled || typeof initialValues === 'undefined' || initialValues === null,
     errors: {},
-    submitCount: 0,
-    submitError: null,
     fields: {},
     initialValues: initialValues || {},
     invalidClass,
+    loadError: null,
     modified: false,
     modifiedClass,
+    submitCount: 0,
+    submitError: null,
     submitted: false,
     submitting: false,
     validClass,
@@ -474,6 +483,10 @@ function useForm(
   }, [onInitializeField]);
 
   useEffect(() => {
+    onLoadRef.current = onLoad;
+  }, [onLoad]);
+
+  useEffect(() => {
     onSubmitRef.current = onSubmit;
   }, [onSubmit]);
 
@@ -485,11 +498,32 @@ function useForm(
     onValidateRef.current = onValidate;
   }, [onValidate]);
 
+  // Loads form initial values.
+  useEffect(() => {
+    let mounted = true;
+
+    if (onLoad) {
+      const promise = onLoad();
+
+      if (!(promise instanceof Promise)) {
+        throw new Error('onLoad must return a Promise');
+      }
+      promise.then((values) => {
+        // Do nothing if component has been unmounted.
+        if (mounted) initValues(values);
+      }).catch((error) => {
+        dispatch({ type: ACTION_LOAD_ERROR, error });
+      });
+    }
+    return () => { mounted = false; };
+  }, [initValues, onLoad]);
+
   return {
     changes: clonedChanges,
     disabled: state.disabled,
     errors: clonedErrors,
     invalidClass,
+    loadError: state.loadError,
     modified: state.modified,
     modifiedClass,
     submitCount: state.submitCount,
