@@ -17,5 +17,8 @@ TODO.md
 # Dependencies
 /node_modules/
 
+# Sources
+/src/
+
 # Tests
 /test/
