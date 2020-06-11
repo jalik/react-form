@@ -70,7 +70,6 @@ export const ACTION_VALIDATED = 'VALIDATED';
  */
 function formReducer(current, action) {
   let state;
-  console.log(action);
 
   switch (action.type) {
     case ACTION_INIT_VALUES:
