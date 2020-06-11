@@ -176,9 +176,7 @@ const {
 
 #### Loading form
 
-If you need to initialize your form asynchronously, you have two options.
-
-1. Use the `onLoad` option in `useForm()`, which must be a function that returns a promise with the loaded values
+If you need to initialize your form asynchronously, use `initValues(values)`.
 
 ```js
 import { Button, Field, Form, useForm } from '@jalik/react-form';
@@ -197,39 +195,7 @@ function updateUser(userId, patch) {
 
 function UserForm({ userId }) {
   const form = useForm({
-    onLoad: () => fetchUser(userId),
-    onSubmit: (values) => updateUser(userId, values)
-  });
-
-  return (
-    <Form context={form}>
-      <Field name="username" />
-      <Field name="password" />
-      <Button type="submit">Save</Button>
-    </Form>
-  );
-}
-```
-
-2. Use the `initValues()` to tell to the form what are the initial values.
-
-```js
-import { Button, Field, Form, useForm } from '@jalik/react-form';
-
-function fetchUser(userId) {
-  return fetch(`https://www.mysite.com/users/${userId}`).then(resp => resp.json());
-}
-
-function updateUser(userId, patch) {
-  return fetch(`https://www.mysite.com/users/${userId}`, {
-    method: 'PATCH',
-    body: JSON.stringify(patch),
-    headers: { 'content-type': 'application/json' }
-  });
-}
-
-function UserForm({ userId }) {
-  const form = useForm({
+    disabled: true, // to avoid modifications during loading
     onSubmit: (values) => updateUser(userId, values)
   });
 

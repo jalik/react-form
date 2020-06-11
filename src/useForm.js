@@ -32,7 +32,6 @@ import {
 } from 'react';
 import formReducer, {
   ACTION_INIT_VALUES,
-  ACTION_LOAD_ERROR,
   ACTION_REGISTER_FIELD,
   ACTION_RESET,
   ACTION_RESET_VALUES,
@@ -77,7 +76,6 @@ import {
  *   disabled: boolean,
  *   errors: Object,
  *   invalidClass: string,
- *   loadError: Error,
  *   modified: boolean,
  *   modifiedClass: string,
  *   submitCount: number,
@@ -236,7 +234,7 @@ function useForm(
    */
   const setError = useCallback((name, error) => {
     dispatch({ type: ACTION_SET_ERROR, error, name });
-  }, [dispatch]);
+  }, []);
 
   /**
    * Defines several field errors.
@@ -244,7 +242,7 @@ function useForm(
    */
   const setErrors = useCallback((errors) => {
     dispatch({ type: ACTION_SET_ERRORS, errors });
-  }, [dispatch]);
+  }, []);
 
   /**
    * Validates one or more fields values.
@@ -498,32 +496,11 @@ function useForm(
     onValidateRef.current = onValidate;
   }, [onValidate]);
 
-  // Loads form initial values.
-  useEffect(() => {
-    let mounted = true;
-
-    if (onLoad) {
-      const promise = onLoad();
-
-      if (!(promise instanceof Promise)) {
-        throw new Error('onLoad must return a Promise');
-      }
-      promise.then((values) => {
-        // Do nothing if component has been unmounted.
-        if (mounted) initValues(values);
-      }).catch((error) => {
-        dispatch({ type: ACTION_LOAD_ERROR, error });
-      });
-    }
-    return () => { mounted = false; };
-  }, [initValues, onLoad]);
-
   return {
     changes: clonedChanges,
     disabled: state.disabled,
     errors: clonedErrors,
     invalidClass,
-    loadError: state.loadError,
     modified: state.modified,
     modifiedClass,
     submitCount: state.submitCount,
