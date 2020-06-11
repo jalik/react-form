@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.1.1
+- Fixes infinite loop when anonymous functions are passed as `validator` or `parser` in `<Field>`
+
 ## v1.1.0
 - Removes debounce on validate and submit
 - Fixes infinite loop with `initialValues` in `useForm()`

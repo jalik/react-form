@@ -145,7 +145,8 @@ function Field(
   useEffect(() => {
     register(name, { parser, validator });
     return () => { unregister(name); };
-  }, [name, parser, register, unregister, validator]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, register, unregister]);
 
   if (type === CHECKBOX) {
     // Checks if single or multiple checkbox.
