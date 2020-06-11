@@ -71,7 +71,7 @@ export function SelectOption(opts) {
   }
   return (
     <option
-      key={value}
+      key={label}
       disabled={disabled}
       value={value}
     >
