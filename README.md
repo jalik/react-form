@@ -26,8 +26,8 @@ The benefits of using this lib are:
 - Disable form submission until fields are valid
 - Reset one, several, or all fields
 - Handling form submission errors and retry
-- Debounce of validation and submission
 - Compatible with custom components
+- <s>Debounce of validation and submission</s> (removed until it's more stable)
 
 ## Installation
 

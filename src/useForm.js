@@ -393,8 +393,6 @@ function useForm(
     });
   }, [clonedChanges, clonedValues, setErrors]);
 
-  const debouncedValidate = useDebouncePromise(validate, validateDelay);
-
   /**
    * Validates if necessary and submits form.
    * todo disable form during validation and submission without re-enabling it between both,
@@ -410,8 +408,6 @@ function useForm(
       return null;
     }) : debouncedSubmit()
   ), [debouncedSubmit, state.validated, validate]);
-
-  const debouncedValidateAndSubmit = useDebouncePromise(validateAndSubmit, submitDelay);
 
   /**
    * Handles change of field value.
@@ -473,8 +469,8 @@ function useForm(
    */
   const handleSubmit = useCallback((event) => {
     event.preventDefault();
-    debouncedValidateAndSubmit();
-  }, [debouncedValidateAndSubmit]);
+    validateAndSubmit();
+  }, [validateAndSubmit]);
 
   useEffect(() => {
     onInitializeFieldRef.current = onInitializeField;
@@ -525,9 +521,9 @@ function useForm(
     setErrors,
     setValue,
     setValues,
-    submit: debouncedValidateAndSubmit,
+    submit: validateAndSubmit,
     unregister,
-    validate: debouncedValidate,
+    validate,
   };
 }
 
