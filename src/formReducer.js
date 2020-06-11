@@ -55,8 +55,8 @@ export const ACTION_VALIDATED = 'VALIDATED';
  *   disabled: boolean,
  *   errors: Object,
  *   fields: Object,
+ *   initialized: boolean,
  *   initialValues: Object,
- *   loadError: Object,
  *   modified: boolean,
  *   submitCount: number,
  *   submitError: Error|null,
@@ -75,6 +75,7 @@ function formReducer(current, action) {
     case ACTION_INIT_VALUES:
       state = {
         ...current,
+        initialized: true,
         initialValues: clone(action.values),
         values: action.values,
         // Enable form.

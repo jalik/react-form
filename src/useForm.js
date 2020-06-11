@@ -75,6 +75,7 @@ import {
  *   changes: Object,
  *   disabled: boolean,
  *   errors: Object,
+ *   initialized: boolean,
  *   invalidClass: string,
  *   modified: boolean,
  *   modifiedClass: string,
@@ -146,15 +147,16 @@ function useForm(
   const onValidateRef = useRef(onValidate);
 
   // Defines the form state.
+  const isInitialized = typeof initialValues !== 'undefined' && initialValues !== null;
   const [state, dispatch] = useReducer(formReducer, {
     changes: {},
     // Disables fields if default values are undefined.
-    disabled: disabled || typeof initialValues === 'undefined' || initialValues === null,
+    disabled: disabled || !isInitialized,
     errors: {},
     fields: {},
+    initialized: isInitialized,
     initialValues: initialValues || {},
     invalidClass,
-    loadError: null,
     modified: false,
     modifiedClass,
     submitCount: 0,
@@ -492,10 +494,17 @@ function useForm(
     onValidateRef.current = onValidate;
   }, [onValidate]);
 
+  useEffect(() => {
+    if (initialValues && !state.initialized) {
+      initValues(initialValues);
+    }
+  }, [initValues, initialValues, state.initialized]);
+
   return {
     changes: clonedChanges,
     disabled: state.disabled,
     errors: clonedErrors,
+    initialized: state.initialized,
     invalidClass,
     modified: state.modified,
     modifiedClass,
