@@ -68,7 +68,7 @@ export const ACTION_VALIDATED = 'VALIDATED';
  *   values: Object,
  * }}
  */
-function formReducer(current, action) {
+function reducer(current, action) {
   let state;
 
   switch (action.type) {
@@ -340,4 +340,4 @@ function formReducer(current, action) {
   return state;
 }
 
-export default formReducer;
+export default reducer;

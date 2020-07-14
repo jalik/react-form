@@ -30,7 +30,7 @@ import {
   useReducer,
   useRef,
 } from 'react';
-import formReducer, {
+import reducer, {
   ACTION_INIT_VALUES,
   ACTION_REGISTER_FIELD,
   ACTION_RESET,
@@ -46,7 +46,7 @@ import formReducer, {
   ACTION_VALIDATE,
   ACTION_VALIDATE_ERROR,
   ACTION_VALIDATED,
-} from './formReducer';
+} from './reducer';
 import useDebouncePromise from './useDebouncePromise';
 import {
   clone,
@@ -148,7 +148,7 @@ function useForm(
 
   // Defines the form state.
   const isInitialized = typeof initialValues !== 'undefined' && initialValues !== null;
-  const [state, dispatch] = useReducer(formReducer, {
+  const [state, dispatch] = useReducer(reducer, {
     changes: {},
     // Disables fields if default values are undefined.
     disabled: disabled || !isInitialized,
