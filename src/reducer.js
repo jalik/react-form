@@ -68,16 +68,16 @@ export const ACTION_VALIDATED = 'VALIDATED';
  *   values: Object,
  * }}
  */
-function reducer(current, action) {
+function reducer(current, { data, error, type }) {
   let state;
 
-  switch (action.type) {
+  switch (type) {
     case ACTION_INIT_VALUES:
       state = {
         ...current,
         initialized: true,
-        initialValues: clone(action.values),
-        values: action.values,
+        initialValues: clone(data.values),
+        values: data.values,
         // Enable form.
         disabled: false,
         // Reset form state.
@@ -96,12 +96,12 @@ function reducer(current, action) {
 
     case ACTION_REGISTER_FIELD:
       // Ignore registration of already registered fields (radios, checkboxes).
-      if (typeof current.fields[action.name] !== 'undefined') {
+      if (typeof current.fields[data.name] !== 'undefined') {
         return current;
       }
       state = {
         ...current,
-        fields: { ...current.fields, [action.name]: action.options },
+        fields: { ...current.fields, [data.name]: data.options },
         // todo add field to changes if it is registered after form initialization
         // changes: { ...current.changes, [action.name]: current.initialValues !== null },
       };
@@ -131,7 +131,7 @@ function reducer(current, action) {
       const initialValues = clone(current.initialValues);
       let values = clone(current.values);
 
-      action.values.forEach((name) => {
+      data.values.forEach((name) => {
         values = build(name, resolve(name, initialValues), values);
         changes[name] = undefined;
         errors[name] = undefined;
@@ -158,7 +158,7 @@ function reducer(current, action) {
     case ACTION_SET_ERROR:
       state = {
         ...current,
-        errors: { ...current.errors, [action.name]: action.error },
+        errors: { ...current.errors, [data.name]: data.error },
         validated: false,
         validating: false,
         disabled: false,
@@ -168,8 +168,8 @@ function reducer(current, action) {
     case ACTION_SET_ERRORS: {
       const errors = clone(current.errors);
 
-      Object.keys(action.errors).forEach((name) => {
-        errors[name] = action.errors[name];
+      Object.keys(data.errors).forEach((name) => {
+        errors[name] = data.errors[name];
       });
 
       state = {
@@ -185,7 +185,7 @@ function reducer(current, action) {
     case ACTION_SET_VALUE: {
       state = {
         ...current,
-        values: build(action.name, action.value, clone(current.values)),
+        values: build(data.name, data.value, clone(current.values)),
         modified: true,
         submitted: false,
         // Invalidate form.
@@ -196,12 +196,12 @@ function reducer(current, action) {
         // Update changed fields.
         changes: {
           ...current.changes,
-          [action.name]: action.value !== resolve(action.name, current.initialValues),
+          [data.name]: data.value !== resolve(data.name, current.initialValues),
         },
         // Clear field error.
         errors: {
           ...current.errors,
-          [action.name]: undefined,
+          [data.name]: undefined,
         },
       };
       break;
@@ -212,9 +212,9 @@ function reducer(current, action) {
       const errors = clone(current.errors);
       let values = clone(current.values);
 
-      Object.keys(action.values).forEach((name) => {
-        values = build(name, action.values[name], values);
-        changes[name] = action.values[name] !== resolve(name, current.initialValues);
+      Object.keys(data.values).forEach((name) => {
+        values = build(name, data.values[name], values);
+        changes[name] = data.values[name] !== resolve(name, current.initialValues);
         errors[name] = undefined;
       });
 
@@ -252,7 +252,7 @@ function reducer(current, action) {
         ...current,
         disabled: false,
         submitCount: current.submitCount + 1,
-        submitError: action.error,
+        submitError: error,
         submitting: false,
       };
       break;
@@ -279,14 +279,14 @@ function reducer(current, action) {
       const errors = { ...current.errors };
       const values = clone(current.values);
 
-      if (typeof changes[action.name] !== 'undefined') {
-        delete changes[action.name];
+      if (typeof changes[data.name] !== 'undefined') {
+        delete changes[data.name];
       }
-      if (typeof errors[action.name] !== 'undefined') {
-        delete errors[action.name];
+      if (typeof errors[data.name] !== 'undefined') {
+        delete errors[data.name];
       }
-      if (typeof resolve(action.name, current.values) !== 'undefined') {
-        build(action.name, undefined, current.values);
+      if (typeof resolve(data.name, current.values) !== 'undefined') {
+        build(data.name, undefined, current.values);
       }
       // fixme see how to keep errors and changes when field is moved.
       //  when moved (from an index to another index in an array),
@@ -317,7 +317,7 @@ function reducer(current, action) {
       state = {
         ...current,
         validating: false,
-        validateError: action.error,
+        validateError: error,
         disabled: false,
       };
       break;
@@ -335,7 +335,7 @@ function reducer(current, action) {
       break;
 
     default:
-      throw new Error(`Unknown reducer action type "${action.type}"`);
+      throw new Error(`Unknown reducer action type "${type}"`);
   }
   return state;
 }

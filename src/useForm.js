@@ -212,7 +212,7 @@ function useForm(
    * @param {Object} values
    */
   const initValues = useCallback((values) => {
-    dispatch({ type: ACTION_INIT_VALUES, values });
+    dispatch({ type: ACTION_INIT_VALUES, data: { values } });
   }, [dispatch]);
 
   /**
@@ -226,7 +226,7 @@ function useForm(
       // eslint-disable-next-line no-console
       console.warn(`field "${name}" has a validator and onValidateField is defined`);
     }
-    dispatch({ type: ACTION_REGISTER_FIELD, name, options });
+    dispatch({ type: ACTION_REGISTER_FIELD, data: { name, options } });
   }, []);
 
   /**
@@ -235,7 +235,7 @@ function useForm(
    * @param {Object} error
    */
   const setError = useCallback((name, error) => {
-    dispatch({ type: ACTION_SET_ERROR, error, name });
+    dispatch({ type: ACTION_SET_ERROR, data: { error, name } });
   }, []);
 
   /**
@@ -243,7 +243,7 @@ function useForm(
    * @param {Object} errors
    */
   const setErrors = useCallback((errors) => {
-    dispatch({ type: ACTION_SET_ERRORS, errors });
+    dispatch({ type: ACTION_SET_ERRORS, data: { errors } });
   }, []);
 
   /**
@@ -297,7 +297,7 @@ function useForm(
    * @param {*} value
    */
   const setValue = useCallback((name, value) => {
-    dispatch({ type: ACTION_SET_VALUE, name, value });
+    dispatch({ type: ACTION_SET_VALUE, data: { name, value } });
     debouncedValidateValues({ [name]: value });
   }, [debouncedValidateValues]);
 
@@ -306,7 +306,7 @@ function useForm(
    * @param {Object} values
    */
   const setValues = useCallback((values) => {
-    dispatch({ type: ACTION_SET_VALUES, values });
+    dispatch({ type: ACTION_SET_VALUES, data: { values } });
     debouncedValidateValues(values);
   }, [debouncedValidateValues]);
 
@@ -320,7 +320,7 @@ function useForm(
       // eslint-disable-next-line no-console
       console.warn('resetting form during validation has been prevented');
     } else if (values) {
-      dispatch({ type: ACTION_RESET_VALUES, values });
+      dispatch({ type: ACTION_RESET_VALUES, data: { values } });
     } else {
       dispatch({ type: ACTION_RESET });
     }
@@ -358,7 +358,7 @@ function useForm(
    * @param {string} name
    */
   const unregister = useCallback((name) => {
-    dispatch({ type: ACTION_UNREGISTER_FIELD, name });
+    dispatch({ type: ACTION_UNREGISTER_FIELD, data: { name } });
   }, []);
 
   /**
