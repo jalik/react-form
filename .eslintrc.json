@@ -19,6 +19,7 @@
   ],
   "rules": {
     "react/button-has-type": "warn",
+    "react/forbid-prop-types": "warn",
     "react/jsx-filename-extension": "off",
     "react/jsx-props-no-spreading": "warn"
   }
