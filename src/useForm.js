@@ -344,7 +344,7 @@ function useForm(
       throw new Error('onSubmit must return a Promise');
     }
     return promise.then((result) => {
-      dispatch({ type: ACTION_SUBMITTED });
+      dispatch({ type: ACTION_SUBMITTED, data: { result } });
       return result;
     }).catch((error) => {
       dispatch({ type: ACTION_SUBMIT_ERROR, error });

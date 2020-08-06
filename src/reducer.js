@@ -86,6 +86,7 @@ function reducer(current, { data, error, type }) {
         modified: false,
         submitCount: 0,
         submitError: null,
+        submitResult: null,
         submitted: false,
         submitting: false,
         validateError: null,
@@ -117,6 +118,7 @@ function reducer(current, { data, error, type }) {
         modified: false,
         submitCount: 0,
         submitError: null,
+        submitResult: null,
         submitted: false,
         submitting: false,
         validateError: null,
@@ -146,6 +148,7 @@ function reducer(current, { data, error, type }) {
         // Reset form state.
         submitCount: 0,
         submitError: null,
+        submitResult: null,
         submitted: false,
         submitting: false,
         validateError: null,
@@ -244,6 +247,7 @@ function reducer(current, { data, error, type }) {
         disabled: true,
         // Reset previous form submitting result.
         submitError: null,
+        submitResult: null,
       };
       break;
 
@@ -260,6 +264,7 @@ function reducer(current, { data, error, type }) {
     case ACTION_SUBMITTED:
       state = {
         ...current,
+        submitResult: data.result,
         submitted: true,
         submitCount: 0,
         submitError: null,

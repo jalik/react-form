@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.0
+- Returns the form submit result as `submitResult` in `useForm()`
+
 ## v1.1.1
 - Fixes infinite loop when anonymous functions are passed as `validator` or `parser` in `<Field>`
 
