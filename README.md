@@ -32,11 +32,14 @@ The benefits of using this lib are:
 
 To install this package using npm, do `npm install --save @jalik/react-form`.
 
-## Documentation
+## Warning
 
-*Since this package started as a personal project and needs a lot of time, documentation will be released in a second time with sandbox examples to play with, please be patient.*
+*Since maintaining a package is time-consuming, the documentation is not complete yet, thank you for your understanding.*
 
-*For those who want to test before everyone, below is a very light and incomplete documentation.*
+## Demo
+
+You can play with a codesandbox of the lib at this address:
+https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/UserForm.js
 
 ## Quick start
 
@@ -70,6 +73,112 @@ function SignInForm() {
 }
 ```
 
+Now let's add validation using custom functions.
+
+## Validation
+
+```js
+import { Button, Field, FieldError, Form, useForm } from '@jalik/react-form';
+import Schema from '@jalik/schema';
+
+// 1. Create some helpers that can be reused in other form components.
+// The next functions could be located in another file like "formUtils.js",
+// but they are presented here for simplicity.
+
+// Helper function to create a field initializer using a schema
+function createFieldInitializer(schema) {
+  return (name) => {
+    const field = schema.getField(name);
+    return field ? {
+      max: field.getMax(),
+      min: field.getMin(),
+      maxLength: field.getMaxLength(),
+      minLength: field.getMinLength(),
+      pattern: field.getPattern(),
+      required: field.isRequired(),
+    } : null;
+  };
+}
+
+// Helper function to create a field validator using a schema
+function createFieldValidator(schema) {
+  return (value, name, values) => {
+    schema.getField(name).validate(value, {
+      context: values,
+      rootOnly: true,
+    });
+  };
+}
+
+// Helper function to create a form validator using a schema
+function createFormValidator(schema) {
+  return (values) => new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(schema.getErrors(values));
+    }, 1000);
+  });
+}
+
+
+// 2. Declare the form schema (structure and constraints).
+// Here I am using one of my lib (@jalik/schema) for the validation,
+// but you could use any library for that (yup, joi...),
+// you would just need to adapt the helpers defined previously.
+
+const SignInFormSchema = new Schema({
+  username: {
+    type: 'string',
+    required: true,
+    minLength: 1,
+  },
+  password: {
+    type: 'string',
+    required: true,
+    minLength: 1,
+  },
+});
+
+
+// 3. Prepare the functions using the schema and the helpers.
+
+const onInitializeField = createFieldInitializer(SignInFormSchema);
+const onValidate = createFormValidator(SignInFormSchema);
+const onValidateField = createFieldValidator(SignInFormSchema);
+
+
+// 4. Write the form and pass those functions to the useForm() hook options.
+
+function SignInForm() {
+  const form = useForm({
+    initialValues: {
+      username: null,
+      password: null    
+    },
+    onInitializeField,
+    onValidate,
+    onValidateField,
+    onSubmit(values) {
+      // do anything with values and return a promise.
+      return fetch('https://www.mysite.com/auth', {
+        method: 'POST',
+        body: JSON.stringify(values),
+        headers: { 'content-type': 'application/json' }
+      });
+    }
+  });
+  return (
+    <Form context={form}>
+      <Field name="username" />
+      <FieldError name="username" />
+      <Field name="password" />
+      <FieldError name="password" />
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}
+```
+
+
 ## Hooks
 
 ### useForm()
@@ -91,6 +200,8 @@ const form = useForm({
   // optional
   onInitializeField(name) {
     // returns field attributes based on name...
+    // usefull if you want to centralize this process
+    // and return attributes dynamically.
     return { required: true };
   },
   // required, needs to return a promise
@@ -130,45 +241,74 @@ const form = useForm({
 
 ### useFormContext()
 
-This hook returns the form context.
+This hook returns the form context, most of the functions and attributes returned are used internally, so you may not need to know the purpose of all elements.
 
 ```js
 import { useFormContext } from '@jalik/react-form';
 
 const {
-  // states
+  // the list of modified fields
   changes,
+  // tells if the form is disabled
   disabled,
+  // the fields errors
   errors,
+  // the CSS class to use for invalid fields (used by <Field>)
   invalidClass,
+  // tells if the form was modified
   modified,
+  // the CSS class to use for modified fields (used by <Field>)
   modifiedClass,
+  // the number of times the form was submitted
   submitCount,
+  // the submission error
   submitError,
+  // the submission result (returned by the promise)
   submitResult,
+  // tells if the form was submitted (go back to false when form is modified)
   submitted,
+  // tells if the form is submitting
   submitting,
+  // the CSS class to use for valid fields (used by <Field>)
   validClass,
+  // the validation error (network or other)
   validateError,
+  // tells if the form was validated and is valid
   validated,
+  // tells if the form is validating
   validating,
+  // the form values
   values,
 
-  // functions
+  // returns the attributes of a field
   getAttributes,
+  // returns the initial value of a field
   getInitialValue,
+  // returns the current value of a field (same as fiels.name)
   getValue,
+  // handler for onChange events
   handleChange,
+  // handler for onReset events
   handleReset,
+  // handler for onSubmit events
   handleSubmit,
+  // resets and sets initial fields values
   initValues,
+  // removes a field that does not exist anymore (clears errors)
   remove,
+  // resets fields values to their initial values
   reset,
+  // sets a field error
   setError,
+  // sets errors of multiple fields
   setErrors,
+  // sets value of a field
   setValue,
+  // sets values of multiple fields
   setValues,
+  // submits the form with values (validate first)
   submit,
+  // validates fields values without submitting
   validate
 } = useFormContext();
 ```
