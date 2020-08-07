@@ -9,25 +9,24 @@
 
 ## Why using this ?
 
-This package has many advantages that you could find in other solutions like Formik, React-Hook-Form, Redux Form... but it offers a different developer experience, which tries to be much more easy to use and less verbose than other packages, it also focuses on being flexible and powerful.
+This package has many advantages that you could find in other solutions like Formik, React-Hook-Form, Redux Form... however it offers a different DX (developer experience) by trying to be the fastest to learn, and the easiest to use while keeping the code as light as possible, so main goals are flexibility and power, then performance.
 
 The benefits of using this lib are:
-- Initialization of fields using a schema
-- Handling fields state (value and onChange)
-- Handling the list of modified fields
-- Handling form status (modified, disabled, validating, submitting...)
-- Auto disable fields until form is initialized
-- Auto disable fields when form is disabled, not modified, validating or submitting
-- Auto parsing fields value when modified (smart typing or custom parser)
-- Auto validate fields when modified
-- Auto validate fields before form submission
-- Validate form using a schema
-- Handling form errors
-- Disable form submission until fields are valid
+- Fields definition (constraints) using a schema
+- Managing fields state (value and onChange)
+- Managing the list of modified fields
+- Managing form status (modified, disabled, validating, submitting...)
+- Auto disabling fields until form is initialized
+- Auto disabling fields when form is disabled, not modified, validating or submitting
+- Auto parsing of fields value when modified (smart typing or custom parser)
+- Auto validation of fields when modified
+- Auto validation of fields on form submission
+- Form validation using a schema
+- Form errors handling
+- Avoiding form submission until fields are valid
 - Reset one, several, or all fields
-- Handling form submission errors and retry
-- Compatible with custom components
-- <s>Debounce of validation and submission</s> (removed until it's more stable)
+- Handling form submission errors and retries
+- Compatible with custom components (like reactstrap)
 
 ## Installation
 
@@ -41,12 +40,12 @@ To install this package using npm, do `npm install --save @jalik/react-form`.
 
 ## Quick start
 
-Here is a basic log in form with minimal options and no validation:
+Here is a basic sign in form with minimal options and no validation:
 
 ```js
 import { Button, Field, Form, useForm } from '@jalik/react-form';
 
-function LogInForm() {
+function SignInForm() {
   const form = useForm({
     initialValues: {
       username: null,
@@ -146,6 +145,7 @@ const {
   modifiedClass,
   submitCount,
   submitError,
+  submitResult,
   submitted,
   submitting,
   validClass,
@@ -162,14 +162,13 @@ const {
   handleReset,
   handleSubmit,
   initValues,
-  register,
+  remove,
   reset,
   setError,
   setErrors,
   setValue,
   setValues,
   submit,
-  unregister,
   validate
 } = useFormContext();
 ```
@@ -238,12 +237,6 @@ This component handles the value and the changes of an input. It can also parse 
 ```js
 import { Field } from '@jalik/react-form';
 
-function checkRequired(value, name) {
-  if (!value) {
-    throw new Error(`${name} is required`);
-  }
-}
-
 function parseBoolean(value) {
  return /^true$/i.test(value);
 }
@@ -254,7 +247,6 @@ export function AcceptCheckboxField() {
       name="acceptTerms"
       parser={parseBoolean}
       type="checkbox"
-      validator={checkRequired}
       value="true"
     />
   );
@@ -282,19 +274,10 @@ export function CountrySelectField() {
 
 ### FieldError
 
-This component is a convenient way to display the error of a field without having to handle conditions.
+This component automatically displays the field error (if present).
 
 ```js
 import { Field, FieldError } from '@jalik/react-form';
-
-function checkPassword(value) {
-  if (!/[a-zA-Z]/.test(value)) {
-    throw new Error('password must contain letters');
-  }
-  if (!/[0-9]/.test(value)) {
-    throw new Error('password must contain numbers');
-  }
-}
 
 export function PasswordField() {
   return (
@@ -302,7 +285,6 @@ export function PasswordField() {
       <Field
         name="password"
         type="password"
-        validator={checkPassword}
       />
       <FieldError name="password" />
     </>

@@ -1,7 +1,10 @@
 # Changelog
 
-## v1.2.0
-- Returns the form submit result as `submitResult` in `useForm()`
+## v2.0.0
+- Removes attribute `validator` from `<Field>`
+- Removes `register` and `unregister` from `useForm()`
+- Adds `remove` in `useForm()` as a replacement of  `unregister`
+- Returns the form submission result as `submitResult` in `useForm()`
 
 ## v1.1.1
 - Fixes infinite loop when anonymous functions are passed as `validator` or `parser` in `<Field>`

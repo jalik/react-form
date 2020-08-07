@@ -24,7 +24,6 @@
  */
 
 import {
-  any,
   arrayOf,
   bool,
   func,
@@ -35,6 +34,7 @@ import {
   string,
 } from 'prop-types';
 import React, {
+  useCallback,
   useEffect,
   useMemo,
 } from 'react';
@@ -93,7 +93,6 @@ function Field(
     options,
     parser,
     type,
-    validator,
     value,
     ...props
   },
@@ -107,13 +106,29 @@ function Field(
     handleChange,
     invalidClass,
     modifiedClass,
-    register,
-    unregister,
+    remove,
     validClass,
   } = useFormContext();
 
+  // Check deprecated attributes
+  // eslint-disable-next-line react/prop-types,react/destructuring-assignment
+  if (props.validator) {
+    // eslint-disable-next-line no-console
+    console.warn(`${name}: attribute "validator" is deprecated`);
+  }
+
+  // Check incompatible attributes
+  if (onChange && parser) {
+    // eslint-disable-next-line no-console
+    console.warn(`${name}: attributes "parser" and "onChange" are incompatibles`);
+  }
+
   const contextValue = getValue(name);
   const classNames = [className];
+
+  const handleChangeCallback = useCallback((event) => {
+    handleChange(event, { parser });
+  }, [handleChange, parser]);
 
   // Get field attributes (compute only once).
   const attributes = useMemo(() => (
@@ -135,18 +150,13 @@ function Field(
     disabled: disabled || formDisabled,
     multiple,
     name,
-    onChange: onChange || handleChange,
+    onChange: onChange || handleChangeCallback,
     // Keep value passed to field instead of the form context value if field is checkable.
     value: inputValue(isCheckable(type) ? value : contextValue),
   };
 
-  // Registers the field when mounted, so the form is aware of it,
-  // and unregisters it when unmounted, this allows cleaning errors and stuffs like that.
-  useEffect(() => {
-    register(name, { parser, validator });
-    return () => { unregister(name); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, register, unregister]);
+  // Removes the field when unmounted, to clean errors and stuffs like that.
+  useEffect(() => () => { remove(name); }, [name, remove]);
 
   if (type === CHECKBOX) {
     // Checks if single or multiple checkbox.
@@ -219,16 +229,21 @@ Field.propTypes = {
   name: string.isRequired,
   onChange: func,
   options: arrayOf(oneOfType([
-    any,
+    bool,
+    number,
+    string,
     shape({
       disabled: bool,
       label: string,
-      value: any.isRequired,
+      value: oneOfType([
+        bool,
+        number,
+        string,
+      ]),
     }),
   ])),
   parser: func,
   type: string,
-  validator: func,
   value: oneOfType([string, number, bool]),
 };
 
@@ -243,7 +258,6 @@ Field.defaultProps = {
   options: null,
   parser: null,
   type: TEXT,
-  validator: null,
   value: null,
 };
 

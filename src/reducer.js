@@ -30,7 +30,7 @@ import {
 } from './utils';
 
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
-export const ACTION_REGISTER_FIELD = 'REGISTER_FIELD';
+export const ACTION_REMOVE = 'REMOVE';
 export const ACTION_RESET = 'RESET';
 export const ACTION_RESET_VALUES = 'RESET_VALUES';
 export const ACTION_SET_ERROR = 'SET_ERROR';
@@ -40,7 +40,6 @@ export const ACTION_SET_VALUES = 'SET_VALUES';
 export const ACTION_SUBMIT = 'SUBMIT';
 export const ACTION_SUBMIT_ERROR = 'SUBMIT_ERROR';
 export const ACTION_SUBMITTED = 'SUBMITTED';
-export const ACTION_UNREGISTER_FIELD = 'UNREGISTER_FIELD';
 export const ACTION_VALIDATE = 'VALIDATE';
 export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR';
 export const ACTION_VALIDATED = 'VALIDATED';
@@ -54,12 +53,12 @@ export const ACTION_VALIDATED = 'VALIDATED';
  *   changes: Object,
  *   disabled: boolean,
  *   errors: Object,
- *   fields: Object,
  *   initialized: boolean,
  *   initialValues: Object,
  *   modified: boolean,
  *   submitCount: number,
  *   submitError: Error|null,
+ *   submitResult: Object|null,
  *   submitted: boolean,
  *   submitting: boolean,
  *   validateError: Error|null,
@@ -92,19 +91,6 @@ function reducer(current, { data, error, type }) {
         validateError: null,
         validated: false,
         validating: false,
-      };
-      break;
-
-    case ACTION_REGISTER_FIELD:
-      // Ignore registration of already registered fields (radios, checkboxes).
-      if (typeof current.fields[data.name] !== 'undefined') {
-        return current;
-      }
-      state = {
-        ...current,
-        fields: { ...current.fields, [data.name]: data.options },
-        // todo add field to changes if it is registered after form initialization
-        // changes: { ...current.changes, [action.name]: current.initialValues !== null },
       };
       break;
 
@@ -279,7 +265,9 @@ function reducer(current, { data, error, type }) {
       };
       break;
 
-    case ACTION_UNREGISTER_FIELD: {
+    // fixme see how to keep errors and changes when an array field is moved to another index.
+    //  solution: handle array operations (append, prepend...) in reducer.
+    case ACTION_REMOVE: {
       const changes = { ...current.changes };
       const errors = { ...current.errors };
       const values = clone(current.values);
@@ -293,12 +281,6 @@ function reducer(current, { data, error, type }) {
       if (typeof resolve(data.name, current.values) !== 'undefined') {
         build(data.name, undefined, current.values);
       }
-      // fixme see how to keep errors and changes when field is moved.
-      //  when moved (from an index to another index in an array),
-      //  the field is unregistered and registered again.
-      //  solution 1: using a garbage collector (remove unregistered items after a delay).
-      //  solution 2: handle array operations (append, prepend...) in reducer.
-
       state = {
         ...current,
         changes,

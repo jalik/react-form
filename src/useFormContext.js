@@ -40,35 +40,7 @@ function notImplemented() {
  * The default form context.
  * @type {React.Context}
  */
-export const FormContext = createContext({
-  changes: {},
-  disabled: false,
-  errors: {},
-  fields: {},
-  modified: false,
-  submitCount: 0,
-  submitError: null,
-  submitted: false,
-  submitting: false,
-  validated: false,
-  values: {},
-  getAttributes: notImplemented,
-  getInitialValue: notImplemented,
-  getValue: notImplemented,
-  handleChange: notImplemented,
-  handleReset: notImplemented,
-  handleSubmit: notImplemented,
-  initValues: notImplemented,
-  register: notImplemented,
-  reset: notImplemented,
-  setError: notImplemented,
-  setErrors: notImplemented,
-  setValue: notImplemented,
-  setValues: notImplemented,
-  submit: notImplemented,
-  unregister: notImplemented,
-  validate: notImplemented,
-});
+export const FormContext = createContext({});
 
 /**
  * Returns the form context.

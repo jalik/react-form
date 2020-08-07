@@ -32,7 +32,7 @@ import {
 } from 'react';
 import reducer, {
   ACTION_INIT_VALUES,
-  ACTION_REGISTER_FIELD,
+  ACTION_REMOVE,
   ACTION_RESET,
   ACTION_RESET_VALUES,
   ACTION_SET_ERROR,
@@ -42,7 +42,6 @@ import reducer, {
   ACTION_SUBMIT,
   ACTION_SUBMIT_ERROR,
   ACTION_SUBMITTED,
-  ACTION_UNREGISTER_FIELD,
   ACTION_VALIDATE,
   ACTION_VALIDATE_ERROR,
   ACTION_VALIDATED,
@@ -81,6 +80,7 @@ import {
  *   modifiedClass: string,
  *   submitCount: number,
  *   submitError: Error|null,
+ *   submitResult: Object|null,
  *   submitted: boolean,
  *   submitting: boolean,
  *   validClass: string,
@@ -95,14 +95,13 @@ import {
  *   handleReset: function,
  *   handleSubmit: function,
  *   initValues: function,
- *   register: function,
+ *   remove: function,
  *   reset: function,
  *   setError: function,
  *   setErrors: function,
  *   setValue: function,
  *   setValues: function,
  *   submit: function,
- *   unregister: function,
  *   validate: function
  *  }}
  */
@@ -153,7 +152,6 @@ function useForm(
     // Disables fields if default values are undefined.
     disabled: disabled || !isInitialized,
     errors: {},
-    fields: {},
     initialized: isInitialized,
     initialValues: initialValues || {},
     invalidClass,
@@ -216,17 +214,11 @@ function useForm(
   }, [dispatch]);
 
   /**
-   * Registers a field.
+   * Removes a field.
    * @param {string} name
-   * @param {Object} options
    */
-  const register = useCallback((name, options = {}) => {
-    // Warns for potential bug when mixing two validation modes.
-    if (onValidateFieldRef.current && options.validator) {
-      // eslint-disable-next-line no-console
-      console.warn(`field "${name}" has a validator and onValidateField is defined`);
-    }
-    dispatch({ type: ACTION_REGISTER_FIELD, data: { name, options } });
+  const remove = useCallback((name) => {
+    dispatch({ type: ACTION_REMOVE, data: { name } });
   }, []);
 
   /**
@@ -255,15 +247,10 @@ function useForm(
     const promises = [];
 
     Object.keys(fields).forEach((name) => {
-      const field = state.fields[name] || {};
-
-      // Uses field validator attribute or onValidateField.
-      const validator = field.validator || onValidateFieldRef.current;
-
       // Validates field value.
-      if (typeof validator === 'function') {
+      if (typeof onValidateFieldRef.current === 'function') {
         try {
-          const result = validator(fields[name], name, state.values);
+          const result = onValidateFieldRef.current(fields[name], name, state.values);
 
           // Asynchronous validation by catching promise error.
           if (typeof result !== 'undefined' && result instanceof Promise) {
@@ -287,7 +274,7 @@ function useForm(
         setErrors(errors);
       }
     });
-  }, [setErrors, state.fields, state.values]);
+  }, [setErrors, state.values]);
 
   const debouncedValidateValues = useDebouncePromise(validateValues, validateDelay);
 
@@ -354,14 +341,6 @@ function useForm(
   const debouncedSubmit = useDebouncePromise(submit, submitDelay);
 
   /**
-   * Unregisters a field.
-   * @param {string} name
-   */
-  const unregister = useCallback((name) => {
-    dispatch({ type: ACTION_UNREGISTER_FIELD, data: { name } });
-  }, []);
-
-  /**
    * Validates form values.
    * @return {Promise}
    */
@@ -414,11 +393,11 @@ function useForm(
   /**
    * Handles change of field value.
    * @param {Event} event
+   * @param {{parser: function}} options
    */
-  const handleChange = useCallback((event) => {
+  const handleChange = useCallback((event, { parser }) => {
     const { target } = event;
     const { name, type } = target;
-    const { parser } = state.fields[name] || {};
     let value;
 
     // Parses value using a custom parser or using the native parser (smart typing).
@@ -454,7 +433,7 @@ function useForm(
       value = parsedValue;
     }
     setValue(name, value);
-  }, [getValue, setValue, state.fields]);
+  }, [getValue, setValue]);
 
   /**
    * Handles form reset.
@@ -525,14 +504,13 @@ function useForm(
     handleReset,
     handleSubmit,
     initValues,
-    register,
+    remove,
     reset,
     setError,
     setErrors,
     setValue,
     setValues,
     submit: validateAndSubmit,
-    unregister,
     validate,
   };
 }
