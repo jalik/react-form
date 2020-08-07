@@ -1,6 +1,6 @@
 {
   "name": "@jalik/react-form",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "An easy way to manage forms with React.",
   "license": "MIT",
   "keywords": [
