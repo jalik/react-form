@@ -29,14 +29,6 @@ import {
 } from 'react';
 
 /**
- * Throws a not implemented error.
- * @throws Error
- */
-function notImplemented() {
-  throw new Error('not implemented');
-}
-
-/**
  * The default form context.
  * @type {React.Context}
  */
