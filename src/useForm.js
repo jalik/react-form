@@ -314,13 +314,13 @@ function useForm(
    * Resets form values.
    * @param {string[]} fields names
    */
-  const reset = useCallback((values) => {
+  const reset = useCallback((fieldNames) => {
     // Prevents form reset during validation.
     if (state.validating) {
       // eslint-disable-next-line no-console
       console.warn('resetting form during validation has been prevented');
-    } else if (values) {
-      dispatch({ type: ACTION_RESET_VALUES, data: { values } });
+    } else if (fieldNames) {
+      dispatch({ type: ACTION_RESET_VALUES, data: { fieldNames } });
     } else {
       dispatch({ type: ACTION_RESET });
     }

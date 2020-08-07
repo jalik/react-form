@@ -133,7 +133,7 @@ function reducer(current, { data, error, type }) {
       const initialValues = clone(current.initialValues);
       let values = clone(current.values);
 
-      data.values.forEach((name) => {
+      data.fieldNames.forEach((name) => {
         values = build(name, resolve(name, initialValues), values);
         changes[name] = undefined;
         errors[name] = undefined;
