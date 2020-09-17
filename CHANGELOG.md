@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.0.1
+- Upgrades dependencies
+
 ## v2.0.0
 - Removes attribute `validator` from `<Field>`
 - Removes `register` and `unregister` from `useForm()`
@@ -15,7 +18,7 @@
 - Fixes display of children in `<Field>` when the attribute `options` is undefined and using a custom component
 - Fixes React warnings of duplicate keys with `options` in `<Field>`
 - Returns `initialized` in `useForm()`
-- Updates dependencies
+- Upgrades dependencies
 
 ## v1.0.0
 - First public release
