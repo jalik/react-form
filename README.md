@@ -32,21 +32,26 @@ The benefits of using this lib are:
 
 To install this package using npm, do `npm install --save @jalik/react-form`.
 
-## Warning
-
-*Since maintaining a package is time-consuming, the documentation is not complete yet, thank you for your understanding.*
-
 ## Demo
 
-You can play with a codesandbox of the lib at this address:
+You can play with the lib at this address:
 https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/UserForm.js
 
-## Quick start
+## Creating a form
 
-Here is a basic sign in form with minimal options and no validation:
+Here is a basic sign in form without validation.
+It uses the provided form components (which are not required), to handle all the logic for you (modification, validation, attributes state...).
 
 ```js
 import { Button, Field, Form, useForm } from '@jalik/react-form';
+
+function authenticate(username, password) {
+  return fetch('https://www.mysite.com/auth', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+    headers: { 'content-type': 'application/json' }
+  });
+}
 
 function SignInForm() {
   const form = useForm({
@@ -54,14 +59,7 @@ function SignInForm() {
       username: null,
       password: null    
     },
-    onSubmit(values) {
-      // do anything with values and return a promise.
-      return fetch('https://www.mysite.com/auth', {
-        method: 'POST',
-        body: JSON.stringify(values),
-        headers: { 'content-type': 'application/json' }
-      });
-    }
+    onSubmit: (values) => authenticate(values.username, values.password),
   });
   return (
     <Form context={form}>
@@ -73,59 +71,21 @@ function SignInForm() {
 }
 ```
 
-Now let's add validation using custom functions.
+## Validating a form
 
-## Validation
+Of course, we can set up validation checks on our forms.
+We can do that using functions, or a schema (recommended).
+
+### Validating using a schema
+
+In the example below, I am using my own lib `@jalik/schema` to validate the form using a schema, but you could use any lib you want (yup, joi...).
+
+Declare the form schema (structure and constraints).
 
 ```js
-import { Button, Field, FieldError, Form, useForm } from '@jalik/react-form';
 import Schema from '@jalik/schema';
 
-// 1. Create some helpers that can be reused in other form components.
-// The next functions could be located in another file like "formUtils.js",
-// but they are presented here for simplicity.
-
-// Helper function to create a field initializer using a schema
-function createFieldInitializer(schema) {
-  return (name) => {
-    const field = schema.getField(name);
-    return field ? {
-      max: field.getMax(),
-      min: field.getMin(),
-      maxLength: field.getMaxLength(),
-      minLength: field.getMinLength(),
-      pattern: field.getPattern(),
-      required: field.isRequired(),
-    } : null;
-  };
-}
-
-// Helper function to create a field validator using a schema
-function createFieldValidator(schema) {
-  return (value, name, values) => {
-    schema.getField(name).validate(value, {
-      context: values,
-      rootOnly: true,
-    });
-  };
-}
-
-// Helper function to create a form validator using a schema
-function createFormValidator(schema) {
-  return (values) => new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(schema.getErrors(values));
-    }, 1000);
-  });
-}
-
-
-// 2. Declare the form schema (structure and constraints).
-// Here I am using one of my lib (@jalik/schema) for the validation,
-// but you could use any library for that (yup, joi...),
-// you would just need to adapt the helpers defined previously.
-
-const SignInFormSchema = new Schema({
+export const SignInFormSchema = new Schema({
   username: {
     type: 'string',
     required: true,
@@ -137,16 +97,65 @@ const SignInFormSchema = new Schema({
     minLength: 1,
   },
 });
+```
 
+Create some helpers that make the bridge between the schema and the form, so they can be reused in other form components.
+These functions should be located in another file and imported when needed.
 
-// 3. Prepare the functions using the schema and the helpers.
+```js
+// The function returned initializes the field's attributes using the schema.
+// Example: if a field is required in the schema, it will also be required in the form.
+export function createFieldInitializer(schema) {
+  // called by onInitializeField
+  return (name) => {
+    const field = schema.getField(name);
+    return field ? {
+      max: field.getMax(),
+      min: field.getMin(),
+      // maxLength: field.getMaxLength(),
+      minLength: field.getMinLength(),
+      pattern: field.getPattern(),
+      required: field.isRequired(),
+    } : null;
+  };
+}
+
+// The function returned validates the field's value using the schema.
+export function createFieldValidator(schema) {
+  // called by onValidateField
+  return (value, name, values) => {
+    schema.getField(name).validate(value, {
+      context: values,
+      rootOnly: true,
+    });
+  };
+}
+
+// The function returned validates the form (all fields) using the schema.
+export function createFormValidator(schema) {
+  // called by onValidate
+  return (values) => new Promise((resolve) => {
+    resolve(schema.getErrors(values));
+  });
+}
+```
+
+Then we can create the form using the schema helper functions.
+
+```js
+import { Button, Field, FieldError, Form, useForm } from '@jalik/react-form';
+
+function authenticate(username, password) {
+  return fetch('https://www.mysite.com/auth', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+    headers: { 'content-type': 'application/json' }
+  });
+}
 
 const onInitializeField = createFieldInitializer(SignInFormSchema);
 const onValidate = createFormValidator(SignInFormSchema);
 const onValidateField = createFieldValidator(SignInFormSchema);
-
-
-// 4. Write the form and pass those functions to the useForm() hook options.
 
 function SignInForm() {
   const form = useForm({
@@ -157,14 +166,7 @@ function SignInForm() {
     onInitializeField,
     onValidate,
     onValidateField,
-    onSubmit(values) {
-      // do anything with values and return a promise.
-      return fetch('https://www.mysite.com/auth', {
-        method: 'POST',
-        body: JSON.stringify(values),
-        headers: { 'content-type': 'application/json' }
-      });
-    }
+    onSubmit: (values) => authenticate(values.username, values.password),
   });
   return (
     <Form context={form}>
@@ -178,10 +180,25 @@ function SignInForm() {
 }
 ```
 
+## Customizing components
 
-## Hooks
+You can use your preferred UI components library and use the provided form components by using the `component` attribute on any form component (`<Field />` or `<Button />`).
 
-### useForm()
+Example with Reactstrap:
+
+```js
+import { Button as _Button } from 'reactstrap';
+
+export default function RsButton(props) {
+  return <Button {...props} component={_Button} />;
+}
+```
+
+## API
+
+### Hooks
+
+#### useForm()
 
 This hook creates and return the form context (states and functions).
 
@@ -239,7 +256,7 @@ const form = useForm({
 });
 ```
 
-### useFormContext()
+#### useFormContext()
 
 This hook returns the form context, most of the functions and attributes returned are used internally, so you may not need to know the purpose of all elements.
 
@@ -313,19 +330,20 @@ const {
 } = useFormContext();
 ```
 
-#### Loading form
+**Note on async form initialization**
 
-If you need to initialize your form asynchronously, use `initValues(values)`.
+If you need to initialize form values asynchronously, use `initValues(values)` instead of `setValues(values)`, it will say to the form that those values are the initial values and should be used to reset the form.
 
 ```js
 import { Button, Field, Form, useForm } from '@jalik/react-form';
 
 function fetchUser(userId) {
-  return fetch(`https://www.mysite.com/users/${userId}`).then(resp => resp.json());
+  return fetch(`https://www.mysite.com/api/users/${userId}`)
+    .then((resp) => resp.json());
 }
 
 function updateUser(userId, patch) {
-  return fetch(`https://www.mysite.com/users/${userId}`, {
+  return fetch(`https://www.mysite.com/api/users/${userId}`, {
     method: 'PATCH',
     body: JSON.stringify(patch),
     headers: { 'content-type': 'application/json' }
@@ -334,14 +352,12 @@ function updateUser(userId, patch) {
 
 function UserForm({ userId }) {
   const form = useForm({
-    disabled: true, // to avoid modifications during loading
+    disabled: true, // avoid modifications during loading
     onSubmit: (values) => updateUser(userId, values)
   });
 
   useEffect(() => {
-    fetchUser(userId).then((user) => {
-      form.initValues(user);
-    });
+    fetchUser(userId).then(form.initValues);
   }, [fetchUser, form.initValues]);
 
   return (
@@ -354,23 +370,25 @@ function UserForm({ userId }) {
 }
 ```
 
-## Components
+### Components
 
-This lib exposes a few components to make life easier.
+To make life easier, some components are provided.
 
-### Button
+#### Button
 
-This component is synced with form state, so whenever the form is disabled (because it is validating or submitting), the button is also disabled.
+This component is synced with the form, so whenever the form is disabled (because it is validating or submitting), the button is also disabled.
 
 ```js
 import { Button } from '@jalik/react-form';
 
-<Button>Just a button</Button>
-<Button type="reset">Reset</Button>
-<Button type="submit">Submit</Button>
+function SubmitButton() {
+  return (
+    <Button type="submit">Submit</Button>
+  );
+}
 ```
 
-### Field
+#### Field
 
 This component handles the value and the changes of an input. It can also parse and validate the field on the fly. Only the name is required.
 
@@ -378,7 +396,7 @@ This component handles the value and the changes of an input. It can also parse 
 import { Field } from '@jalik/react-form';
 
 function parseBoolean(value) {
- return /^true$/i.test(value);
+ return /^true|1$/gi.test(value);
 }
 
 export function AcceptCheckboxField() {
@@ -412,7 +430,7 @@ export function CountrySelectField() {
 }
 ```
 
-### FieldError
+#### FieldError
 
 This component automatically displays the field error (if present).
 
@@ -432,9 +450,9 @@ export function PasswordField() {
 }
 ```
 
-### Form
+#### Form
 
-This component contains the form context, so any component inside a Form is associated to it.
+This component contains the form context, so any component inside a `Form` is associated to it.
 
 ```js
 import { Button, Field, Form, useForm } from '@jalik/react-form';
