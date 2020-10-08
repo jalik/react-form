@@ -3,7 +3,6 @@
 *.iml
 
 # Tools settings
-.babelrc
 .eslintignore
 .eslintrc.json
 .gitignore
@@ -16,9 +15,6 @@ TODO.md
 
 # Dependencies
 /node_modules/
-
-# Sources
-/src/
 
 # Tests
 /test/

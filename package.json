@@ -29,6 +29,8 @@
     "watch": "npx gulp watch"
   },
   "main": "dist/index.js",
+  "esnext": "src/index.js",
+  "sideEffects": false,
   "dependencies": {
     "@babel/runtime": "^7.11.2",
     "@jalik/deep-extend": "^1.1.8",
