@@ -151,6 +151,16 @@ export function clone(object) {
 }
 
 /**
+ * Returns the field ID using name and value.
+ * @param {string} name
+ * @param {*} value
+ * @return {string}
+ */
+export function getFieldId(name, value) {
+  return `field_${name}_${String(value)}`.replace(/[^a-zA-Z0-9_-]+/g, '_');
+}
+
+/**
  * Returns selected values of a multiple select.
  * @param {HTMLSelectElement} select
  * @return {[]}
@@ -193,16 +203,6 @@ export function isElementWithArrayValue(element) {
 }
 
 /**
- * Returns true if value is "true", "yes", "1" or "y",
- * false if not truthy or null for anything else.
- * @param {string|*} text
- * @return {boolean|null}
- */
-export function parseBoolean(text) {
-  return typeof text === 'string' && text.length > 0 ? /^[1y]|true|yes$/i.test(text) : null;
-}
-
-/**
  * Returns the parsed value of a field based on its type.
  * @param {Element} input
  * @return {number|string|*}
@@ -216,15 +216,6 @@ export function parseInputValue(input) {
     }
   }
   return value;
-}
-
-/**
- * Returns the string if not empty, otherwise returns null.
- * @param {string} text
- * @return {string|null}
- */
-export function parseString(text) {
-  return typeof text === 'string' && text.length > 0 ? text : null;
 }
 
 /**

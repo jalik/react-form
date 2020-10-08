@@ -39,7 +39,10 @@ import React, {
   useMemo,
 } from 'react';
 import useFormContext from '../useFormContext';
-import { inputValue } from '../utils';
+import {
+  getFieldId,
+  inputValue,
+} from '../utils';
 
 export const CHECKBOX = 'checkbox';
 export const RADIO = 'radio';
@@ -87,6 +90,7 @@ function Field(
     component: Component,
     disabled,
     emptyOptionLabel,
+    id,
     multiple,
     name,
     onChange,
@@ -148,6 +152,7 @@ function Field(
     ...props,
     className: classNames.join(' '),
     disabled: disabled || formDisabled,
+    id: id || getFieldId(name, value),
     multiple,
     name,
     onChange: onChange || handleChangeCallback,
@@ -225,6 +230,7 @@ Field.propTypes = {
   component: func,
   disabled: bool,
   emptyOptionLabel: string,
+  id: string,
   multiple: bool,
   name: string.isRequired,
   onChange: func,
@@ -253,6 +259,7 @@ Field.defaultProps = {
   component: null,
   disabled: null,
   emptyOptionLabel: '...',
+  id: null,
   multiple: false,
   onChange: null,
   options: null,

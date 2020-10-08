@@ -31,3 +31,5 @@ export Form from './components/Form';
 export useFieldArray from './useFieldArray';
 export useForm from './useForm';
 export useFormContext from './useFormContext';
+
+export { getFieldId } from './utils';

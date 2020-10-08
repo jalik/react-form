@@ -1,24 +1,28 @@
 # Changelog
 
+## NEXT
+- Automatically set attribute `id` on `<Field>` using the name and value
+- Added export function `getFieldId(name, value)` to package
+
 ## v2.0.1
-- Upgrades dependencies
+- Upgraded dependencies
 
 ## v2.0.0
-- Removes attribute `validator` from `<Field>`
-- Removes `register` and `unregister` from `useForm()`
-- Adds `remove` in `useForm()` as a replacement of  `unregister`
-- Returns the form submission result as `submitResult` in `useForm()`
+- [BREAKING] Removed attribute `validator` from `<Field>`
+- [BREAKING] Removed functions `register()` and `unregister()` returned from `useForm()`
+- Added function `remove(name)` returned by `useForm()` as a replacement of  `unregister()`
+- Added attribute `submitResult` returned by `useForm()`
 
 ## v1.1.1
-- Fixes infinite loop when anonymous functions are passed as `validator` or `parser` in `<Field>`
+- Fixed infinite loop with anonymous functions passed as `validator` or `parser` in `<Field>`
 
 ## v1.1.0
-- Removes debounce on validate and submit
-- Fixes infinite loop with `initialValues` in `useForm()`
-- Fixes display of children in `<Field>` when the attribute `options` is undefined and using a custom component
-- Fixes React warnings of duplicate keys with `options` in `<Field>`
-- Returns `initialized` in `useForm()`
-- Upgrades dependencies
+- Removed debounce on validate and submit
+- Fixed infinite loop with `initialValues` in `useForm()` options
+- Fixed display of children in `<Field>` when the attribute `options` is undefined and using a custom component
+- Fixed React warnings of duplicate keys when using attribute `options` in `<Field>`
+- Added attribute `initialized` returned by `useForm()`
+- Upgraded dependencies
 
 ## v1.0.0
 - First public release
