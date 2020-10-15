@@ -41,6 +41,7 @@ import {
  * @param {Object} initialValues
  * @param {string} invalidClass
  * @param {string} modifiedClass
+ * @param {boolean} nullify
  * @param {function} onInitializeField
  * @param {function} onLoad
  * @param {function} onSubmit
@@ -91,6 +92,7 @@ function useForm(
     initialValues,
     invalidClass = 'field-invalid',
     modifiedClass = 'field-modified',
+    nullify = false,
     onInitializeField,
     onLoad,
     onSubmit,
@@ -379,9 +381,14 @@ function useForm(
     let value;
 
     // Parses value using a custom parser or using the native parser (smart typing).
-    const parsedValue = typeof parser === 'function'
+    let parsedValue = typeof parser === 'function'
       ? parser(target.value, target)
       : parseInputValue(target);
+
+    // Replaces empty string with null.
+    if (parsedValue === '' && nullify) {
+      parsedValue = null;
+    }
 
     // Handles array value (checkboxes, select-multiple).
     if (isElementWithArrayValue(target.form.elements[name])) {
@@ -411,7 +418,7 @@ function useForm(
       value = parsedValue;
     }
     setValue(name, value);
-  }, [getValue, setValue]);
+  }, [getValue, nullify, setValue]);
 
   /**
    * Handles form reset.

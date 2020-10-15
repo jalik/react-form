@@ -19,6 +19,7 @@ The benefits of using this lib are:
 - Auto disabling fields until form is initialized
 - Auto disabling fields when form is disabled, not modified, validating or submitting
 - Auto parsing of fields value when modified (smart typing or custom parser)
+- Auto replacing empty string by null on field change
 - Auto validation of fields when modified
 - Auto validation of fields on form submission
 - Form validation using a schema
@@ -210,6 +211,9 @@ import { useForm } from '@jalik/react-form';
 const form = useForm({
   // required, needs to be "{}" if form is empty
   initialValues: { /* a:1, b:2... */ },
+  // optional, replace empty string by null on field change
+  // false by default
+  nullify: true,
   // optional
   submitDelay: 100,
   // optional
@@ -224,8 +228,8 @@ const form = useForm({
   // required, needs to return a promise
   onSubmit(values) {
     return new Promise((resolve) => {
-      // resolve to notify that the form has been submitted
-      resolve();
+      // resolve with an optional result, to notify that the form has been submitted
+      resolve({ success: true });
       // or reject with error
       reject(new Error('network error'));
     });
@@ -235,9 +239,16 @@ const form = useForm({
     return new Promise((resolve) => {
       const errors = {};
       // check for errors...
-      // resolve "{}" if no error
-      // resolve "{username: 'field is required'}" if "username" field is invalid
+      if (!values.username) {
+        errors.username = 'field is required';
+      }
+      // resolve with errors details
       resolve(errors);
+
+      // these instructions will resolve with no errors
+      resolve({});
+      resolve(null);
+      resolve(false);
     });
   },
   // optional, needs to return a promise
