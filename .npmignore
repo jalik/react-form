@@ -7,11 +7,8 @@
 .eslintrc.json
 .gitignore
 .travis.yml
-babel.config.js
+babel.config.*
 gulpfile.js
-
-# Others
-TODO.md
 
 # Dependencies
 /node_modules/
