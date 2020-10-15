@@ -30,12 +30,12 @@ export const ACTION_VALIDATED = 'VALIDATED';
  * @param {Object} action
  * @throws {Error}
  * @return {{
- *   changes: Object,
  *   disabled: boolean,
  *   errors: Object,
  *   initialized: boolean,
  *   initialValues: Object,
  *   modified: boolean,
+ *   modifiedFields: Object,
  *   submitCount: number,
  *   submitError: Error|null,
  *   submitResult: Object|null,
@@ -60,9 +60,9 @@ function reducer(current, { data, error, type }) {
         // Enable form.
         disabled: false,
         // Reset form state.
-        changes: {},
         errors: {},
         modified: false,
+        modifiedFields: {},
         submitCount: 0,
         submitError: null,
         submitResult: null,
@@ -79,9 +79,9 @@ function reducer(current, { data, error, type }) {
         ...current,
         values: clone(current.initialValues),
         // Reset form state.
-        changes: {},
         errors: {},
         modified: false,
+        modifiedFields: {},
         submitCount: 0,
         submitError: null,
         submitResult: null,
@@ -94,23 +94,23 @@ function reducer(current, { data, error, type }) {
       break;
 
     case ACTION_RESET_VALUES: {
-      const changes = clone(current.changes);
+      const modifiedFields = clone(current.modifiedFields);
       const errors = clone(current.errors);
       const initialValues = clone(current.initialValues);
       let values = clone(current.values);
 
       data.fieldNames.forEach((name) => {
         values = build(name, resolve(name, initialValues), values);
-        changes[name] = undefined;
+        modifiedFields[name] = undefined;
         errors[name] = undefined;
       });
 
       state = {
         ...current,
         values,
-        changes,
         errors,
-        modified: Object.keys(changes).length > 0,
+        modified: Object.keys(modifiedFields).length > 0,
+        modifiedFields,
         // Reset form state.
         submitCount: 0,
         submitError: null,
@@ -163,8 +163,8 @@ function reducer(current, { data, error, type }) {
         submitCount: 0,
         submitError: null,
         // Update changed fields.
-        changes: {
-          ...current.changes,
+        modifiedFields: {
+          ...current.modifiedFields,
           [data.name]: data.value !== resolve(data.name, current.initialValues),
         },
         // Clear field error.
@@ -177,13 +177,13 @@ function reducer(current, { data, error, type }) {
     }
 
     case ACTION_SET_VALUES: {
-      const changes = clone(current.changes);
+      const modifiedFields = clone(current.modifiedFields);
       const errors = clone(current.errors);
       let values = clone(current.values);
 
       Object.keys(data.values).forEach((name) => {
         values = build(name, data.values[name], values);
-        changes[name] = data.values[name] !== resolve(name, current.initialValues);
+        modifiedFields[name] = data.values[name] !== resolve(name, current.initialValues);
         errors[name] = undefined;
       });
 
@@ -198,7 +198,7 @@ function reducer(current, { data, error, type }) {
         submitCount: 0,
         submitError: null,
         // Add fields to changes.
-        changes,
+        modifiedFields,
         // Clear fields error.
         errors,
       };
@@ -239,21 +239,21 @@ function reducer(current, { data, error, type }) {
         // Replace initial values when form is submitted.
         initialValues: clone(current.values),
         // Reset form state.
-        changes: {},
         modified: false,
+        modifiedFields: {},
         submitting: false,
       };
       break;
 
-    // fixme see how to keep errors and changes when an array field is moved to another index.
+    // fixme see how to keep errors and modifiedFields when an array field is moved to another index
     //  solution: handle array operations (append, prepend...) in reducer.
     case ACTION_REMOVE: {
-      const changes = { ...current.changes };
+      const modifiedFields = { ...current.modifiedFields };
       const errors = { ...current.errors };
       const values = clone(current.values);
 
-      if (typeof changes[data.name] !== 'undefined') {
-        delete changes[data.name];
+      if (typeof modifiedFields[data.name] !== 'undefined') {
+        delete modifiedFields[data.name];
       }
       if (typeof errors[data.name] !== 'undefined') {
         delete errors[data.name];
@@ -263,7 +263,7 @@ function reducer(current, { data, error, type }) {
       }
       state = {
         ...current,
-        changes,
+        modifiedFields,
         errors,
         values,
       };

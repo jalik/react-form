@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+- **[BREAKING]** Renamed attribute `changes` to `modifiedFields` returned from `useForm()`
 - Allow to return a falsy value (e.g. null, false) during validation instead of an empty object, when there are no errors
 - Automatically set attribute `id` on `<Field>` using the name and value
 - Added export function `getFieldId(name, value)` to package
@@ -11,8 +12,8 @@
 - Upgraded dependencies
 
 ## v2.0.0
-- [BREAKING] Removed attribute `validator` from `<Field>`
-- [BREAKING] Removed functions `register()` and `unregister()` returned from `useForm()`
+- **[BREAKING]** Removed attribute `validator` from `<Field>`
+- **[BREAKING]** Removed functions `register()` and `unregister()` returned from `useForm()`
 - Added function `remove(name)` returned by `useForm()` as a replacement of  `unregister()`
 - Added attribute `submitResult` returned by `useForm()`
 

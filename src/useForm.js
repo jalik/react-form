@@ -52,13 +52,13 @@ import {
  * @param {number} validateDelay
  * @throws {Error}
  * @return {{
- *   changes: Object,
  *   disabled: boolean,
  *   errors: Object,
  *   initialized: boolean,
  *   invalidClass: string,
  *   modified: boolean,
  *   modifiedClass: string,
+ *   modifiedFields: Object,
  *   submitCount: number,
  *   submitError: Error|null,
  *   submitResult: Object|null,
@@ -132,7 +132,6 @@ function useForm(
   const [state, dispatch] = useReducer(
     reducer,
     useMemo(() => ({
-      changes: {},
       // Disables fields if default values are undefined.
       disabled: disabled || !isInitialized,
       errors: {},
@@ -141,6 +140,7 @@ function useForm(
       invalidClass,
       modified: false,
       modifiedClass,
+      modifiedFields: {},
       submitCount: 0,
       submitError: null,
       submitted: false,
@@ -155,9 +155,9 @@ function useForm(
   );
 
   // Optimizes cloned variables.
-  const clonedChanges = useMemo(() => clone(state.changes), [state.changes]);
   const clonedErrors = useMemo(() => clone(state.errors), [state.errors]);
   const clonedInitialValues = useMemo(() => clone(state.initialValues), [state.initialValues]);
+  const clonedModifiedFields = useMemo(() => clone(state.modifiedFields), [state.modifiedFields]);
   const clonedValues = useMemo(() => clone(state.values), [state.values]);
 
   /**
@@ -332,7 +332,7 @@ function useForm(
     let promise;
 
     if (typeof onValidateRef.current === 'function') {
-      promise = onValidateRef.current(clonedValues, clonedChanges);
+      promise = onValidateRef.current(clonedValues, clonedModifiedFields);
 
       if (!(promise instanceof Promise)) {
         throw new Error('onValidate() must return a Promise');
@@ -352,7 +352,7 @@ function useForm(
     }).catch((error) => {
       dispatch({ type: ACTION_VALIDATE_ERROR, error });
     });
-  }, [clonedChanges, clonedValues, setErrors]);
+  }, [clonedModifiedFields, clonedValues, setErrors]);
 
   /**
    * Validates if necessary and submits form.
@@ -464,14 +464,14 @@ function useForm(
     }
   }, [initValues, initialValues, state.initialized]);
 
-  return {
-    changes: clonedChanges,
+  return useMemo(() => ({
     disabled: state.disabled,
     errors: clonedErrors,
     initialized: state.initialized,
     invalidClass,
     modified: state.modified,
     modifiedClass,
+    modifiedFields: clonedModifiedFields,
     submitCount: state.submitCount,
     submitError: state.submitError,
     submitResult: state.submitResult,
@@ -497,7 +497,10 @@ function useForm(
     setValues,
     submit: validateAndSubmit,
     validate,
-  };
+  }), [
+    // eslint-disable-next-line max-len
+    clonedModifiedFields, clonedErrors, clonedValues, getAttributes, getInitialValue, getValue, handleChange, handleReset, handleSubmit, initValues, invalidClass, modifiedClass, remove, reset, setError, setErrors, setValue, setValues, state.disabled, state.initialized, state.modified, state.submitCount, state.submitError, state.submitResult, state.submitted, state.submitting, state.validateError, state.validated, state.validating, validClass, validate, validateAndSubmit,
+  ]);
 }
 
 export default useForm;

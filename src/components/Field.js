@@ -82,7 +82,6 @@ function Field(
   },
 ) {
   const {
-    changes,
     disabled: formDisabled,
     errors,
     getAttributes,
@@ -90,6 +89,7 @@ function Field(
     handleChange,
     invalidClass,
     modifiedClass,
+    modifiedFields,
     remove,
     validClass,
   } = useFormContext();
@@ -120,7 +120,7 @@ function Field(
   ), [getAttributes, name]);
 
   // Adds CSS classes corresponding to field state.
-  if (changes[name] === true) {
+  if (modifiedFields[name] === true) {
     classNames.push(modifiedClass);
     classNames.push(typeof errors[name] !== 'undefined' ? invalidClass : validClass);
   } else if (typeof errors[name] !== 'undefined') {

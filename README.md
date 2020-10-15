@@ -275,8 +275,6 @@ This hook returns the form context, most of the functions and attributes returne
 import { useFormContext } from '@jalik/react-form';
 
 const {
-  // the list of modified fields
-  changes,
   // tells if the form is disabled
   disabled,
   // the fields errors
@@ -287,6 +285,8 @@ const {
   modified,
   // the CSS class to use for modified fields (used by <Field>)
   modifiedClass,
+  // the list of modified fields
+  modifiedFields,
   // the number of times the form was submitted
   submitCount,
   // the submission error
