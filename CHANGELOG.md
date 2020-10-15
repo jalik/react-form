@@ -4,6 +4,7 @@
 - Allow to return a falsy value (e.g. null, false) during validation instead of an empty object, when there are no errors
 - Automatically set attribute `id` on `<Field>` using the name and value
 - Added export function `getFieldId(name, value)` to package
+- Upgraded dependencies
 
 ## v2.0.1
 - Upgraded dependencies
