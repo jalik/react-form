@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## v3.0.0
 - **[BREAKING]** Renamed attribute `changes` to `modifiedFields` returned from `useForm()`
 - Allow to return a falsy value (e.g. null, false) during validation instead of an empty object, when there are no errors
 - Automatically set attribute `id` on `<Field>` using the name and value
