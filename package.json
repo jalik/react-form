@@ -20,13 +20,14 @@
     "url": "https://github.com/jalik/react-form/issues"
   },
   "scripts": {
-    "build": "npx gulp build",
-    "lint": "npx eslint --ext js,jsx .",
-    "lint-fix": "npx eslint --fix --ext js,jsx .",
-    "prepare": "npx gulp prepare",
+    "build": "babel src -d dist",
+    "clean": "rimraf dist",
+    "dev": "babel --watch src -d dist",
+    "lint": "eslint --ext js,jsx .",
+    "lint-fix": "eslint --fix --ext js,jsx .",
+    "prepare": "npm run clean && npm run build && npm run lint",
     "prepublishOnly": "npm test",
-    "test": "npx jest",
-    "watch": "npx gulp watch"
+    "test": "jest --passWithNoTests"
   },
   "main": "dist/index.js",
   "esnext": "src/index.js",
@@ -37,13 +38,13 @@
     "prop-types": "^15.7.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.12.0",
     "@babel/core": "^7.11.6",
     "@babel/plugin-proposal-export-default-from": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.11.5",
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
     "babel-eslint": "^10.1.0",
-    "del": "^6.0.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.1",
@@ -51,11 +52,9 @@
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react": "^7.21.2",
     "eslint-plugin-react-hooks": "^2.5.1",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-eslint": "^6.0.0",
     "jest": "^26.4.2",
     "react": "^16.13.1",
+    "rimraf": "^3.0.2",
     "typescript": "^4.0.3"
   },
   "peerDependencies": {
