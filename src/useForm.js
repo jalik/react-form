@@ -127,26 +127,30 @@ function useForm(
 
   // Defines the form state.
   const isInitialized = typeof initialValues !== 'undefined' && initialValues !== null;
-  const [state, dispatch] = useReducer(reducer, {
-    changes: {},
-    // Disables fields if default values are undefined.
-    disabled: disabled || !isInitialized,
-    errors: {},
-    initialized: isInitialized,
-    initialValues: initialValues || {},
-    invalidClass,
-    modified: false,
-    modifiedClass,
-    submitCount: 0,
-    submitError: null,
-    submitted: false,
-    submitting: false,
-    validClass,
-    validateError: null,
-    validated: false,
-    validating: false,
-    values: clone(initialValues || {}),
-  }, undefined);
+  const [state, dispatch] = useReducer(
+    reducer,
+    useMemo(() => ({
+      changes: {},
+      // Disables fields if default values are undefined.
+      disabled: disabled || !isInitialized,
+      errors: {},
+      initialized: isInitialized,
+      initialValues: initialValues || {},
+      invalidClass,
+      modified: false,
+      modifiedClass,
+      submitCount: 0,
+      submitError: null,
+      submitted: false,
+      submitting: false,
+      validClass,
+      validateError: null,
+      validated: false,
+      validating: false,
+      values: clone(initialValues || {}),
+    }), [disabled, initialValues, invalidClass, isInitialized, modifiedClass, validClass]),
+    undefined,
+  );
 
   // Optimizes cloned variables.
   const clonedChanges = useMemo(() => clone(state.changes), [state.changes]);
