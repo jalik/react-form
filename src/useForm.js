@@ -298,12 +298,6 @@ function useForm(
    * @return {Promise}
    */
   const submit = useCallback(() => {
-    // Prevents form submission if it is invalid.
-    if (!state.validated) {
-      // eslint-disable-next-line no-console
-      console.warn('submission of invalid form has been prevented');
-      return new Promise(((resolve1) => resolve1(false)));
-    }
     dispatch({ type: ACTION_SUBMIT });
     const promise = onSubmitRef.current(clonedValues);
 
@@ -316,7 +310,7 @@ function useForm(
     }).catch((error) => {
       dispatch({ type: ACTION_SUBMIT_ERROR, error });
     });
-  }, [clonedValues, state.validated]);
+  }, [clonedValues]);
 
   const debouncedSubmit = useDebouncePromise(submit, submitDelay);
 
@@ -363,7 +357,7 @@ function useForm(
    */
   const validateAndSubmit = useCallback(() => (
     !state.validated ? validate().then((errors) => {
-      if (typeof errors === 'object' && errors !== null && Object.keys(errors).length === 0) {
+      if (!errors || (typeof errors === 'object' && Object.keys(errors).length === 0)) {
         return debouncedSubmit();
       }
       return null;
