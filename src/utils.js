@@ -294,7 +294,7 @@ export function resolve(path, context, syntaxChecked = false) {
 export function uuid() {
   let d = new Date().getTime();
   // Time in microseconds since page-load or 0 if unsupported
-  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
+  let d2 = (typeof performance !== 'undefined' && typeof performance.now === 'function' && (performance.now() * 1000)) || 0;
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     // random number between 0 and 16
     let r = Math.random() * 16;

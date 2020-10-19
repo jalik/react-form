@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.0.1
+- Fixed error `performance is not defined` in nodejs env
+
 ## v3.0.0
 - **[BREAKING]** Renamed attribute `changes` to `modifiedFields` returned from `useForm()`
 - Allow to return a falsy value (e.g. null, false) during validation instead of an empty object, when there are no errors
