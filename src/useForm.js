@@ -375,7 +375,8 @@ function useForm(
    * @param {Event} event
    * @param {{parser: function}} options
    */
-  const handleChange = useCallback((event, { parser }) => {
+  const handleChange = useCallback((event, options) => {
+    const { parser } = options || {};
     const { target } = event;
     const { name, type } = target;
     let value;
