@@ -1,5 +1,8 @@
 # Changelog
 
+## vNEXT
+- Fixed call of handleChange() with nothing as second argument
+
 ## v3.0.2
 - Upgraded dependencies
 
