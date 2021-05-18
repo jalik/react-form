@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2021 Karl STEIN
  */
 
 import {
@@ -175,7 +175,7 @@ function useFieldArray({ context, defaultValue, name }) {
     remove(index);
   }), [remove]);
 
-  return {
+  return useMemo(() => ({
     append,
     fields: fields.current,
     handleAppend,
@@ -185,7 +185,7 @@ function useFieldArray({ context, defaultValue, name }) {
     move,
     prepend,
     remove,
-  };
+  }), [append, handleAppend, handlePrepend, handleRemove, insert, move, prepend, remove]);
 }
 
 export default useFieldArray;
