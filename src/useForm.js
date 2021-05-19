@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2021 Karl STEIN
  */
 
 import {
@@ -288,16 +288,12 @@ function useForm(
    * @param {string[]} fields names
    */
   const reset = useCallback((fieldNames) => {
-    // Prevents form reset during validation.
-    if (state.validating) {
-      // eslint-disable-next-line no-console
-      console.warn('resetting form during validation has been prevented');
-    } else if (fieldNames) {
+    if (fieldNames) {
       dispatch({ type: ACTION_RESET_VALUES, data: { fieldNames } });
     } else {
       dispatch({ type: ACTION_RESET });
     }
-  }, [state.validating]);
+  }, []);
 
   /**
    * Submits form.

@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2021 Karl STEIN
  */
 
 import {
@@ -75,6 +75,10 @@ function reducer(current, { data, error, type }) {
       break;
 
     case ACTION_RESET:
+      if (current.validating) {
+        console.warn('Reset form ignored during validation.');
+        return current;
+      }
       state = {
         ...current,
         values: clone(current.initialValues),
@@ -94,6 +98,10 @@ function reducer(current, { data, error, type }) {
       break;
 
     case ACTION_RESET_VALUES: {
+      if (current.validating) {
+        console.warn('Reset form ignored during validation.');
+        return current;
+      }
       const modifiedFields = clone(current.modifiedFields);
       const errors = clone(current.errors);
       const initialValues = clone(current.initialValues);
