@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2021 Karl STEIN
  */
 
 import {
@@ -23,6 +23,7 @@ import {
   getFieldId,
   inputValue,
 } from '../utils';
+import SelectOption from './SelectOption';
 
 export const CHECKBOX = 'checkbox';
 export const RADIO = 'radio';
@@ -37,30 +38,6 @@ export const TEXTAREA = 'textarea';
  */
 function isCheckable(type) {
   return [CHECKBOX, RADIO].indexOf(type) !== -1;
-}
-
-export function SelectOption(opts) {
-  let disabled = false;
-  let label;
-  let value;
-
-  if (typeof opts === 'object' && opts !== null && typeof opts.value !== 'undefined') {
-    disabled = opts.disabled;
-    label = opts.label || opts.value;
-    value = opts.value;
-  } else {
-    label = opts;
-    value = opts;
-  }
-  return (
-    <option
-      key={label}
-      disabled={disabled}
-      value={value}
-    >
-      {label}
-    </option>
-  );
 }
 
 function Field(
@@ -178,7 +155,11 @@ function Field(
     return finalOptions.length > 0 || children ? (
       <Component {...finalProps} type={type}>
         {children}
-        {finalOptions.map(SelectOption)}
+        {finalOptions.map((option) => (
+          typeof option === 'object' && option != null
+            ? <SelectOption {...option} />
+            : <SelectOption value={option} />
+        ))}
       </Component>
     ) : (
       <Component {...finalProps} type={type} />
@@ -190,7 +171,11 @@ function Field(
     return (
       <select {...finalProps}>
         {children}
-        {finalOptions.map(SelectOption)}
+        {finalOptions.map((option) => (
+          typeof option === 'object' && option != null
+            ? <SelectOption {...option} />
+            : <SelectOption value={option} />
+        ))}
       </select>
     );
   }
