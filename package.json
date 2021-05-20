@@ -34,8 +34,7 @@
   "sideEffects": false,
   "dependencies": {
     "@babel/runtime": "^7.14.0",
-    "@jalik/deep-extend": "^1.1.12",
-    "prop-types": "^15.7.2"
+    "@jalik/deep-extend": "^1.1.12"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",
@@ -58,7 +57,7 @@
     "typescript": "^4.2.4"
   },
   "peerDependencies": {
-    "prop-types": "^15.7.0",
+    "prop-types": "^15.7.2",
     "react": "^16.8.0"
   }
 }
