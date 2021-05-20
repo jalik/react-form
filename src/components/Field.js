@@ -144,6 +144,7 @@ function Field(
       // Adds an empty value to avoid selection of the first value by default.
       if (!multiple && !children) {
         list.unshift({
+          key: 'emptyOptionLabel',
           label: emptyOptionLabel,
           value: '',
         });
@@ -176,10 +177,8 @@ function Field(
     return (
       <select {...finalProps}>
         {children}
-        {finalOptions.map((option) => (
-          typeof option === 'object' && option != null
-            ? <SelectOption {...option} />
-            : <SelectOption value={option} />
+        {finalOptions.map(({ key, ...option }) => (
+          <SelectOption key={key} {...option} />
         ))}
       </select>
     );
