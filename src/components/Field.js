@@ -133,17 +133,24 @@ function Field(
     finalProps.checked = contextValue === value;
   }
 
-  const finalOptions = options ? [...options] : [];
+  const finalOptions = useMemo(() => {
+    const list = (options ? [...options] : []).map((option, index) => (
+      typeof option === 'object' && option != null
+        ? { ...option, key: `${option.label}_${option.value}` }
+        : { key: `${index}_${option}`, label: option, value: option }
+    ));
 
-  if (finalOptions.length > 0) {
-    // Adds an empty value to avoid selection of the first value by default.
-    if (!multiple && !children) {
-      finalOptions.unshift({
-        label: emptyOptionLabel,
-        value: '',
-      });
+    if (list.length > 0) {
+      // Adds an empty value to avoid selection of the first value by default.
+      if (!multiple && !children) {
+        list.unshift({
+          label: emptyOptionLabel,
+          value: '',
+        });
+      }
     }
-  }
+    return list;
+  }, [children, emptyOptionLabel, multiple, options]);
 
   // Forces multiple field to have an array as value.
   if (multiple && !(finalProps.value instanceof Array)) {
@@ -155,10 +162,8 @@ function Field(
     return finalOptions.length > 0 || children ? (
       <Component {...finalProps} type={type}>
         {children}
-        {finalOptions.map((option) => (
-          typeof option === 'object' && option != null
-            ? <SelectOption {...option} />
-            : <SelectOption value={option} />
+        {finalOptions.map(({ key, ...option }) => (
+          <SelectOption key={key} {...option} />
         ))}
       </Component>
     ) : (
