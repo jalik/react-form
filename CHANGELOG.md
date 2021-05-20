@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.4
+
+- Fixed react missing key warnings in Field.js
+- Removed "prop-types" from dependencies (still in peerDependencies)
+
 ## v3.0.3
 
 - Fixed call of handleChange() with nothing as second argument
