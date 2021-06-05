@@ -30,6 +30,7 @@
     "test": "jest --passWithNoTests"
   },
   "main": "dist/index.js",
+  "module": "src/index.js",
   "esnext": "src/index.js",
   "sideEffects": false,
   "files": [
