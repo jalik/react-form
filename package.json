@@ -32,6 +32,10 @@
   "main": "dist/index.js",
   "esnext": "src/index.js",
   "sideEffects": false,
+  "files": [
+    "/dist",
+    "/src"
+  ],
   "dependencies": {
     "@babel/runtime": "^7.14.0",
     "@jalik/deep-extend": "^1.1.12"
