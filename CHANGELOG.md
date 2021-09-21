@@ -1,8 +1,8 @@
 # Changelog
 
-## v3.0.8
+## v3.0.9
 
-- Fixed errors while importing source
+- Fixed ESM build
 
 ## v3.0.7
 
