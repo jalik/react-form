@@ -1,15 +1,26 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2021 Karl STEIN
  */
 
-export Button from './components/Button';
-export Field from './components/Field';
-export FieldError from './components/FieldError';
-export Form from './components/Form';
+import Button from './components/Button';
+import Field from './components/Field';
+import FieldError from './components/FieldError';
+import Form from './components/Form';
 
-export useFieldArray from './useFieldArray';
-export useForm from './useForm';
-export useFormContext from './useFormContext';
+import useFieldArray from './useFieldArray';
+import useForm from './useForm';
+import useFormContext from './useFormContext';
 
-export { getFieldId } from './utils';
+import { getFieldId } from './utils';
+
+export {
+  Button,
+  Field,
+  FieldError,
+  Form,
+  useFormContext,
+  useFieldArray,
+  useForm,
+  getFieldId,
+};
