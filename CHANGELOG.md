@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.8
+
+- Fixed errors while importing source
+
 ## v3.0.7
 
 - Upgraded dependencies
