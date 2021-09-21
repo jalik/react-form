@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.7
+
+- Upgraded dependencies
+
 ## v3.0.6
 
 - Fixed react missing key warnings in Field.js
