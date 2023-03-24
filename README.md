@@ -16,6 +16,7 @@ The benefits of using this lib are:
 - Managing fields state (value and onChange)
 - Managing the list of modified fields
 - Managing form status (modified, disabled, validating, submitting...)
+- Loading form values using promises
 - Auto disabling fields until form is initialized
 - Auto disabling fields when form is disabled, not modified, validating or submitting
 - Auto parsing of fields value when modified (smart typing or custom parser)
@@ -31,7 +32,7 @@ The benefits of using this lib are:
 
 ## Installation
 
-To install this package using npm, do `npm install --save @jalik/react-form`.
+Install this package with `npm install -P @jalik/react-form`.
 
 ## Demo
 
@@ -40,33 +41,190 @@ https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/UserFo
 
 ## Creating a form
 
-Here is a basic sign in form without validation.
-It uses the provided form components (which are not required), to handle all the logic for you (modification, validation, attributes state...).
+Creating a form using the provided components can save you a lot of time by handling the logic for you (modification, validation, states...).
 
 ```js
-import { Button, Field, Form, useForm } from '@jalik/react-form';
+import {
+  Button,
+  Field,
+  Form,
+  useForm,
+} from '@jalik/react-form';
 
 function authenticate(username, password) {
   return fetch('https://www.mysite.com/auth', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
-    headers: { 'content-type': 'application/json' }
+    headers: { 'content-type': 'application/json' },
   });
+}
+
+function onSubmit(values) {
+  const { username, password } = values;
+  return authenticate(username, password);
 }
 
 function SignInForm() {
   const form = useForm({
+    // WARNING: initialValues does not update the form when values change.
+    // If you want to change initialValues, use form.initValues() or pass onLoad to useForm()
     initialValues: {
       username: null,
-      password: null    
+      password: null,
     },
-    onSubmit: (values) => authenticate(values.username, values.password),
+    // onSubmit needs to return a promise,
+    // so the form is aware of the loading state.
+    onSubmit,
   });
+
   return (
     <Form context={form}>
       <Field name="username" />
       <Field name="password" />
       <Button type="submit">Submit</Button>
+    </Form>
+  );
+}
+```
+
+## Loading a form
+
+There are several ways to load a form:
+* Loading values in the parent component then passing them to the form component ;
+* Loading values inside the form component ;
+* Loading values using the `onLoad` option in `useForm()` ;
+
+
+### Loading values in the parent component then passing them to the form component
+
+```js
+import {
+  Field,
+  Form,
+  useForm,
+} from '@jalik/react-form';
+
+function loadUser(id) {
+  return fetch(`/api/user/${id}`)
+    .then((resp) => resp.json());
+}
+
+function UserForm(props) {
+  const { initialValues } = props;
+
+  const form = useForm({
+    initialValues,
+    onSubmit: (values) => { /* do something with values */ },
+  });
+
+  return (
+    <Form context={form}>
+      <Field name="firstName" />
+      <Field name="lastName" />
+    </Form>
+  );
+}
+
+function UserFormPage() {
+  // example with react-router
+  const params = useParams();
+  const [user, setUser] = useState();
+  // user loading logic...
+  return (
+    <UserForm
+      initialValues={user}
+      // IMPORTANT: force updating the component whenever the user changes
+      key={user}
+    />
+  );
+}
+```
+
+### Loading values inside the form component
+
+```js
+import { useEffect } from 'react';
+import {
+  Field,
+  Form,
+  useForm,
+} from '@jalik/react-form';
+
+function loadUser(id) {
+  return fetch(`/api/user/${id}`)
+    .then((resp) => resp.json());
+}
+
+function UserFormPage() {
+  // example with react-router
+  const params = useParams();
+
+  const form = useForm({
+    // initialValues must be null (or omitted)
+    // so the form will understand that it will be initialized later.
+    initialValues: null,
+    onSubmit: (values) => { /* do something with values */ },
+  });
+
+  // This example shows how one could load data,
+  // but it is recommanded to use a loading library to do that.
+  useEffect(() => {
+    let mounted = true;
+    loadUser(params.id).then((user) => {
+      if (mounted) {
+        // The only thing important here
+        // to set initialValues after the form context has been created.
+        form.initValues(user);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [form.initValues, params.id]);
+
+  return (
+    <Form context={form}>
+      <Field name="firstName" />
+      <Field name="lastName" />
+    </Form>
+  );
+  return (
+    <UserForm id={params.id} />
+  );
+}
+```
+
+### Loading values using the `onLoad` option in `useForm()`
+
+```js
+import { useCallback } from 'react';
+import {
+  Field,
+  Form,
+  useForm,
+} from '@jalik/react-form';
+
+function loadUser(id) {
+  return fetch(`/api/user/${id}`)
+    .then((resp) => resp.json());
+}
+
+function UserFormPage(props) {
+  // example with react-router
+  const params = useParams();
+
+  const form = useForm({
+    initialValues,
+    // WARNING: onLoad is called every time it changes,
+    // in this case the form will be updated when the id changes.
+    onLoad: useCallback(() => loadUser(params.id), [params.id]),
+    onSubmit: (values) => { /* do something with values */ },
+  });
+
+  return (
+    <Form context={form}>
+      <Field name="firstName" />
+      <Field name="lastName" />
     </Form>
   );
 }
@@ -144,13 +302,19 @@ export function createFormValidator(schema) {
 Then we can create the form using the schema helper functions.
 
 ```js
-import { Button, Field, FieldError, Form, useForm } from '@jalik/react-form';
+import {
+  Button,
+  Field,
+  FieldError,
+  Form,
+  useForm,
+} from '@jalik/react-form';
 
 function authenticate(username, password) {
   return fetch('https://www.mysite.com/auth', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
-    headers: { 'content-type': 'application/json' }
+    headers: { 'content-type': 'application/json' },
   });
 }
 
@@ -162,7 +326,7 @@ function SignInForm() {
   const form = useForm({
     initialValues: {
       username: null,
-      password: null    
+      password: null,
     },
     onInitializeField,
     onValidate,
@@ -225,6 +389,10 @@ const form = useForm({
     // and return attributes dynamically.
     return { required: true };
   },
+  onLoad() {
+    // returns a promise with the form data.
+    return loadFormValues();
+  },
   // required, needs to return a promise
   onSubmit(values) {
     return new Promise((resolve) => {
@@ -261,7 +429,7 @@ const form = useForm({
       // or resolve with error message
       resolve('field is required');
       // or reject
-      reject(new Error('an error occurred during validation'))
+      reject(new Error('an error occurred during validation'));
     });
   },
 });
@@ -281,6 +449,12 @@ const {
   errors,
   // the CSS class to use for invalid fields (used by <Field>)
   invalidClass,
+  // the loading error (if any)
+  loadError,
+  // tells if the onLoad function was successful
+  loaded,
+  // tells if the onLoad function is running
+  loading,
   // tells if the form was modified
   modified,
   // the CSS class to use for modified fields (used by <Field>)
@@ -337,48 +511,8 @@ const {
   // submits the form with values (validate first)
   submit,
   // validates fields values without submitting
-  validate
+  validate,
 } = useFormContext();
-```
-
-**Note on async form initialization**
-
-If you need to initialize form values asynchronously, use `initValues(values)` instead of `setValues(values)`, it will say to the form that those values are the initial values and should be used to reset the form.
-
-```js
-import { Button, Field, Form, useForm } from '@jalik/react-form';
-
-function fetchUser(userId) {
-  return fetch(`https://www.mysite.com/api/users/${userId}`)
-    .then((resp) => resp.json());
-}
-
-function updateUser(userId, patch) {
-  return fetch(`https://www.mysite.com/api/users/${userId}`, {
-    method: 'PATCH',
-    body: JSON.stringify(patch),
-    headers: { 'content-type': 'application/json' }
-  });
-}
-
-function UserForm({ userId }) {
-  const form = useForm({
-    disabled: true, // avoid modifications during loading
-    onSubmit: (values) => updateUser(userId, values)
-  });
-
-  useEffect(() => {
-    fetchUser(userId).then(form.initValues);
-  }, [fetchUser, form.initValues]);
-
-  return (
-    <Form context={form}>
-      <Field name="username" />
-      <Field name="password" />
-      <Button type="submit">Save</Button>
-    </Form>
-  );
-}
 ```
 
 ### Components
@@ -407,7 +541,7 @@ This component handles the value and the changes of an input. It can also parse 
 import { Field } from '@jalik/react-form';
 
 function parseBoolean(value) {
- return /^true|1$/gi.test(value);
+  return /^true|1$/gi.test(value);
 }
 
 export function AcceptCheckboxField() {
@@ -433,8 +567,8 @@ export function CountrySelectField() {
       name="country"
       type="select"
       options={[
-        {label:"French Polynesia", value: 'pf'},
-        {label:"New Zealand", value: 'nz'}
+        { label: 'French Polynesia', value: 'pf' },
+        { label: 'New Zealand', value: 'nz' },
       ]}
     />
   );
@@ -446,7 +580,10 @@ export function CountrySelectField() {
 This component automatically displays the field error (if present).
 
 ```js
-import { Field, FieldError } from '@jalik/react-form';
+import {
+  Field,
+  FieldError,
+} from '@jalik/react-form';
 
 export function PasswordField() {
   return (
@@ -466,14 +603,19 @@ export function PasswordField() {
 This component contains the form context, so any component inside a `Form` is associated to it.
 
 ```js
-import { Button, Field, Form, useForm } from '@jalik/react-form';
+import {
+  Button,
+  Field,
+  Form,
+  useForm,
+} from '@jalik/react-form';
 
 export function LogInForm() {
   const form = useForm({
     initialValues: {},
     onSubmit(values) {
       // do something...
-    }
+    },
   });
   return (
     <Form context={form}>

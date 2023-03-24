@@ -10,6 +10,9 @@ import {
 } from './utils';
 
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
+export const ACTION_LOAD = 'LOAD';
+export const ACTION_LOAD_ERROR = 'LOAD_ERROR';
+export const ACTION_LOADED = 'LOADED';
 export const ACTION_REMOVE = 'REMOVE';
 export const ACTION_RESET = 'RESET';
 export const ACTION_RESET_VALUES = 'RESET_VALUES';
@@ -24,6 +27,27 @@ export const ACTION_VALIDATE = 'VALIDATE';
 export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR';
 export const ACTION_VALIDATED = 'VALIDATED';
 
+const initialState = {
+  disabled: false,
+  errors: {},
+  initialized: true,
+  initialValues: null,
+  loadError: null,
+  loaded: false,
+  loading: false,
+  modified: false,
+  modifiedFields: {},
+  submitCount: 0,
+  submitError: null,
+  submitResult: null,
+  submitted: false,
+  submitting: false,
+  validateError: null,
+  validated: false,
+  validating: false,
+  values: {},
+};
+
 /**
  * Form reducers.
  * @param {Object} current
@@ -34,6 +58,9 @@ export const ACTION_VALIDATED = 'VALIDATED';
  *   errors: Object,
  *   initialized: boolean,
  *   initialValues: Object,
+ *   loadError: Error|null,
+ *   loaded: boolean,
+ *   loading: boolean,
  *   modified: boolean,
  *   modifiedFields: Object,
  *   submitCount: number,
@@ -53,24 +80,41 @@ function reducer(current, { data, error, type }) {
   switch (type) {
     case ACTION_INIT_VALUES:
       state = {
-        ...current,
+        ...initialState,
+        disabled: false,
         initialized: true,
         initialValues: clone(data.values),
         values: data.values,
-        // Enable form.
-        disabled: false,
-        // Reset form state.
-        errors: {},
-        modified: false,
-        modifiedFields: {},
-        submitCount: 0,
-        submitError: null,
-        submitResult: null,
-        submitted: false,
-        submitting: false,
-        validateError: null,
-        validated: false,
-        validating: false,
+      };
+      break;
+
+    case ACTION_LOAD:
+      state = {
+        ...current,
+        loadError: null,
+        loaded: false,
+        loading: true,
+      };
+      break;
+
+    case ACTION_LOAD_ERROR:
+      state = {
+        ...current,
+        loadError: error,
+        loaded: false,
+        loading: false,
+      };
+      break;
+
+    case ACTION_LOADED:
+      state = {
+        ...initialState,
+        initialized: true,
+        initialValues: clone(data.values),
+        loadError: null,
+        loaded: true,
+        loading: false,
+        values: data.values,
       };
       break;
 

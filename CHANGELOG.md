@@ -3,6 +3,8 @@
 ## NEXT
 
 - **[BREAKING]** Do not replace initial values when form was successfully submitted
+- Added `onLoad` option in `useForm()`
+- Added attributes `loadError`, `loaded` and `loading` returned by `useForm()`
 
 ## v3.0.9
 

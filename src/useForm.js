@@ -12,6 +12,9 @@ import {
 } from 'react';
 import reducer, {
   ACTION_INIT_VALUES,
+  ACTION_LOAD,
+  ACTION_LOAD_ERROR,
+  ACTION_LOADED,
   ACTION_REMOVE,
   ACTION_RESET,
   ACTION_RESET_VALUES,
@@ -56,6 +59,9 @@ import {
  *   errors: Object,
  *   initialized: boolean,
  *   invalidClass: string,
+ *   loadError: Error|null,
+ *   loaded: boolean,
+ *   loading: boolean,
  *   modified: boolean,
  *   modifiedClass: string,
  *   modifiedFields: Object,
@@ -122,7 +128,6 @@ function useForm(
 
   // Defines function references.
   const onInitializeFieldRef = useRef(onInitializeField);
-  const onLoadRef = useRef(onLoad);
   const onSubmitRef = useRef(onSubmit);
   const onValidateFieldRef = useRef(onValidateField);
   const onValidateRef = useRef(onValidate);
@@ -138,6 +143,9 @@ function useForm(
       initialized: isInitialized,
       initialValues: initialValues || {},
       invalidClass,
+      loadError: null,
+      loaded: false,
+      loading: typeof onLoad === 'function',
       modified: false,
       modifiedClass,
       modifiedFields: {},
@@ -150,7 +158,7 @@ function useForm(
       validated: false,
       validating: false,
       values: clone(initialValues || {}),
-    }), [disabled, initialValues, invalidClass, isInitialized, modifiedClass, validClass]),
+    }), [disabled, initialValues, invalidClass, isInitialized, modifiedClass, onLoad, validClass]),
     undefined,
   );
 
@@ -433,9 +441,26 @@ function useForm(
     onInitializeFieldRef.current = onInitializeField;
   }, [onInitializeField]);
 
+  // Load initial values using a function.
   useEffect(() => {
-    onLoadRef.current = onLoad;
-  }, [onLoad]);
+    let mounted = true;
+    if (typeof onLoad === 'function') {
+      dispatch({ type: ACTION_LOAD });
+      onLoad()
+        .then((result) => {
+          if (mounted) {
+            initValues(result);
+            dispatch({ type: ACTION_LOADED, data: { values: result } });
+          }
+        })
+        .catch((error) => {
+          dispatch({ type: ACTION_LOAD_ERROR, error });
+        });
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [initValues, onLoad]);
 
   useEffect(() => {
     onSubmitRef.current = onSubmit;
