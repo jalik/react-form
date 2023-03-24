@@ -1,5 +1,9 @@
 # Changelog
 
+## NEXT
+
+- **[BREAKING]** Do not replace initial values when form was successfully submitted
+
 ## v3.0.9
 
 - Fixed ESM build

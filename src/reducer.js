@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2021 Karl STEIN
+ * Copyright (c) 2023 Karl STEIN
  */
 
 import {
@@ -244,8 +244,6 @@ function reducer(current, { data, error, type }) {
         submitError: null,
         // Re-enable form after submitting.
         disabled: false,
-        // Replace initial values when form is submitted.
-        initialValues: clone(current.values),
         // Reset form state.
         modified: false,
         modifiedFields: {},
