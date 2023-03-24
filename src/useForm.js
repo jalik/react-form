@@ -154,12 +154,6 @@ function useForm(
     undefined,
   );
 
-  // Optimizes cloned variables.
-  const clonedErrors = useMemo(() => clone(state.errors), [state.errors]);
-  const clonedInitialValues = useMemo(() => clone(state.initialValues), [state.initialValues]);
-  const clonedModifiedFields = useMemo(() => clone(state.modifiedFields), [state.modifiedFields]);
-  const clonedValues = useMemo(() => clone(state.values), [state.values]);
-
   /**
    * Returns attributes of a field.
    * @param {string} name
@@ -177,8 +171,8 @@ function useForm(
    * @return {*}
    */
   const getInitialValue = useCallback((name) => (
-    resolve(name, clonedInitialValues)
-  ), [clonedInitialValues]);
+    resolve(name, clone(state.initialValues))
+  ), [state.initialValues]);
 
   /**
    * Returns a copy of field value.
@@ -187,9 +181,9 @@ function useForm(
    * @return {*}
    */
   const getValue = useCallback((name, defaultValue) => {
-    const value = resolve(name, clonedValues);
+    const value = resolve(name, clone(state.values));
     return typeof value !== 'undefined' ? value : defaultValue;
-  }, [clonedValues]);
+  }, [state.values]);
 
   /**
    * Defines initial values (after loading for example).
@@ -301,7 +295,7 @@ function useForm(
    */
   const submit = useCallback(() => {
     dispatch({ type: ACTION_SUBMIT });
-    const promise = onSubmitRef.current(clonedValues);
+    const promise = onSubmitRef.current(clone(state.values));
 
     if (!(promise instanceof Promise)) {
       throw new Error('onSubmit must return a Promise');
@@ -312,7 +306,7 @@ function useForm(
     }).catch((error) => {
       dispatch({ type: ACTION_SUBMIT_ERROR, error });
     });
-  }, [clonedValues]);
+  }, [state.values]);
 
   const debouncedSubmit = useDebouncePromise(submit, submitDelay);
 
@@ -328,7 +322,7 @@ function useForm(
     let promise;
 
     if (typeof onValidateRef.current === 'function') {
-      promise = onValidateRef.current(clonedValues, clonedModifiedFields);
+      promise = onValidateRef.current(clone(state.values), clone(state.modifiedFields));
 
       if (!(promise instanceof Promise)) {
         throw new Error('onValidate() must return a Promise');
@@ -348,7 +342,7 @@ function useForm(
     }).catch((error) => {
       dispatch({ type: ACTION_VALIDATE_ERROR, error });
     });
-  }, [clonedModifiedFields, clonedValues, setErrors]);
+  }, [setErrors, state.modifiedFields, state.values]);
 
   /**
    * Validates if necessary and submits form.
@@ -462,23 +456,10 @@ function useForm(
   }, [initValues, initialValues, state.initialized]);
 
   return useMemo(() => ({
-    disabled: state.disabled,
-    errors: clonedErrors,
-    initialized: state.initialized,
+    ...clone(state),
     invalidClass,
-    modified: state.modified,
     modifiedClass,
-    modifiedFields: clonedModifiedFields,
-    submitCount: state.submitCount,
-    submitError: state.submitError,
-    submitResult: state.submitResult,
-    submitted: state.submitted,
-    submitting: state.submitting,
     validClass,
-    validateError: state.validateError,
-    validated: state.validated,
-    validating: state.validating,
-    values: clonedValues,
     getAttributes,
     getInitialValue,
     getValue,
@@ -495,39 +476,10 @@ function useForm(
     submit: validateAndSubmit,
     validate,
   }), [
-    // eslint-disable-next-line max-len
-    clonedModifiedFields,
-    clonedErrors,
-    clonedValues,
-    getAttributes,
-    getInitialValue,
-    getValue,
-    handleChange,
-    handleReset,
-    handleSubmit,
-    initValues,
-    invalidClass,
-    modifiedClass,
-    remove,
-    reset,
-    setError,
-    setErrors,
-    setValue,
-    setValues,
-    state.disabled,
-    state.initialized,
-    state.modified,
-    state.submitCount,
-    state.submitError,
-    state.submitResult,
-    state.submitted,
-    state.submitting,
-    state.validateError,
-    state.validated,
-    state.validating,
-    validClass,
-    validate,
-    validateAndSubmit,
+    state, invalidClass, modifiedClass, validClass, getAttributes,
+    getInitialValue, getValue, handleChange, handleReset, handleSubmit,
+    initValues, remove, reset, setError, setErrors, setValue, setValues,
+    validateAndSubmit, validate,
   ]);
 }
 
