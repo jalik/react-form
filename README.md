@@ -443,6 +443,8 @@ This hook returns the form context, most of the functions and attributes returne
 import { useFormContext } from '@jalik/react-form';
 
 const {
+  // clears all errors
+  clearErrors,
   // tells if the form is disabled
   disabled,
   // the fields errors

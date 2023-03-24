@@ -9,6 +9,7 @@ import {
   resolve,
 } from './utils';
 
+export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS';
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
 export const ACTION_LOAD = 'LOAD';
 export const ACTION_LOAD_ERROR = 'LOAD_ERROR';
@@ -78,6 +79,13 @@ function reducer(current, { data, error, type }) {
   let state;
 
   switch (type) {
+    case ACTION_CLEAR_ERRORS:
+      state = {
+        ...current,
+        errors: {},
+      };
+      break;
+
     case ACTION_INIT_VALUES:
       state = {
         ...initialState,

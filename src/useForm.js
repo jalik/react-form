@@ -11,6 +11,7 @@ import {
   useRef,
 } from 'react';
 import reducer, {
+  ACTION_CLEAR_ERRORS,
   ACTION_INIT_VALUES,
   ACTION_LOAD,
   ACTION_LOAD_ERROR,
@@ -167,6 +168,14 @@ function useForm(
     }), [disabled, initialValues, invalidClass, isInitialized, modifiedClass, onLoad, validClass]),
     undefined,
   );
+
+  /**
+   * Clears all errors.
+   * @type {(function(): void)|*}
+   */
+  const clearErrors = useCallback(() => {
+    dispatch({ type: ACTION_CLEAR_ERRORS });
+  }, []);
 
   /**
    * Returns attributes of a field.
@@ -523,6 +532,7 @@ function useForm(
     invalidClass,
     modifiedClass,
     validClass,
+    clearErrors,
     getAttributes,
     getInitialValue,
     getValue,
@@ -540,7 +550,8 @@ function useForm(
     validate,
     validateFields,
   }), [
-    state, invalidClass, modifiedClass, validClass, getAttributes,
+    state, invalidClass, modifiedClass, validClass,
+    clearErrors, getAttributes,
     getInitialValue, getValue, handleChange, handleReset, handleSubmit,
     initValues, remove, reset, setError, setErrors, setValue, setValues,
     validateAndSubmit, validate, validateFields,
