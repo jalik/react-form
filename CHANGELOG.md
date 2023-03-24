@@ -4,6 +4,7 @@
 
 - **[BREAKING]** Initial values are not updated after form submission
 - **[BREAKING]** onValidateField() must return the field Error instead of throwing it
+- **[BREAKING]** Changed signature of onValidateField(value, name, values) to onValidateField(name, value, values)
 - Added `onLoad` option to `useForm()`
 - Added `onChange` option to `useForm()`
 - Return `hasError` from `useForm()`

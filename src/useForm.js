@@ -239,7 +239,7 @@ function useForm(
   const validateField = useCallback((name, value) => {
     if (typeof onValidateFieldRef.current === 'function') {
       try {
-        const result = onValidateFieldRef.current(value, name, state.values);
+        const result = onValidateFieldRef.current(name, value, state.values);
 
         if (result != null && result instanceof Promise) {
           return result;
