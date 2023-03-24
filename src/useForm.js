@@ -63,6 +63,7 @@ import {
  *   handleChange: function,
  *   handleReset: function,
  *   handleSubmit: function,
+ *   hasError: boolean,
  *   initValues: function,
  *   initialized: boolean,
  *   invalidClass: string,

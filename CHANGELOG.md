@@ -6,6 +6,7 @@
 - **[BREAKING]** onValidateField() must return the field Error instead of throwing it
 - Added `onLoad` option to `useForm()`
 - Added `onChange` option to `useForm()`
+- Return `hasError` from `useForm()`
 - Return `loadError`, `loaded` and `loading` from `useForm()`
 - Return `validateFields()` from `useForm()`
 - Fixed `form.errors` to not contain attributes with `undefined`

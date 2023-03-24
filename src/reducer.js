@@ -55,6 +55,7 @@ const initialState = {
  * @return {{
  *   disabled: boolean,
  *   errors: Object,
+ *   hasError: boolean,
  *   initialized: boolean,
  *   initialValues: Object,
  *   loadError: Error|null,
@@ -328,7 +329,10 @@ function reducer(current, { data, error, type }) {
     default:
       throw new Error(`Unknown reducer action type "${type}"`);
   }
-  return state;
+  return {
+    ...state,
+    hasError: Object.keys(state.errors).length > 0,
+  };
 }
 
 export default reducer;
