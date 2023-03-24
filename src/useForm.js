@@ -20,7 +20,6 @@ import reducer, {
   ACTION_RESET_VALUES,
   ACTION_SET_ERROR,
   ACTION_SET_ERRORS,
-  ACTION_SET_VALUE,
   ACTION_SET_VALUES,
   ACTION_SUBMIT,
   ACTION_SUBMIT_ERROR,
@@ -45,6 +44,7 @@ import {
  * @param {string} invalidClass
  * @param {string} modifiedClass
  * @param {boolean} nullify
+ * @param {function} onChange
  * @param {function} onInitializeField
  * @param {function} onLoad
  * @param {function} onSubmit
@@ -99,6 +99,7 @@ function useForm(
     invalidClass = 'field-invalid',
     modifiedClass = 'field-modified',
     nullify = false,
+    onChange,
     onInitializeField,
     onLoad,
     onSubmit,
@@ -110,6 +111,9 @@ function useForm(
   },
 ) {
   // Checks options.
+  if (onChange != null && typeof onChange !== 'function') {
+    throw new Error('onChange must be a function');
+  }
   if (typeof onSubmit !== 'function') {
     throw new Error('onSubmit must be a function');
   }
@@ -272,18 +276,28 @@ function useForm(
    * @param {*} value
    */
   const setValue = useCallback((name, value) => {
-    dispatch({ type: ACTION_SET_VALUE, data: { name, value } });
-    debouncedValidateValues({ [name]: value });
-  }, [debouncedValidateValues]);
+    let mutation = { [name]: value };
+    if (onChange) {
+      const nextValues = { ...state.values, ...mutation };
+      mutation = onChange ? onChange(mutation, nextValues) : mutation;
+    }
+    dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
+    debouncedValidateValues(mutation);
+  }, [debouncedValidateValues, onChange, state.values]);
 
   /**
    * Defines several field values (use initValues() to set all form values).
    * @param {Object} values
    */
   const setValues = useCallback((values) => {
-    dispatch({ type: ACTION_SET_VALUES, data: { values } });
-    debouncedValidateValues(values);
-  }, [debouncedValidateValues]);
+    let mutation = { ...values };
+    if (onChange) {
+      const nextValues = { ...state.values, ...mutation };
+      mutation = onChange ? onChange(mutation, nextValues) : mutation;
+    }
+    dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
+    debouncedValidateValues(mutation);
+  }, [debouncedValidateValues, onChange, state.values]);
 
   /**
    * Resets form values.
@@ -410,7 +424,7 @@ function useForm(
         // Checkbox is unique and handles a boolean value.
         value = target.checked ? parsedValue : !parsedValue;
       } else {
-        // Checkbox is unique and handles any value different than boolean.
+        // Checkbox is unique and handles any value different of boolean.
         value = target.checked ? parsedValue : undefined;
       }
     } else {

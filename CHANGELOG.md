@@ -3,8 +3,9 @@
 ## NEXT
 
 - **[BREAKING]** Do not replace initial values when form was successfully submitted
-- Added `onLoad` option in `useForm()`
-- Added attributes `loadError`, `loaded` and `loading` returned by `useForm()`
+- Added `onLoad` option to `useForm()`
+- Added `onChange` option to `useForm()`
+- Added `loadError`, `loaded` and `loading` in object returned by `useForm()`
 - Fixed `form.errors` returning errors with `undefined`
 
 ## v3.0.9

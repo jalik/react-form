@@ -18,7 +18,6 @@ export const ACTION_RESET = 'RESET';
 export const ACTION_RESET_VALUES = 'RESET_VALUES';
 export const ACTION_SET_ERROR = 'SET_ERROR';
 export const ACTION_SET_ERRORS = 'SET_ERRORS';
-export const ACTION_SET_VALUE = 'SET_VALUE';
 export const ACTION_SET_VALUES = 'SET_VALUES';
 export const ACTION_SUBMIT = 'SUBMIT';
 export const ACTION_SUBMIT_ERROR = 'SUBMIT_ERROR';
@@ -199,31 +198,6 @@ function reducer(current, { data, error, type }) {
         validated: false,
         validating: false,
         disabled: false,
-      };
-      break;
-    }
-
-    case ACTION_SET_VALUE: {
-      state = {
-        ...current,
-        values: build(data.name, data.value, clone(current.values)),
-        modified: true,
-        submitted: false,
-        // Invalidate form.
-        validated: false,
-        // Reset submit count.
-        submitCount: 0,
-        submitError: null,
-        // Update changed fields.
-        modifiedFields: {
-          ...current.modifiedFields,
-          [data.name]: data.value !== resolve(data.name, current.initialValues),
-        },
-        // Clear field error.
-        errors: {
-          ...current.errors,
-          [data.name]: undefined,
-        },
       };
       break;
     }
