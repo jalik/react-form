@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2021 Karl STEIN
+ * Copyright (c) 2023 Karl STEIN
  */
 
 import {
@@ -287,7 +287,7 @@ function useForm(
    * Resets form values.
    * @param {string[]} fields names
    */
-  const reset = useCallback((fieldNames) => {
+  const reset = useCallback((fieldNames = undefined) => {
     if (fieldNames) {
       dispatch({ type: ACTION_RESET_VALUES, data: { fieldNames } });
     } else {
@@ -496,7 +496,38 @@ function useForm(
     validate,
   }), [
     // eslint-disable-next-line max-len
-    clonedModifiedFields, clonedErrors, clonedValues, getAttributes, getInitialValue, getValue, handleChange, handleReset, handleSubmit, initValues, invalidClass, modifiedClass, remove, reset, setError, setErrors, setValue, setValues, state.disabled, state.initialized, state.modified, state.submitCount, state.submitError, state.submitResult, state.submitted, state.submitting, state.validateError, state.validated, state.validating, validClass, validate, validateAndSubmit,
+    clonedModifiedFields,
+    clonedErrors,
+    clonedValues,
+    getAttributes,
+    getInitialValue,
+    getValue,
+    handleChange,
+    handleReset,
+    handleSubmit,
+    initValues,
+    invalidClass,
+    modifiedClass,
+    remove,
+    reset,
+    setError,
+    setErrors,
+    setValue,
+    setValues,
+    state.disabled,
+    state.initialized,
+    state.modified,
+    state.submitCount,
+    state.submitError,
+    state.submitResult,
+    state.submitted,
+    state.submitting,
+    state.validateError,
+    state.validated,
+    state.validating,
+    validClass,
+    validate,
+    validateAndSubmit,
   ]);
 }
 
