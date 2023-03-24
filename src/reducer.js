@@ -153,8 +153,8 @@ function reducer(current, { data, error, type }) {
 
       data.fieldNames.forEach((name) => {
         values = build(name, resolve(name, initialValues), values);
-        modifiedFields[name] = undefined;
-        errors[name] = undefined;
+        delete modifiedFields[name];
+        delete errors[name];
       });
 
       state = {
@@ -236,7 +236,7 @@ function reducer(current, { data, error, type }) {
       Object.keys(data.values).forEach((name) => {
         values = build(name, data.values[name], values);
         modifiedFields[name] = data.values[name] !== resolve(name, current.initialValues);
-        errors[name] = undefined;
+        delete errors[name];
       });
 
       state = {
