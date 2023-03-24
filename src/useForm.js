@@ -57,6 +57,13 @@ import {
  * @return {{
  *   disabled: boolean,
  *   errors: Object,
+ *   getAttributes: function,
+ *   getInitialValue: function,
+ *   getValue: function,
+ *   handleChange: function,
+ *   handleReset: function,
+ *   handleSubmit: function,
+ *   initValues: function,
  *   initialized: boolean,
  *   invalidClass: string,
  *   loadError: Error|null,
@@ -65,23 +72,6 @@ import {
  *   modified: boolean,
  *   modifiedClass: string,
  *   modifiedFields: Object,
- *   submitCount: number,
- *   submitError: Error|null,
- *   submitResult: Object|null,
- *   submitted: boolean,
- *   submitting: boolean,
- *   validClass: string,
- *   validateError: Error|null,
- *   validated: boolean,
- *   validating: boolean
- *   values: Object,
- *   getAttributes: function,
- *   getInitialValue: function,
- *   getValue: function,
- *   handleChange: function,
- *   handleReset: function,
- *   handleSubmit: function,
- *   initValues: function,
  *   remove: function,
  *   reset: function,
  *   setError: function,
@@ -89,7 +79,18 @@ import {
  *   setValue: function,
  *   setValues: function,
  *   submit: function,
- *   validate: function
+ *   submitCount: number,
+ *   submitError: Error|null,
+ *   submitResult: Object|null,
+ *   submitted: boolean,
+ *   submitting: boolean,
+ *   validClass: string,
+ *   validate: function,
+ *   validateError: Error|null,
+ *   validateFields: function,
+ *   validated: boolean,
+ *   validating: boolean
+ *   values: Object,
  *  }}
  */
 function useForm(
@@ -192,7 +193,7 @@ function useForm(
    * @param {*} defaultValue
    * @return {*}
    */
-  const getValue = useCallback((name, defaultValue) => {
+  const getValue = useCallback((name, defaultValue = undefined) => {
     const value = resolve(name, clone(state.values));
     return typeof value !== 'undefined' ? value : defaultValue;
   }, [state.values]);
@@ -231,44 +232,66 @@ function useForm(
   }, []);
 
   /**
-   * Validates one or more fields values.
+   * Validates a field value.
+   * @type {(function(*, *): (Promise))|*}
+   */
+  const validateField = useCallback((name, value) => {
+    if (typeof onValidateFieldRef.current === 'function') {
+      try {
+        const result = onValidateFieldRef.current(value, name, state.values);
+
+        if (result != null && result instanceof Promise) {
+          return result;
+        }
+        return Promise.resolve(result);
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    }
+    return Promise.resolve(null);
+  }, [state.values]);
+
+  /**
+   * Validates one or more fields by passing field names or names and values.
    * @param {Object}
    */
-  const validateValues = useCallback((fields) => {
+  const validateFields = useCallback((fieldsOrFieldsAndValues) => {
     const errors = {};
     const promises = [];
 
-    Object.keys(fields).forEach((name) => {
-      // Validates field value.
-      if (typeof onValidateFieldRef.current === 'function') {
-        try {
-          const result = onValidateFieldRef.current(fields[name], name, state.values);
+    if (fieldsOrFieldsAndValues instanceof Array) {
+      fieldsOrFieldsAndValues.forEach((name) => {
+        promises.push(
+          validateField(name, getValue(name))
+            .then((error) => [name, error]),
+        );
+      });
+    } else {
+      Object.entries(fieldsOrFieldsAndValues).forEach(([name, value]) => {
+        promises.push(
+          validateField(name, value)
+            .then((error) => [name, error]),
+        );
+      });
+    }
 
-          // Asynchronous validation by catching promise error.
-          if (typeof result !== 'undefined' && result instanceof Promise) {
-            promises.push(result);
-            result.then((error) => {
-              errors[name] = error;
-            }).catch((error) => {
-              dispatch({ type: ACTION_VALIDATE_ERROR, error });
-            });
+    Promise.all(promises)
+      .then((results) => {
+        results.forEach(([name, error]) => {
+          if (error != null) {
+            errors[name] = error;
           }
-        } catch (error) {
-          // Synchronous validation by catching error.
-          errors[name] = error;
-        }
-      }
-    });
-
-    // Updates errors.
-    Promise.all(promises).finally(() => {
-      if (Object.keys(errors).length > 0) {
+        });
+      })
+      .catch((error) => {
+        dispatch({ type: ACTION_VALIDATE_ERROR, error });
+      })
+      .finally(() => {
         setErrors(errors);
-      }
-    });
-  }, [setErrors, state.values]);
+      });
+  }, [getValue, setErrors, validateField]);
 
-  const debouncedValidateValues = useDebouncePromise(validateValues, validateDelay);
+  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay);
 
   /**
    * Defines the value of a field.
@@ -282,8 +305,8 @@ function useForm(
       mutation = onChange ? onChange(mutation, nextValues) : mutation;
     }
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
-    debouncedValidateValues(mutation);
-  }, [debouncedValidateValues, onChange, state.values]);
+    debouncedValidateFields(mutation);
+  }, [debouncedValidateFields, onChange, state.values]);
 
   /**
    * Defines several field values (use initValues() to set all form values).
@@ -296,8 +319,8 @@ function useForm(
       mutation = onChange ? onChange(mutation, nextValues) : mutation;
     }
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
-    debouncedValidateValues(mutation);
-  }, [debouncedValidateValues, onChange, state.values]);
+    debouncedValidateFields(mutation);
+  }, [debouncedValidateFields, onChange, state.values]);
 
   /**
    * Resets form values.
@@ -514,11 +537,12 @@ function useForm(
     setValues,
     submit: validateAndSubmit,
     validate,
+    validateFields,
   }), [
     state, invalidClass, modifiedClass, validClass, getAttributes,
     getInitialValue, getValue, handleChange, handleReset, handleSubmit,
     initValues, remove, reset, setError, setErrors, setValue, setValues,
-    validateAndSubmit, validate,
+    validateAndSubmit, validate, validateFields,
   ]);
 }
 

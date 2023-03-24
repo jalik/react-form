@@ -2,11 +2,13 @@
 
 ## NEXT
 
-- **[BREAKING]** Do not replace initial values when form was successfully submitted
+- **[BREAKING]** Initial values are not updated after form submission
+- **[BREAKING]** onValidateField() must return the field Error instead of throwing it
 - Added `onLoad` option to `useForm()`
 - Added `onChange` option to `useForm()`
-- Added `loadError`, `loaded` and `loading` in object returned by `useForm()`
-- Fixed `form.errors` returning errors with `undefined`
+- Return `loadError`, `loaded` and `loading` from `useForm()`
+- Return `validateFields()` from `useForm()`
+- Fixed `form.errors` to not contain attributes with `undefined`
 
 ## v3.0.9
 

@@ -512,6 +512,8 @@ const {
   submit,
   // validates fields values without submitting
   validate,
+  // validates some fields
+  validateFields,
 } = useFormContext();
 ```
 
