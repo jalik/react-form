@@ -134,7 +134,6 @@ function useForm(
   }
 
   // Defines function references.
-  const onInitializeFieldRef = useRef(onInitializeField);
   const onSubmitRef = useRef(onSubmit);
   const onValidateFieldRef = useRef(onValidateField);
   const onValidateRef = useRef(onValidate);
@@ -183,10 +182,10 @@ function useForm(
    * @param {Object} defaultAttributes
    */
   const getAttributes = useCallback((name, defaultAttributes = {}) => (
-    typeof onInitializeFieldRef.current === 'function'
-      ? onInitializeFieldRef.current(name)
+    typeof onInitializeField === 'function'
+      ? onInitializeField(name, state.values)
       : defaultAttributes
-  ), []);
+  ), [onInitializeField, state.values]);
 
   /**
    * Returns the initial value of a field.
@@ -483,10 +482,6 @@ function useForm(
     event.preventDefault();
     validateAndSubmit();
   }, [validateAndSubmit]);
-
-  useEffect(() => {
-    onInitializeFieldRef.current = onInitializeField;
-  }, [onInitializeField]);
 
   // Load initial values using a function.
   useEffect(() => {

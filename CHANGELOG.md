@@ -10,6 +10,7 @@
 - Return `hasError` from `useForm()`
 - Return `loadError`, `loaded` and `loading` from `useForm()`
 - Return `validateFields()` from `useForm()`
+- Pass form values as second argument of `onInitializeField()`
 - Fixed `form.errors` to not contain attributes with `undefined`
 
 ## v3.0.9
