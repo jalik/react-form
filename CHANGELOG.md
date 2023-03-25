@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## 4.0.0
 
 - **[BREAKING]** Initial values are not updated after form submission
 - **[BREAKING]** onValidateField() must return the field Error instead of throwing it
