@@ -1,9 +1,9 @@
 # Changelog
 
-## 4.0.0
+## 4.0.0 (2023-03-24)
 
-- **[BREAKING]** Initial values are not updated after form submission
-- **[BREAKING]** onValidateField() must return the field Error instead of throwing it
+- **[BREAKING]** Initial values are not replaced after form submission (to get the same behaviour, call `initValues(submittedValues)`)
+- **[BREAKING]** onValidateField() must return the Error instead of throwing it
 - **[BREAKING]** Changed signature of onValidateField(value, name, values) to onValidateField(name, value, values)
 - Added `onLoad` option to `useForm()`
 - Added `onChange` option to `useForm()`

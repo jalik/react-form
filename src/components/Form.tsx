@@ -1,28 +1,29 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2023 Karl STEIN
  */
 
-import {
-  func,
-  node,
-  shape,
-} from 'prop-types';
 import React from 'react';
+import { Fields, UseFormHook } from '../useForm';
 import { FormContext } from '../useFormContext';
 
-function Form(
-  {
+export interface FormProps<T extends Fields, R> {
+  context: UseFormHook<T, R>;
+}
+
+function Form<T extends Fields, R>(props: FormProps<T, R> & React.FormHTMLAttributes<HTMLFormElement>): JSX.Element {
+  const {
     children,
     context,
-    ...props
-  },
-) {
+    ...others
+  } = props;
+
   const { handleReset, handleSubmit } = context;
+
   return (
     <FormContext.Provider value={context}>
       <form
-        {...props}
+        {...others}
         method="post"
         onReset={handleReset}
         onSubmit={handleSubmit}
@@ -32,17 +33,5 @@ function Form(
     </FormContext.Provider>
   );
 }
-
-Form.propTypes = {
-  children: node,
-  context: shape({
-    handleReset: func.isRequired,
-    handleSubmit: func.isRequired,
-  }).isRequired,
-};
-
-Form.defaultProps = {
-  children: null,
-};
 
 export default Form;

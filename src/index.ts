@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2021 Karl STEIN
+ * Copyright (c) 2023 Karl STEIN
  */
 
 import Button from './components/Button';

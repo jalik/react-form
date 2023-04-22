@@ -1,9 +1,13 @@
 # Project settings
-/.idea/
+.idea/
 *.iml
 
-# Dependencies
-/node_modules/
+# npm packages
+node_modules/
 
 # Compiled files
 /dist/
+/esm/
+
+# Coverage
+/coverage/

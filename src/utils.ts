@@ -1,22 +1,20 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2020 Karl STEIN
+ * Copyright (c) 2023 Karl STEIN
  */
 
 import deepExtend from '@jalik/deep-extend';
+import { FieldElement } from './useForm';
 
 /**
  * Returns the copy of an object built from the path with the assigned value.
- * @param {string} path
- * @param {*} value
- * @param {Object} context
- * @param {boolean} syntaxChecked
- * @return {*}
  */
-export function build(path, value, context, syntaxChecked = false) {
-  if (typeof path !== 'string') {
-    throw new Error('path must be a string');
-  }
+export function build<T>(
+  path: string,
+  value: any,
+  context: any,
+  syntaxChecked = false,
+): T {
   // Return value when resolve has reach the deepest level in context path.
   // ex: "object.array[0]" => "array[0]" => "[0]" => ""
   if (path === '') {
@@ -66,7 +64,7 @@ export function build(path, value, context, syntaxChecked = false) {
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
     // Resolve dot "." path.
     // ex: "object.field" => field: "object", subPath: "field"
-    const field = path.substr(0, dotIndex);
+    const field: string = path.substring(0, dotIndex);
 
     // Create object if it does not exist.
     if (typeof ctx === 'undefined') {
@@ -74,14 +72,14 @@ export function build(path, value, context, syntaxChecked = false) {
     } else if (typeof ctx[field] === 'undefined') {
       ctx[field] = {};
     }
-    ctx[field] = build(path.substr(dotIndex + 1), value, ctx[field]);
+    ctx[field] = build(path.substring(dotIndex + 1), value, ctx[field]);
   } else if (bracketIndex !== -1 && (dotIndex === -1 || bracketIndex < dotIndex)) {
     // Resolve brackets "[..]" path.
     // ex: "[0].field" => field: "[0]", subPath: "field"
     // ex: "[a].field" => field: "[a]", subPath: "field"
     if (bracketIndex === 0) {
       // Extract key.
-      let key = path.substring(bracketIndex + 1, bracketEnd);
+      let key: number | string = path.substring(bracketIndex + 1, bracketEnd);
 
       // Parse key value if it's a number.
       if (/^[0-9]+$/.test(key)) {
@@ -97,21 +95,21 @@ export function build(path, value, context, syntaxChecked = false) {
       // Resolve "field" instead of ".field" if array is followed by a dot.
       let subPath;
 
-      if (path.substr(bracketEnd + 1, 1) === '.') {
-        subPath = path.substr(bracketEnd + 2);
+      if (path.substring(bracketEnd + 1, bracketEnd + 2) === '.') {
+        subPath = path.substring(bracketEnd + 2);
 
         // Create object if it does not exist.
         if (typeof ctx[key] === 'undefined') {
           ctx[key] = {};
         }
       } else {
-        subPath = path.substr(bracketEnd + 1);
+        subPath = path.substring(bracketEnd + 1);
       }
       ctx[key] = build(subPath, value, ctx[key]);
     } else {
       // ex: "array[0].field" => field: "array", subPath: "[0].field"
-      const field = path.substr(0, bracketIndex);
-      ctx[field] = build(path.substr(bracketIndex), value, ctx[field]);
+      const field = path.substring(0, bracketIndex);
+      ctx[field] = build(path.substring(bracketIndex), value, ctx[field]);
     }
   } else {
     // Set root attribute.
@@ -122,35 +120,47 @@ export function build(path, value, context, syntaxChecked = false) {
 }
 
 /**
- * Returns a deeply cloned opbject.
- * @param {Object} object
- * @return {Object}
+ * Returns a deeply cloned object.
  */
-export function clone(object) {
+export function clone<T>(object: T): T {
   return deepExtend({}, object);
 }
 
 /**
  * Returns the field ID using name and value.
- * @param {string} name
- * @param {*} value
- * @return {string}
  */
-export function getFieldId(name, value) {
+export function getFieldId(name: string, value: unknown): string {
   return `field_${name}_${String(value)}`.replace(/[^a-zA-Z0-9_-]+/g, '_');
 }
 
 /**
- * Returns selected values of a multiple select.
- * @param {HTMLSelectElement} select
- * @return {[]}
+ * Returns checked values from an input element.
  */
-export function getSelectedValues(select) {
+export function getCheckedValues(element: HTMLInputElement): string[] {
   const values = [];
+  const { form } = element;
 
-  for (let i = 0; i < select.options.length; i += 1) {
-    if (select.options[i].selected) {
-      values.push(select.options[i].value);
+  if (form) {
+    for (let i = 0; i < form.length; i += 1) {
+      const item = form.elements[i];
+      if (item instanceof HTMLInputElement && item.name === element.name && item.checked) {
+        values.push(item.value);
+      }
+    }
+  }
+  return values;
+}
+
+/**
+ * Returns selected values from a select element.
+ */
+export function getSelectedValues(element: HTMLSelectElement): string[] {
+  const values = [];
+  const { options } = element;
+
+  for (let i = 0; i < options.length; i += 1) {
+    if (options[i].selected) {
+      values.push(options[i].value);
     }
   }
   return values;
@@ -158,39 +168,64 @@ export function getSelectedValues(select) {
 
 /**
  * Returns an empty string when value is null.
- * @param {*} value
- * @return {string}
  */
-export function inputValue(value) {
-  return value !== null && typeof value !== 'undefined' ? value : '';
+export function inputValue(value?: string | number | boolean | unknown): string | unknown {
+  return value == null ? '' : value;
 }
 
-/**
- * Checks if the element is handling an array value.
- * @param {RadioNodeList} element
- * @return {boolean}
- */
-export function isElementWithArrayValue(element) {
-  if (element instanceof RadioNodeList && element.length > 1) {
-    for (let i = 0; i < element.length; i += 1) {
-      if (element[i].type !== 'checkbox' && !element[i].multiple) {
-        return false;
+export function isMultipleFieldElement(element: RadioNodeList | Element): boolean {
+  let count = 0;
+  const inputTypes = ['checkbox', 'file'];
+
+  if (element instanceof HTMLInputElement
+    || element instanceof HTMLSelectElement
+    || element instanceof HTMLTextAreaElement) {
+    if (element.form && element.name != null) {
+      for (let i = 0; i < element.form.elements.length; i += 1) {
+        const elm = element.form.elements[i];
+
+        if (elm instanceof HTMLInputElement
+          && elm.name === element.name
+          && elm.type === element.type
+          && inputTypes.includes(elm.type)) {
+          count += 1;
+
+          if (count > 1) {
+            return true;
+          }
+        }
       }
     }
-    return true;
+  } else if (element instanceof RadioNodeList) {
+    let name = null;
+    for (let i = 0; i < element.length; i += 1) {
+      const elm = element[i];
+
+      if (elm instanceof HTMLInputElement
+        && inputTypes.includes(elm.type)) {
+        if (!name) {
+          name = elm.name;
+        }
+        if (elm.name === name) {
+          count += 1;
+
+          if (count > 1) {
+            return true;
+          }
+        }
+      }
+    }
   }
   return false;
 }
 
 /**
  * Returns the parsed value of a field based on its type.
- * @param {Element} input
- * @return {number|string|*}
  */
-export function parseInputValue(input) {
+export function parseInputValue(input: FieldElement): string | number | readonly string[] | undefined {
   const { type, value } = input;
 
-  if (typeof value === 'string' && value.length > 0) {
+  if (value.length > 0) {
     if (type === 'number' || type === 'range') {
       return parseFloat(value);
     }
@@ -200,18 +235,14 @@ export function parseInputValue(input) {
 
 /**
  * Returns a value from a context using a path.
- * @param {string} path
- * @param {object} context
- * @param {boolean} syntaxChecked
- * @return {*}
- * @throws SyntaxError
  */
-export function resolve(path, context, syntaxChecked = false) {
-  if (typeof path !== 'string') {
-    throw new Error('path must be a string');
-  }
+export function resolve<T>(
+  path: string,
+  context?: any,
+  syntaxChecked = false,
+): T | undefined {
   // There is nothing to resolve if context is undefined or null.
-  if (typeof context === 'undefined' || context === null) {
+  if (context == null) {
     return context;
   }
   // Return context when resolve has reach the deepest level in context path.
@@ -254,9 +285,13 @@ export function resolve(path, context, syntaxChecked = false) {
 
   // Resolve dot "." path.
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
-    // ex: "object.field" => field: "object", subPath: "field"
-    const field = path.substr(0, dotIndex);
-    return resolve(path.substr(dotIndex + 1), context[field], true);
+    // ex: "object.field" => field: "object", path: "field"
+    const field = path.substring(0, dotIndex);
+
+    if (typeof context !== 'object' || (context instanceof Array)) {
+      throw new Error(`path ${path} is not valid for the given context`);
+    }
+    return resolve(path.substring(dotIndex + 1), context[field], true);
   }
 
   // Resolve brackets "[..]" path.
@@ -264,21 +299,21 @@ export function resolve(path, context, syntaxChecked = false) {
     // ex: "[0].field" => field: "[0]", subPath: "field"
     // ex: "[a].field" => field: "[a]", subPath: "field"
     if (bracketIndex === 0) {
-      let key = path.substring(bracketIndex + 1, bracketEnd);
+      let key: number | string = path.substring(bracketIndex + 1, bracketEnd);
 
       // Parse key value if it's a number.
       if (/^[0-9]+$/.test(key)) {
         key = parseInt(key, 10);
       }
       // Resolve "field" instead of ".field" if array is followed by a dot.
-      const subPath = path.substr(bracketEnd + (
-        path.substr(bracketEnd + 1, 1) === '.' ? 2 : 1
+      const subPath = path.substring(bracketEnd + (
+        path.substring(bracketEnd + 1, bracketEnd + 2) === '.' ? 2 : 1
       ));
       return resolve(subPath, context[key], true);
     }
     // ex: "array[0].field" => field: "array", subPath: "[0].field"
-    const field = path.substr(0, bracketIndex);
-    return resolve(path.substr(bracketIndex), context[field], true);
+    const field = path.substring(0, bracketIndex);
+    return resolve(path.substring(bracketIndex), context[field], true);
   }
 
   // Return root attribute.
@@ -289,15 +324,14 @@ export function resolve(path, context, syntaxChecked = false) {
 /**
  * Generates a GUID.
  * @see https://stackoverflow.com/a/8809472/2881350
- * @return {string}
  */
-export function uuid() {
-  let d = new Date().getTime();
+export function uuid(): string {
+  let d: number = new Date().getTime();
   // Time in microseconds since page-load or 0 if unsupported
-  let d2 = (typeof performance !== 'undefined' && typeof performance.now === 'function' && (performance.now() * 1000)) || 0;
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  let d2: number = (typeof performance !== 'undefined' && typeof performance.now === 'function' && (performance.now() * 1000)) || 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: string) => {
     // random number between 0 and 16
-    let r = Math.random() * 16;
+    let r: number = Math.random() * 16;
     if (d > 0) {
       // Use timestamp until depleted
       // eslint-disable-next-line no-bitwise

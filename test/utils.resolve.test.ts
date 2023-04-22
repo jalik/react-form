@@ -3,15 +3,11 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import {
-  describe,
-  expect,
-  it,
-} from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { resolve } from '../src/utils';
 
 describe('resolve(path, context)', () => {
-  const context = {
+  const context: any = {
     array: [
       42,
       {

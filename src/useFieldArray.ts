@@ -1,32 +1,30 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2021 Karl STEIN
+ * Copyright (c) 2023 Karl STEIN
  */
 
-import {
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { Fields, UseFormHook } from './useForm';
 import useFormContext from './useFormContext';
 import { uuid } from './utils';
 
+
+export interface ArrayItem<T> {
+  key: string | number;
+  value: T;
+}
+
 /**
  * Returns an array item with key and value.
- * @param {*} value
- * @return {{value: *, key: string}}
  */
-function createItem(value) {
+function createItem<T>(value: T): ArrayItem<T> {
   return { key: uuid(), value };
 }
 
 /**
  * Returns fields synchronized with original array.
- * @param {[]} array
- * @param {[]} fields
- * @return {[]}
  */
-function synchronizeItems(array, fields) {
+function synchronizeItems<T>(array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[] {
   // Removes extra items.
   const newArray = fields.slice(0, array.length);
 
@@ -42,43 +40,35 @@ function synchronizeItems(array, fields) {
   return newArray;
 }
 
+
+export interface UseFieldArrayOptions<T, F extends Fields> {
+  context: UseFormHook<F, unknown>,
+  defaultValue: T,
+  name: string
+}
+
 /**
  * Returns utils to manage an array of fields.
- * @param {*} context
- * @param {*} defaultValue
- * @param {string} name
- * @return {{
- *   append: function,
- *   fields: Object,
- *   handleAppend: function,
- *   handlePrepend: function,
- *   handleRemove: function,
- *   insert: function,
- *   move: function,
- *   prepend: function,
- *   remove: function
- * }}
  */
-function useFieldArray({ context, defaultValue, name }) {
+function useFieldArray<T, F extends Fields>(options: UseFieldArrayOptions<T, F>) {
+  const { context, defaultValue, name } = options;
   const form = useFormContext();
   const { getValue, setValue } = context || form;
-  const fields = useRef([]);
+  const fields = useRef<ArrayItem<T>[]>([]);
 
   /**
    * The original array.
-   * @type {[]}
    */
   const array = useMemo(() => {
-    const value = getValue(name, []);
+    const value = getValue<T[]>(name, []);
     fields.current = synchronizeItems(value, fields.current);
     return value;
   }, [getValue, name]);
 
   /**
    * Adds a value at the end of the array.
-   * @param {*} value
    */
-  const append = useCallback((...value) => {
+  const append = useCallback((...value: T[]): void => {
     // Update virtual array.
     fields.current.push(...value.map(createItem));
 
@@ -89,10 +79,8 @@ function useFieldArray({ context, defaultValue, name }) {
 
   /**
    * Inserts a value at a given index.
-   * @param {number} index
-   * @param {*} value
    */
-  const insert = useCallback((index, ...value) => {
+  const insert = useCallback((index: number, ...value: T[]): void => {
     // Update virtual array.
     fields.current.splice(index, 0, ...value.map(createItem));
 
@@ -105,10 +93,8 @@ function useFieldArray({ context, defaultValue, name }) {
 
   /**
    * Moves a value from an index to another index.
-   * @param {number} fromIndex
-   * @param {number} toIndex
    */
-  const move = useCallback((fromIndex, toIndex) => {
+  const move = useCallback((fromIndex: number, toIndex: number): void => {
     const index = Math.min(Math.max(toIndex, 0), array.length);
 
     // Update virtual array.
@@ -123,9 +109,8 @@ function useFieldArray({ context, defaultValue, name }) {
 
   /**
    * Adds a value at beginning of the array.
-   * @param {*} value
    */
-  const prepend = useCallback((...value) => {
+  const prepend = useCallback((...value: T[]): void => {
     // Update virtual array.
     fields.current.unshift(...value.map(createItem));
 
@@ -136,9 +121,8 @@ function useFieldArray({ context, defaultValue, name }) {
 
   /**
    * Removes a value from the array by its index.
-   * @param {string} index
    */
-  const remove = useCallback((index) => {
+  const remove = useCallback((index: number): void => {
     // Update virtual array.
     fields.current.splice(index, 1);
 
@@ -149,28 +133,24 @@ function useFieldArray({ context, defaultValue, name }) {
 
   /**
    * Handles event that appends a value.
-   * @param {Event} event
    */
-  const handleAppend = useCallback((event) => {
+  const handleAppend = useCallback((event: React.SyntheticEvent): void => {
     event.preventDefault();
     append(typeof defaultValue === 'function' ? defaultValue() : defaultValue);
   }, [append, defaultValue]);
 
   /**
    * Handles event that prepends a value.
-   * @param {Event} event
    */
-  const handlePrepend = useCallback((event) => {
+  const handlePrepend = useCallback((event: React.SyntheticEvent): void => {
     event.preventDefault();
     prepend(typeof defaultValue === 'function' ? defaultValue() : defaultValue);
   }, [prepend, defaultValue]);
 
   /**
    * Handles event that removes a value at a given index.
-   * @param {number} index
-   * @return {function}
    */
-  const handleRemove = useCallback((index) => ((event) => {
+  const handleRemove = useCallback((index: number) => ((event: React.SyntheticEvent): void => {
     event.preventDefault();
     remove(index);
   }), [remove]);

@@ -19,41 +19,40 @@
   "bugs": {
     "url": "https://github.com/jalik/react-form/issues"
   },
-  "scripts": {
-    "build": "npm run build-cjs && npm run build-esm",
-    "build-cjs": "babel ./src -d ./dist",
-    "build-esm": "babel --config-file ./babel-esm.config.json ./src -d ./esm",
-    "clean": "rimraf ./dist ./esm",
-    "dev": "concurrently 'npm:dev-*'",
-    "dev-cjs": "babel --watch ./src -d ./dist",
-    "dev-esm": "babel --watch --config-file ./babel-esm.config.json ./src -d ./esm",
-    "lint": "eslint --ext js,jsx .",
-    "lint-fix": "eslint --fix --ext js,jsx .",
-    "prepare": "npm run clean && npm run build && npm run lint",
-    "prepublishOnly": "npm test",
-    "test": "jest --passWithNoTests"
-  },
+  "sideEffects": false,
+  "esnext": "./esm/index.js",
   "main": "./dist/index.js",
   "module": "./esm/index.js",
-  "esnext": "src/index.js",
-  "sideEffects": false,
   "files": [
     "/dist",
-    "/esm",
-    "/src"
+    "/esm"
   ],
+  "scripts": {
+    "build": "npm run build-cjs && npm run build-esm",
+    "build-cjs": "tsc -p tsconfig.cjs.json",
+    "build-esm": "tsc",
+    "clean": "rimraf ./dist ./esm",
+    "dev": "concurrently 'npm:dev-*'",
+    "dev-cjs": "tsc --watch -p tsconfig.cjs.json",
+    "dev-esm": "tsc --watch",
+    "lint": "eslint --ext .ts .",
+    "lint-fix": "eslint --ext .ts --fix .",
+    "prepare": "npm run clean && npm run build",
+    "prepublishOnly": "npm run lint && npm test",
+    "test": "jest --passWithNoTests --coverage=true"
+  },
   "dependencies": {
-    "@babel/runtime": "^7.15.4",
-    "@jalik/deep-extend": "^1.1.14"
+    "@jalik/deep-extend": "^1.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.21.0",
-    "@babel/core": "^7.21.3",
-    "@babel/eslint-parser": "^7.21.3",
-    "@babel/plugin-transform-runtime": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
+    "@babel/preset-typescript": "^7.21.4",
     "@jest/globals": "^29.5.0",
+    "@types/react": "^18.0.37",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
     "concurrently": "^7.6.0",
     "eslint": "^8.36.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -64,8 +63,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^29.5.0",
     "react": "^17.0.2",
-    "rimraf": "^4.4.1",
-    "typescript": "^5.0.2"
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.4"
   },
   "peerDependencies": {
     "prop-types": "^15.7.2",

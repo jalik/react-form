@@ -6,10 +6,15 @@
     "node": true
   },
   "extends": [
-    "airbnb",
-    "airbnb/hooks"
+    "eslint:recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
-  "parser": "@babel/eslint-parser",
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": "latest"
+  },
   "plugins": [
     "import",
     "jest",
@@ -18,9 +23,7 @@
     "react-hooks"
   ],
   "rules": {
-    "react/button-has-type": "warn",
-    "react/forbid-prop-types": "warn",
-    "react/jsx-filename-extension": "off",
-    "react/jsx-props-no-spreading": "warn"
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "no-console": "error"
   }
 }

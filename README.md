@@ -9,9 +9,12 @@
 
 ## Why using this ?
 
-This package has many advantages that you could find in other solutions like Formik, React-Hook-Form, Redux Form... however it offers a different DX (developer experience) by trying to be the fastest to learn, and the easiest to use while keeping the code as light as possible, so main goals are flexibility and power, then performance.
+This package has many advantages that you could find in other solutions like Formik, React-Hook-Form, Redux Form...
+however it offers a different DX (developer experience) by trying to be the fastest to learn, and the easiest to use
+while keeping the code as light as possible, so main goals are flexibility and power, then performance.
 
 The benefits of using this lib are:
+
 - Fields definition (constraints) using a schema
 - Managing fields state (value and onChange)
 - Managing the list of modified fields
@@ -41,7 +44,8 @@ https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/UserFo
 
 ## Creating a form
 
-Creating a form using the provided components can save you a lot of time by handling the logic for you (modification, validation, states...).
+Creating a form using the provided components can save you a lot of time by handling the logic for you (modification,
+validation, states...).
 
 ```js
 import {
@@ -79,8 +83,8 @@ function SignInForm() {
 
   return (
     <Form context={form}>
-      <Field name="username" />
-      <Field name="password" />
+      <Field name="username"/>
+      <Field name="password"/>
       <Button type="submit">Submit</Button>
     </Form>
   );
@@ -90,10 +94,10 @@ function SignInForm() {
 ## Loading a form
 
 There are several ways to load a form:
+
 * Loading values in the parent component then passing them to the form component ;
 * Loading values inside the form component ;
 * Loading values using the `onLoad` option in `useForm()` ;
-
 
 ### Loading values in the parent component then passing them to the form component
 
@@ -114,13 +118,14 @@ function UserForm(props) {
 
   const form = useForm({
     initialValues,
-    onSubmit: (values) => { /* do something with values */ },
+    onSubmit: (values) => { /* do something with values */
+    },
   });
 
   return (
     <Form context={form}>
-      <Field name="firstName" />
-      <Field name="lastName" />
+      <Field name="firstName"/>
+      <Field name="lastName"/>
     </Form>
   );
 }
@@ -163,7 +168,8 @@ function UserFormPage() {
     // initialValues must be null (or omitted)
     // so the form will understand that it will be initialized later.
     initialValues: null,
-    onSubmit: (values) => { /* do something with values */ },
+    onSubmit: (values) => { /* do something with values */
+    },
   });
 
   // This example shows how one could load data,
@@ -184,12 +190,12 @@ function UserFormPage() {
 
   return (
     <Form context={form}>
-      <Field name="firstName" />
-      <Field name="lastName" />
+      <Field name="firstName"/>
+      <Field name="lastName"/>
     </Form>
   );
   return (
-    <UserForm id={params.id} />
+    <UserForm id={params.id}/>
   );
 }
 ```
@@ -218,13 +224,14 @@ function UserFormPage(props) {
     // WARNING: onLoad is called every time it changes,
     // in this case the form will be updated when the id changes.
     onLoad: useCallback(() => loadUser(params.id), [params.id]),
-    onSubmit: (values) => { /* do something with values */ },
+    onSubmit: (values) => { /* do something with values */
+    },
   });
 
   return (
     <Form context={form}>
-      <Field name="firstName" />
-      <Field name="lastName" />
+      <Field name="firstName"/>
+      <Field name="lastName"/>
     </Form>
   );
 }
@@ -237,7 +244,8 @@ We can do that using functions, or a schema (recommended).
 
 ### Validating using a schema
 
-In the example below, I am using my own lib `@jalik/schema` to validate the form using a schema, but you could use any lib you want (yup, joi...).
+In the example below, I am using my own lib `@jalik/schema` to validate the form using a schema, but you could use any
+lib you want (yup, joi...).
 
 Declare the form schema (structure and constraints).
 
@@ -258,7 +266,8 @@ export const SignInFormSchema = new Schema({
 });
 ```
 
-Create some helpers that make the bridge between the schema and the form, so they can be reused in other form components.
+Create some helpers that make the bridge between the schema and the form, so they can be reused in other form
+components.
 These functions should be located in another file and imported when needed.
 
 ```js
@@ -281,7 +290,8 @@ export function createFieldInitializer(schema) {
 
 // The function returned validates the field's value using the schema.
 export function createFieldValidator(schema) {
-  // called by onValidateField
+  // called by validateField
+  // todo inverse value and name
   return (value, name, values) => {
     schema.getField(name).validate(value, {
       context: values,
@@ -292,7 +302,7 @@ export function createFieldValidator(schema) {
 
 // The function returned validates the form (all fields) using the schema.
 export function createFormValidator(schema) {
-  // called by onValidate
+  // called by validate
   return (values) => new Promise((resolve) => {
     resolve(schema.getErrors(values));
   });
@@ -319,8 +329,8 @@ function authenticate(username, password) {
 }
 
 const onInitializeField = createFieldInitializer(SignInFormSchema);
-const onValidate = createFormValidator(SignInFormSchema);
-const onValidateField = createFieldValidator(SignInFormSchema);
+const validate = createFormValidator(SignInFormSchema);
+const validateField = createFieldValidator(SignInFormSchema);
 
 function SignInForm() {
   const form = useForm({
@@ -329,16 +339,16 @@ function SignInForm() {
       password: null,
     },
     onInitializeField,
-    onValidate,
-    onValidateField,
+    validate,
+    validateField,
     onSubmit: (values) => authenticate(values.username, values.password),
   });
   return (
     <Form context={form}>
-      <Field name="username" />
-      <FieldError name="username" />
-      <Field name="password" />
-      <FieldError name="password" />
+      <Field name="username"/>
+      <FieldError name="username"/>
+      <Field name="password"/>
+      <FieldError name="password"/>
       <Button type="submit">Submit</Button>
     </Form>
   );
@@ -347,7 +357,8 @@ function SignInForm() {
 
 ## Customizing components
 
-You can use your preferred UI components library and use the provided form components by using the `component` attribute on any form component (`<Field />` or `<Button />`).
+You can use your preferred UI components library and use the provided form components by using the `component` attribute
+on any form component (`<Field />` or `<Button />`).
 
 Example with Reactstrap:
 
@@ -403,7 +414,7 @@ const form = useForm({
     });
   },
   // optional, needs to return a promise
-  onValidate(values) {
+  validate(values) {
     return new Promise((resolve) => {
       const errors = {};
       // check for errors...
@@ -420,7 +431,8 @@ const form = useForm({
     });
   },
   // optional, needs to return a promise
-  onValidateField(value, name, formValues) {
+  // todo inverse value and name
+  validateField(value, name, formValues) {
     return new Promise((resolve, reject) => {
       // resolve with no error
       resolve();
@@ -437,7 +449,8 @@ const form = useForm({
 
 #### useFormContext()
 
-This hook returns the form context, most of the functions and attributes returned are used internally, so you may not need to know the purpose of all elements.
+This hook returns the form context, most of the functions and attributes returned are used internally, so you may not
+need to know the purpose of all elements.
 
 ```js
 import { useFormContext } from '@jalik/react-form';
@@ -525,7 +538,8 @@ To make life easier, some components are provided.
 
 #### Button
 
-This component is synced with the form, so whenever the form is disabled (because it is validating or submitting), the button is also disabled.
+This component is synced with the form, so whenever the form is disabled (because it is validating or submitting), the
+button is also disabled.
 
 ```js
 import { Button } from '@jalik/react-form';
@@ -539,7 +553,8 @@ function SubmitButton() {
 
 #### Field
 
-This component handles the value and the changes of an input. It can also parse and validate the field on the fly. Only the name is required.
+This component handles the value and the changes of an input. It can also parse and validate the field on the fly. Only
+the name is required.
 
 ```js
 import { Field } from '@jalik/react-form';
@@ -596,7 +611,7 @@ export function PasswordField() {
         name="password"
         type="password"
       />
-      <FieldError name="password" />
+      <FieldError name="password"/>
     </>
   );
 }
@@ -623,8 +638,8 @@ export function LogInForm() {
   });
   return (
     <Form context={form}>
-      <Field name="username" />
-      <Field name="password" />
+      <Field name="username"/>
+      <Field name="password"/>
       <Button type="submit">Submit</Button>
     </Form>
   );
