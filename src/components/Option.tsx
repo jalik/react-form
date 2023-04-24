@@ -13,7 +13,7 @@ export interface SelectOptionProps {
   value: string | number | boolean;
 }
 
-function SelectOption(props: SelectOptionProps): JSX.Element {
+function Option(props: SelectOptionProps): JSX.Element {
   const {
     disabled,
     label,
@@ -32,8 +32,8 @@ function SelectOption(props: SelectOptionProps): JSX.Element {
   );
 }
 
-SelectOption.defaultProps = {
+Option.defaultProps = {
   disabled: false,
 };
 
-export default SelectOption;
+export default Option;

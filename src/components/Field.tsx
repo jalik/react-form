@@ -6,7 +6,7 @@
 import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react';
 import useFormContext from '../useFormContext';
 import { getFieldId, inputValue } from '../utils';
-import SelectOption, { SelectOptionProps } from './SelectOption';
+import Option, { SelectOptionProps } from './Option';
 
 export const CHECKBOX = 'checkbox';
 export const RADIO = 'radio';
@@ -179,7 +179,7 @@ function Field(props: FieldProps & React.InputHTMLAttributes<HTMLElement>): JSX.
         <Component {...finalProps} type={type}>
           {children}
           {finalOptions.map(({ key, ...option }) => (
-            <SelectOption key={key} {...option} />
+            <Option key={key} {...option} />
           ))}
         </Component>
       );
@@ -194,7 +194,7 @@ function Field(props: FieldProps & React.InputHTMLAttributes<HTMLElement>): JSX.
       <select {...finalProps} value={String(finalProps.value)}>
         {children}
         {finalOptions.map(({ key, ...option }) => (
-          <SelectOption key={key} {...option} />
+          <Option key={key} {...option} />
         ))}
       </select>
     );
