@@ -102,7 +102,7 @@ export interface UseFormOptions<T, R> {
   onInitializeField?(name: string): HTMLAttributes<FieldElement>;
   onLoad?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
-  onValidate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
+  validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
   onValidateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
   submitDelay: number;
   validClass: string;
@@ -123,7 +123,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     onInitializeField,
     onLoad,
     onSubmit,
-    onValidate,
+    validate: validateFunc,
     onValidateField,
     submitDelay = 100,
     validClass = 'field-valid',
@@ -143,8 +143,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   if (typeof onLoad !== 'undefined' && typeof onLoad !== 'function') {
     throw new Error('onLoad must be a function');
   }
-  if (typeof onValidate !== 'undefined' && typeof onValidate !== 'function') {
-    throw new Error('onValidate must be a function');
+  if (typeof validateFunc !== 'undefined' && typeof validateFunc !== 'function') {
+    throw new Error('validate must be a function');
   }
   if (typeof onValidateField !== 'undefined' && typeof onValidateField !== 'function') {
     throw new Error('onValidateField function');
@@ -154,7 +154,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   const onInitializeFieldRef = useRef(onInitializeField);
   const onSubmitRef = useRef(onSubmit);
   const onValidateFieldRef = useRef(onValidateField);
-  const onValidateRef = useRef(onValidate);
+  const validateRef = useRef(validateFunc);
   const isInitialized = initialValues != null;
 
   // Defines the form state.
@@ -376,16 +376,16 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
 
     let promise;
 
-    if (typeof onValidateRef.current === 'function') {
+    if (typeof validateRef.current === 'function') {
       if (!state.values) {
         const error = new Error('Nothing to validate, values are empty');
         dispatch({ type: ACTION_VALIDATE_FAIL, error });
         return Promise.reject(error);
       }
-      promise = onValidateRef.current(clone(state.values), { ...state.modifiedFields });
+      promise = validateRef.current(clone(state.values), { ...state.modifiedFields });
 
       if (!(promise instanceof Promise)) {
-        throw new Error(`onValidate() must return a Promise`);
+        throw new Error(`validate() must return a Promise`);
       }
     } else {
       // Validation is not set, so we don't return any errors to let normal form submission happen.
@@ -521,8 +521,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   }, [onValidateField]);
 
   useEffect(() => {
-    onValidateRef.current = onValidate;
-  }, [onValidate]);
+    validateRef.current = validateFunc;
+  }, [validateFunc]);
 
   useEffect(() => {
     if (initialValues && !state.initialized) {
