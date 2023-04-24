@@ -103,7 +103,7 @@ export interface UseFormOptions<T, R> {
   onLoad?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
   validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
-  onValidateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
+  validateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
   submitDelay: number;
   validClass: string;
   validateDelay: number;
@@ -124,7 +124,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     onLoad,
     onSubmit,
     validate: validateFunc,
-    onValidateField,
+    validateField: validateFieldFunc,
     submitDelay = 100,
     validClass = 'field-valid',
     validateDelay = 200,
@@ -146,14 +146,14 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   if (typeof validateFunc !== 'undefined' && typeof validateFunc !== 'function') {
     throw new Error('validate must be a function');
   }
-  if (typeof onValidateField !== 'undefined' && typeof onValidateField !== 'function') {
-    throw new Error('onValidateField function');
+  if (typeof validateFieldFunc !== 'undefined' && typeof validateFieldFunc !== 'function') {
+    throw new Error('validateField function');
   }
 
   // Defines function references.
   const onInitializeFieldRef = useRef(onInitializeField);
   const onSubmitRef = useRef(onSubmit);
-  const onValidateFieldRef = useRef(onValidateField);
+  const validateFieldRef = useRef(validateFieldFunc);
   const validateRef = useRef(validateFunc);
   const isInitialized = initialValues != null;
 
@@ -247,10 +247,9 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    * Validates a field value.
    */
   const validateField = useCallback((name: string, value?: unknown): Promise<void | Error | undefined> => {
-    if (typeof onValidateFieldRef.current === 'function') {
+    if (typeof validateFieldRef.current === 'function') {
       try {
-        // todo call with (name, value) instead of (value, name)
-        const result = onValidateFieldRef.current(name, value, state.values);
+        const result = validateFieldRef.current(name, value, state.values);
 
         if (result != null && result instanceof Promise) {
           return result;
@@ -517,8 +516,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   }, [onSubmit]);
 
   useEffect(() => {
-    onValidateFieldRef.current = onValidateField;
-  }, [onValidateField]);
+    validateFieldRef.current = validateFieldFunc;
+  }, [validateFieldFunc]);
 
   useEffect(() => {
     validateRef.current = validateFunc;
