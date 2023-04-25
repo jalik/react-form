@@ -95,6 +95,7 @@ function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: For
     case ACTION_LOAD:
       nextState = {
         ...state,
+        disabled: true,
         loadError: undefined,
         loaded: false,
         loading: true,
@@ -104,6 +105,7 @@ function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: For
     case ACTION_LOAD_FAIL:
       nextState = {
         ...state,
+        disabled: false,
         loadError: action.error,
         loaded: false,
         loading: false,
@@ -114,7 +116,8 @@ function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: For
       const { data } = action;
       nextState = {
         ...state,
-        // ...initialState, // todo check if needed
+        ...initialState,
+        disabled: false,
         initialized: true,
         initialValues: clone(data.values),
         loadError: undefined,

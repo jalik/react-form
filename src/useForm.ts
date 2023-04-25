@@ -83,6 +83,7 @@ export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
   handleSubmit(event: React.FormEvent<HTMLFormElement>): void;
   initValues(values: T): void;
   invalidClass?: string;
+  load(): void;
   modifiedClass?: string;
   remove(name: string): void;
   reset(): void;
@@ -158,6 +159,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc);
   const isInitialized = initialValues != null;
+  const mountedRef = useRef(false);
   const onSubmitRef = useRef(onSubmit);
   const transformRef = useRef(transformFunc);
   const validateFieldRef = useRef(validateFieldFunc);
@@ -227,6 +229,24 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   const initValues = useCallback((values: T): void => {
     dispatch({ type: ACTION_INIT_VALUES, data: { values } });
   }, [dispatch]);
+
+  /**
+   * Loads and set initial values.
+   */
+  const load = useCallback((): void => {
+    if (loadFunc) {
+      dispatch({ type: ACTION_LOAD });
+      loadFunc()
+        .then((result) => {
+          if (mountedRef) {
+            dispatch({ type: ACTION_LOAD_SUCCESS, data: { values: result } });
+          }
+        })
+        .catch((error) => {
+          dispatch({ type: ACTION_LOAD_FAIL, error });
+        });
+    }
+  }, [loadFunc]);
 
   /**
    * Removes a field.
@@ -493,27 +513,13 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     validateAndSubmit();
   }, [validateAndSubmit]);
 
-  // Load initial values using a function.
+  // Keep track of mount state.
   useEffect(() => {
-    let mounted = true;
-    // todo create a load function
-    if (typeof loadFunc === 'function') {
-      dispatch({ type: ACTION_LOAD });
-      loadFunc()
-        .then((result) => {
-          if (mounted) {
-            initValues(result);
-            dispatch({ type: ACTION_LOAD_SUCCESS, data: { values: result } });
-          }
-        })
-        .catch((error) => {
-          dispatch({ type: ACTION_LOAD_FAIL, error });
-        });
-    }
+    mountedRef.current = true;
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
-  }, [initValues, loadFunc]);
+  }, []);
 
   useEffect((): void => {
     initializeFieldRef.current = initializeFieldFunc;
@@ -541,6 +547,11 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     }
   }, [initValues, initialValues, state.initialized]);
 
+  // Load initial values using a function.
+  useEffect(() => {
+    load();
+  }, [load]);
+
   return useMemo(() => ({
     ...state,
     invalidClass,
@@ -554,6 +565,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     handleReset,
     handleSubmit,
     initValues,
+    load,
     remove,
     reset,
     setError,
@@ -565,7 +577,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     validateField,
     validateFields,
   }), [state, invalidClass, modifiedClass, validClass, clearErrors, getAttributes, getInitialValue, getValue,
-    handleChange, handleReset, handleSubmit, initValues, remove, reset, setError, setErrors, setValue, setValues,
+    handleChange, handleReset, handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues,
     validateAndSubmit, validate, validateField, validateFields]);
 }
 
