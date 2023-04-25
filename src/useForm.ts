@@ -87,7 +87,7 @@ export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
   modifiedClass?: string;
   remove(name: string): void;
   reset(): void;
-  submit(): Promise<void | R>; // todo return type
+  submit(): Promise<void | R>;
   setError(name: string, error?: Error): void;
   setErrors(errors: FormErrors): void;
   setValue(name: string, value?: unknown): void;
@@ -502,6 +502,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    */
   const handleReset = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
+    event.stopPropagation();
     reset();
   }, [reset]);
 
@@ -510,6 +511,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    */
   const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
+    event.stopPropagation();
     validateAndSubmit();
   }, [validateAndSubmit]);
 

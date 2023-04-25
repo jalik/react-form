@@ -45,6 +45,7 @@ function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonEleme
   const handleClick = useCallback((ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // Avoid submitting parent forms
     ev.preventDefault();
+    ev.stopPropagation();
 
     if (onClick) {
       onClick(ev);
