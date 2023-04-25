@@ -7,6 +7,7 @@ import Button from './components/Button';
 import Field from './components/Field';
 import FieldError from './components/FieldError';
 import Form from './components/Form';
+import Option from './components/Option';
 
 import useFieldArray from './useFieldArray';
 import useForm from './useForm';
@@ -19,8 +20,9 @@ export {
   Field,
   FieldError,
   Form,
-  useFormContext,
+  Option,
+  getFieldId,
   useFieldArray,
   useForm,
-  getFieldId,
+  useFormContext,
 };
