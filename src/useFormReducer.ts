@@ -147,6 +147,7 @@ function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: For
       }
       nextState = {
         ...state,
+        modified: Object.keys(modifiedFields).length > 0,
         modifiedFields,
         errors,
         values,
