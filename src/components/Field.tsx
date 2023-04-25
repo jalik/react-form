@@ -82,7 +82,8 @@ function Field(props: FieldProps & FieldAttributes): JSX.Element {
     console.warn(`${name}: attributes "parser" and "onChange" cannot be set together`);
   }
 
-  const contextValue = getValue(name);
+  // Get context value from field name
+  const contextValue = useMemo(() => getValue(name), [getValue, name]);
 
   const handleChangeCallback = useCallback((event: React.FormEvent<any>) => {
     handleChange(event, { parser });

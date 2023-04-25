@@ -243,7 +243,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   }, []);
 
   /**
-   * Defines several field errors.
+   * Defines form field errors.
    */
   const setErrors = useCallback((errors: FormErrors): void => {
     dispatch({ type: ACTION_SET_ERRORS, data: { errors } });
@@ -303,9 +303,9 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
         dispatch({ type: ACTION_VALIDATE_FAIL, error });
       })
       .finally(() => {
-        setErrors(errors);
+        setErrors({ ...state.errors, ...errors });
       });
-  }, [getValue, setErrors, validateField]);
+  }, [getValue, setErrors, state.errors, validateField]);
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay);
 
