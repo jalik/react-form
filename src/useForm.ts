@@ -103,10 +103,10 @@ export interface UseFormOptions<T, R> {
   invalidClass: string;
   modifiedClass: string;
   nullify: boolean;
-  onChange?(mutation: Fields, values: Partial<T>): Partial<T>;
   initializeField?(name: string): FieldAttributes | undefined;
   load?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
+  transform?(mutation: Fields, values: Partial<T>): Partial<T>;
   validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
   validateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
   submitDelay: number;
@@ -122,15 +122,15 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     disabled = false,
     initialValues,
     invalidClass = 'field-invalid',
-    modifiedClass = 'field-modified',
-    nullify = false,
-    onChange,
     initializeField: initializeFieldFunc,
     load: loadFunc,
+    modifiedClass = 'field-modified',
+    nullify = false,
     onSubmit,
+    submitDelay = 100,
+    transform: transformFunc,
     validate: validateFunc,
     validateField: validateFieldFunc,
-    submitDelay = 100,
     validClass = 'field-valid',
     validateDelay = 200,
   } = options;
@@ -139,8 +139,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   if (typeof onSubmit !== 'function') {
     throw new Error('onSubmit must be a function');
   }
-  if (onChange && typeof onChange !== 'function') {
-    throw new Error('onChange must be a function');
+  if (transformFunc && typeof transformFunc !== 'function') {
+    throw new Error('transform must be a function');
   }
   if (initializeFieldFunc && typeof initializeFieldFunc !== 'function') {
     throw new Error('initializeField must be a function');
@@ -159,6 +159,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   const initializeFieldRef = useRef(initializeFieldFunc);
   const isInitialized = initialValues != null;
   const onSubmitRef = useRef(onSubmit);
+  const transformRef = useRef(transformFunc);
   const validateFieldRef = useRef(validateFieldFunc);
   const validateRef = useRef(validateFunc);
 
@@ -313,17 +314,18 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    */
   const setValues = useCallback((values: Fields): void => {
     let mutation = { ...values };
-    if (onChange) {
+    if (transformRef.current) {
+      // Merge changes with current values.
       let nextValues = clone(state.values) || {};
       Object.entries(mutation).forEach(([name, value]) => {
         nextValues = build(name, value, nextValues);
       });
       // Allow changing values on the fly
-      mutation = onChange ? onChange(mutation, nextValues) : mutation;
+      mutation = transformRef.current(mutation, nextValues);
     }
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
     debouncedValidateFields(mutation);
-  }, [debouncedValidateFields, onChange, state.values]);
+  }, [debouncedValidateFields, state.values]);
 
   /**
    * Defines the value of a field.
@@ -494,6 +496,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   // Load initial values using a function.
   useEffect(() => {
     let mounted = true;
+    // todo create a load function
     if (typeof loadFunc === 'function') {
       dispatch({ type: ACTION_LOAD });
       loadFunc()
@@ -519,6 +522,10 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   useEffect(() => {
     onSubmitRef.current = onSubmit;
   }, [onSubmit]);
+
+  useEffect((): void => {
+    transformRef.current = transformFunc;
+  }, [transformFunc]);
 
   useEffect(() => {
     validateFieldRef.current = validateFieldFunc;
