@@ -90,8 +90,8 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   submit(): Promise<void | R>;
   setError(name: string, error?: Error): void;
   setErrors(errors: Errors): void;
-  setValue(name: string, value?: unknown): void;
-  setValues(values: Partial<V>): void;
+  setValue(name: string, value?: unknown, validate?: boolean): void;
+  setValues(values: Partial<V>, validate?: boolean): void;
   validate(): Promise<void | Errors>;
   validateField(name: string, value?: unknown): Promise<void | Error | undefined>;
   validateFields(fields?: string[] | Partial<V>): Promise<void | Errors>;
@@ -341,7 +341,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Defines several field values (use initValues() to set all form values).
    */
-  const setValues = useCallback((values: Values): void => {
+  const setValues = useCallback((values: Values, validate = undefined): void => {
     // Ignore action if form disabled
     if (disabled) return;
 
@@ -357,7 +357,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     }
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
 
-    if (validateOnChange) {
+    if (validate || (validate !== false && validateOnChange)) {
       debouncedValidateFields(mutation);
     }
   }, [debouncedValidateFields, disabled, state.values, validateOnChange]);
@@ -365,8 +365,8 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Defines the value of a field.
    */
-  const setValue = useCallback((name: string, value?: unknown): void => {
-    setValues({ [name]: value });
+  const setValue = useCallback((name: string, value?: unknown, validate = undefined): void => {
+    setValues({ [name]: value }, validate);
   }, [setValues]);
 
   /**
