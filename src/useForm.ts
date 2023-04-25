@@ -38,9 +38,11 @@ export type FieldChangeOptions = {
   parser?(value: unknown, target: HTMLElement): any
 }
 
-export type FormErrors = { [key: string]: Error; }
+export type Errors = Record<string, Error>
 
-export type Fields = Record<string, unknown>
+export type ModifiedFields = Record<string, boolean>
+
+export type Values = Record<string, unknown>
 
 export type FieldAttributes =
   React.InputHTMLAttributes<HTMLInputElement>
@@ -49,14 +51,12 @@ export type FieldAttributes =
 
 export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
 
-export type ModifiedFields = Record<string, boolean>
-
-export interface FormState<T extends Fields, R> {
+export interface FormState<V extends Values, R> {
   disabled: boolean;
-  errors: FormErrors;
+  errors: Errors;
   hasError: boolean;
   initialized: boolean;
-  initialValues?: T;
+  initialValues?: V;
   loadError?: Error;
   loaded: boolean;
   loading: boolean;
@@ -70,10 +70,10 @@ export interface FormState<T extends Fields, R> {
   validateError?: Error;
   validated: boolean;
   validating: boolean;
-  values?: T;
+  values?: V;
 }
 
-export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
+export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clearErrors(): void;
   getAttributes(name: string): FieldAttributes | undefined;
   getInitialValue<V>(name: string): V | undefined;
@@ -81,7 +81,7 @@ export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
   handleChange(event: React.FormEvent<FieldElement>, options: FieldChangeOptions): void;
   handleReset(event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit(event: React.FormEvent<HTMLFormElement>): void;
-  initValues(values: T): void;
+  initValues(values: V): void;
   invalidClass?: string;
   load(): void;
   modifiedClass?: string;
@@ -89,30 +89,30 @@ export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
   reset(): void;
   submit(): Promise<void | R>;
   setError(name: string, error?: Error): void;
-  setErrors(errors: FormErrors): void;
+  setErrors(errors: Errors): void;
   setValue(name: string, value?: unknown): void;
-  setValues(values: Partial<T>): void;
-  validate(): Promise<void | FormErrors>;
+  setValues(values: Partial<V>): void;
+  validate(): Promise<void | Errors>;
   validateField(name: string, value?: unknown): Promise<void | Error | undefined>;
-  validateFields(fields?: string[] | Partial<T>): Promise<void | FormErrors>;
+  validateFields(fields?: string[] | Partial<V>): Promise<void | Errors>;
   validClass?: string;
   validateOnChange: boolean;
   validateOnSubmit: boolean;
 }
 
-export interface UseFormOptions<T, R> {
+export interface UseFormOptions<V, R> {
   disabled: boolean;
-  initialValues: T;
+  initialValues: V;
   invalidClass: string;
   modifiedClass: string;
   nullify: boolean;
   initializeField?(name: string): FieldAttributes | undefined;
-  load?(): Promise<T>;
-  onSubmit?(values: Partial<T>): Promise<R>;
+  load?(): Promise<V>;
+  onSubmit?(values: Partial<V>): Promise<R>;
   submitDelay: number;
-  transform?(mutation: Fields, values: Partial<T>): Partial<T>;
-  validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
-  validateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
+  transform?(mutation: Values, values: Partial<V>): Partial<V>;
+  validate?(values: Partial<V>, modifiedFields: ModifiedFields): Promise<void | Errors>;
+  validateField?(name: string, value: unknown, values?: V): Promise<void | Error | undefined>;
   validClass: string;
   validateDelay: number;
   validateOnChange?: boolean;
@@ -120,9 +120,9 @@ export interface UseFormOptions<T, R> {
 }
 
 /**
- * Returns utils to manage form state.
+ * Manage form state and actions.
  */
-function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHook<T, R> {
+function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHook<V, R> {
   const {
     disabled = false,
     initialValues,
@@ -173,7 +173,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
 
   // Defines the form state.
   const [state, dispatch] = useReducer(
-    useFormReducer<T, R>,
+    useFormReducer<V, R>,
     {
       // Disables fields if default values are undefined.
       disabled: disabled || !isInitialized,
@@ -232,7 +232,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   /**
    * Defines initial values (after loading for example).
    */
-  const initValues = useCallback((values: T): void => {
+  const initValues = useCallback((values: V): void => {
     dispatch({ type: ACTION_INIT_VALUES, data: { values } });
   }, [dispatch]);
 
@@ -274,7 +274,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   /**
    * Defines form field errors.
    */
-  const setErrors = useCallback((errors: FormErrors): void => {
+  const setErrors = useCallback((errors: Errors): void => {
     dispatch({ type: ACTION_SET_ERRORS, data: { errors } });
   }, []);
 
@@ -300,8 +300,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   /**
    * Validates one or more fields by passing field names or names and values.
    */
-  const validateFields = useCallback((fieldsOrFieldsAndValues: string[] | Partial<T>): Promise<void | FormErrors> => {
-    const errors: FormErrors = {};
+  const validateFields = useCallback((fieldsOrFieldsAndValues: string[] | Partial<V>): Promise<void | Errors> => {
+    const errors: Errors = {};
     const promises: Promise<[string, void | Error | undefined]>[] = [];
 
     if (fieldsOrFieldsAndValues instanceof Array) {
@@ -341,7 +341,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   /**
    * Defines several field values (use initValues() to set all form values).
    */
-  const setValues = useCallback((values: Fields): void => {
+  const setValues = useCallback((values: Values): void => {
     // Ignore action if form disabled
     if (disabled) return;
 
@@ -390,7 +390,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
       return Promise.reject(error);
     }
     dispatch({ type: ACTION_SUBMIT });
-    const promise: Promise<R> = onSubmitRef.current(clone<T>(state.values));
+    const promise: Promise<R> = onSubmitRef.current(clone<V>(state.values));
 
     if (!(promise instanceof Promise)) {
       throw new Error('onSubmit must return a Promise');
@@ -408,7 +408,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   /**
    * Validates form values.
    */
-  const validate = useCallback((): Promise<void | FormErrors> => {
+  const validate = useCallback((): Promise<void | Errors> => {
     // todo tells when the submission will follow the validation
     //  see comment in ACTION_VALIDATED case of formReducer.js
     dispatch({ type: ACTION_VALIDATE });
@@ -428,7 +428,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
       }
     } else {
       // Validation is not set, so we don't return any errors to let normal form submission happen.
-      promise = Promise.resolve<FormErrors>({});
+      promise = Promise.resolve<Errors>({});
     }
 
     return promise

@@ -4,7 +4,7 @@
  */
 
 import React, { useCallback, useMemo, useRef } from 'react';
-import { Fields, UseFormHook } from './useForm';
+import { UseFormHook, Values } from './useForm';
 import useFormContext from './useFormContext';
 import { uuid } from './utils';
 
@@ -41,7 +41,7 @@ function synchronizeItems<T>(array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[]
 }
 
 
-export interface UseFieldArrayOptions<T, F extends Fields> {
+export interface UseFieldArrayOptions<T, F extends Values> {
   context: UseFormHook<F, unknown>,
   defaultValue: T,
   name: string
@@ -50,7 +50,7 @@ export interface UseFieldArrayOptions<T, F extends Fields> {
 /**
  * Returns utils to manage an array of fields.
  */
-function useFieldArray<T, F extends Fields>(options: UseFieldArrayOptions<T, F>) {
+function useFieldArray<T, F extends Values>(options: UseFieldArrayOptions<T, F>) {
   const { context, defaultValue, name } = options;
   const form = useFormContext();
   const { getValue, setValue } = context || form;

@@ -4,14 +4,14 @@
  */
 
 import React from 'react';
-import { Fields, UseFormHook } from '../useForm';
+import { UseFormHook, Values } from '../useForm';
 import { FormContext } from '../useFormContext';
 
-export interface FormProps<T extends Fields, R> {
-  context: UseFormHook<T, R>;
+export interface FormProps<V extends Values, R> {
+  context: UseFormHook<V, R>;
 }
 
-function Form<T extends Fields, R>(props: FormProps<T, R> & React.FormHTMLAttributes<HTMLFormElement>): JSX.Element {
+function Form<V extends Values, R>(props: FormProps<V, R> & React.FormHTMLAttributes<HTMLFormElement>): JSX.Element {
   const {
     children,
     context,

@@ -7,7 +7,7 @@ import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from '
 import { FieldAttributes } from '../useForm';
 import useFormContext from '../useFormContext';
 import { getFieldId, inputValue } from '../utils';
-import Option, { SelectOptionProps } from './Option';
+import Option, { OptionProps } from './Option';
 
 export const CHECKBOX = 'checkbox';
 export const RADIO = 'radio';
@@ -22,14 +22,14 @@ function isCheckable(type: HTMLInputTypeAttribute): boolean {
   return [CHECKBOX, RADIO].indexOf(type) !== -1;
 }
 
-export interface FieldProps {
+export interface FieldProps<T> {
   component: any;
   disabled?: boolean;
   emptyOptionLabel?: string;
   multiple?: boolean;
   name: string;
-  options?: string[] | number[] | boolean[] | SelectOptionProps[];
-  parser?<T>(value: string): T;
+  options?: string[] | number[] | boolean[] | OptionProps[];
+  parser?(value: string): T;
   required?: boolean;
   // todo add formatter
   type?: HTMLInputTypeAttribute | 'select' | 'textarea';
@@ -38,7 +38,7 @@ export interface FieldProps {
   value: unknown;
 }
 
-function Field(props: FieldProps & FieldAttributes): JSX.Element {
+function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
   const {
     children,
     className,

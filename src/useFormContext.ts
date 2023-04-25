@@ -4,7 +4,7 @@
  */
 
 import { createContext, useContext } from 'react';
-import { Fields, UseFormHook } from './useForm';
+import { UseFormHook, Values } from './useForm';
 
 /**
  * The default form context.
@@ -14,8 +14,8 @@ export const FormContext = createContext<any>(undefined);
 /**
  * Returns the form context.
  */
-function useFormContext<T extends Fields, R>(): UseFormHook<T, R> {
-  return useContext<UseFormHook<T, R>>(FormContext);
+function useFormContext<V extends Values, R>(): UseFormHook<V, R> {
+  return useContext<UseFormHook<V, R>>(FormContext);
 }
 
 export default useFormContext;

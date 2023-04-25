@@ -6,14 +6,14 @@
 import React from 'react';
 import { inputValue } from '../utils';
 
-export interface SelectOptionProps {
+export interface OptionProps {
   disabled: boolean;
   key?: React.Key;
   label?: string | number | boolean;
   value: string | number | boolean;
 }
 
-function Option(props: SelectOptionProps): JSX.Element {
+function Option(props: OptionProps): JSX.Element {
   const {
     disabled,
     label,

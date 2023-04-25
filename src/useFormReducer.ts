@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { Fields, FormErrors, FormState } from './useForm';
+import { Errors, FormState, Values } from './useForm';
 import { build, clone, resolve } from './utils';
 
 export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS';
@@ -24,7 +24,7 @@ export const ACTION_VALIDATE = 'VALIDATE';
 export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL';
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS';
 
-const initialState: FormState<Fields, any> = {
+const initialState: FormState<Values, any> = {
   disabled: false,
   errors: {},
   hasError: false,
@@ -46,18 +46,18 @@ const initialState: FormState<Fields, any> = {
   values: undefined,
 };
 
-export type FormAction<T, R> =
+export type FormAction<V, R> =
   { type: 'CLEAR_ERRORS' }
-  | { type: 'INIT_VALUES', data: { values: T } }
+  | { type: 'INIT_VALUES', data: { values: V } }
   | { type: 'LOAD' }
   | { type: 'LOAD_FAIL', error: Error }
-  | { type: 'LOAD_SUCCESS', data: { values: T } }
+  | { type: 'LOAD_SUCCESS', data: { values: V } }
   | { type: 'REMOVE', data: { name: string } }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fieldNames: string[] } }
   | { type: 'SET_ERROR', data: { name: string, error: Error } }
   | { type: 'SET_ERRORS', data: { errors: { [key: string]: Error } } }
-  | { type: 'SET_VALUES', data: { values: Fields } }
+  | { type: 'SET_VALUES', data: { values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_FAIL', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
@@ -68,8 +68,8 @@ export type FormAction<T, R> =
 /**
  * Form reducers.
  */
-function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: FormAction<T, R>): FormState<T, R> {
-  let nextState: FormState<T, R>;
+function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: FormAction<V, R>): FormState<V, R> {
+  let nextState: FormState<V, R>;
 
   switch (action.type) {
     case ACTION_CLEAR_ERRORS:
@@ -219,7 +219,7 @@ function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: For
 
     case ACTION_SET_ERROR: {
       const { data } = action;
-      const errors: FormErrors = {};
+      const errors: Errors = {};
 
       if (data.error != null) {
         errors[data.name] = data.error;
@@ -236,7 +236,7 @@ function useFormReducer<T extends Fields, R>(state: FormState<T, R>, action: For
 
     case ACTION_SET_ERRORS: {
       const { data } = action;
-      const errors: FormErrors = {};
+      const errors: Errors = {};
 
       Object.keys(data.errors).forEach((name) => {
         errors[name] = data.errors[name];
