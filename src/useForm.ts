@@ -96,6 +96,8 @@ export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
   validateField(name: string, value?: unknown): Promise<void | Error | undefined>;
   validateFields(fields?: string[] | Partial<T>): Promise<void | FormErrors>;
   validClass?: string;
+  validateOnChange: boolean;
+  validateOnSubmit: boolean;
 }
 
 export interface UseFormOptions<T, R> {
@@ -113,6 +115,7 @@ export interface UseFormOptions<T, R> {
   validateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
   validClass: string;
   validateDelay: number;
+  validateOnChange?: boolean;
   validateOnSubmit?: boolean;
 }
 
@@ -135,6 +138,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     validateField: validateFieldFunc,
     validClass = 'field-valid',
     validateDelay = 200,
+    validateOnChange = false,
     validateOnSubmit = true,
   } = options;
 
@@ -352,9 +356,11 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
       mutation = transformRef.current(mutation, nextValues);
     }
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
-    // todo add option validateOnChange
-    debouncedValidateFields(mutation);
-  }, [debouncedValidateFields, disabled, state.values]);
+
+    if (validateOnChange) {
+      debouncedValidateFields(mutation);
+    }
+  }, [debouncedValidateFields, disabled, state.values, validateOnChange]);
 
   /**
    * Defines the value of a field.
@@ -565,9 +571,13 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
 
   return useMemo(() => ({
     ...state,
+    // Options
     invalidClass,
     modifiedClass,
     validClass,
+    validateOnChange,
+    validateOnSubmit,
+    // Methods
     clearErrors,
     getAttributes,
     getInitialValue,
@@ -587,10 +597,9 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     validate,
     validateField,
     validateFields,
-    validateOnSubmit,
   }), [state, invalidClass, modifiedClass, validClass, clearErrors, getAttributes, getInitialValue, getValue,
     handleChange, handleReset, handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues,
-    debouncedSubmit, validate, validateField, validateFields, validateOnSubmit]);
+    debouncedSubmit, validate, validateField, validateFields, validateOnChange, validateOnSubmit]);
 }
 
 export default useForm;
