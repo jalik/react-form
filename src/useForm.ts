@@ -107,12 +107,13 @@ export interface UseFormOptions<T, R> {
   initializeField?(name: string): FieldAttributes | undefined;
   load?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
+  submitDelay: number;
   transform?(mutation: Fields, values: Partial<T>): Partial<T>;
   validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
   validateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
-  submitDelay: number;
   validClass: string;
   validateDelay: number;
+  validateOnSubmit?: boolean;
 }
 
 /**
@@ -134,6 +135,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     validateField: validateFieldFunc,
     validClass = 'field-valid',
     validateDelay = 200,
+    validateOnSubmit = true,
   } = options;
 
   // Checks options.
@@ -184,7 +186,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
       submitting: false,
       validated: false,
       validating: false,
-      values: initialValues, // todo clone<T>(initialValues || {}),
+      values: initialValues,
     },
     undefined,
   );
@@ -444,7 +446,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    *  to: validate:disabled => validated => submit => submitted:enabled
    */
   const validateAndSubmit = useCallback((): Promise<void | R> => (
-    !state.validated
+    validateOnSubmit && !state.validated
       ? validate().then((errors) => {
         if (!errors || (typeof errors === 'object' && Object.keys(errors).length === 0)) {
           return submit();
@@ -452,7 +454,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
         return undefined;
       })
       : submit()
-  ), [state.validated, validate, submit]);
+  ), [validateOnSubmit, state.validated, validate, submit]);
 
   const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay);
 
@@ -585,9 +587,10 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     validate,
     validateField,
     validateFields,
+    validateOnSubmit,
   }), [state, invalidClass, modifiedClass, validClass, clearErrors, getAttributes, getInitialValue, getValue,
     handleChange, handleReset, handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues,
-    debouncedSubmit, validate, validateField, validateFields]);
+    debouncedSubmit, validate, validateField, validateFields, validateOnSubmit]);
 }
 
 export default useForm;
