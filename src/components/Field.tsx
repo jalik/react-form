@@ -4,6 +4,7 @@
  */
 
 import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react';
+import { FieldAttributes } from '../useForm';
 import useFormContext from '../useFormContext';
 import { getFieldId, inputValue } from '../utils';
 import Option, { SelectOptionProps } from './Option';
@@ -23,16 +24,21 @@ function isCheckable(type: HTMLInputTypeAttribute): boolean {
 
 export interface FieldProps {
   component: any;
+  disabled?: boolean;
   emptyOptionLabel?: string;
+  multiple?: boolean;
   name: string;
   options?: string[] | number[] | boolean[] | SelectOptionProps[];
   parser?<T>(value: string): T;
+  required?: boolean;
   // todo add formatter
-  type?: HTMLInputTypeAttribute;
+  type?: HTMLInputTypeAttribute | 'select' | 'textarea';
+  // todo remove
   validator?<T>(value: T): Error | undefined;
+  value: unknown;
 }
 
-function Field(props: FieldProps & React.InputHTMLAttributes<HTMLElement>): JSX.Element {
+function Field(props: FieldProps & FieldAttributes): JSX.Element {
   const {
     children,
     className,
@@ -105,7 +111,7 @@ function Field(props: FieldProps & React.InputHTMLAttributes<HTMLElement>): JSX.
   const parsedValue = useMemo(() => parser && typeof value === 'string' ? parser(value) : value, [parser, value]);
 
   const finalProps = useMemo(() => {
-    const p = {
+    const p: { [key: string]: unknown } = {
       ...attributes,
       ...others,
       className: classNames.join(' '),
@@ -113,6 +119,7 @@ function Field(props: FieldProps & React.InputHTMLAttributes<HTMLElement>): JSX.
       id: id || getFieldId(name, value),
       multiple,
       name,
+      required: others.required || attributes?.required,
       onChange: onChange || handleChangeCallback,
       value: contextValue,
     };

@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { HTMLAttributes, useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import useDebouncePromise from './useDebouncePromise';
 import useFormReducer, {
   ACTION_CLEAR_ERRORS,
@@ -42,7 +42,12 @@ export type FormErrors = { [key: string]: Error; }
 
 export type Fields = Record<string, unknown>
 
-export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+export type FieldAttributes =
+  React.InputHTMLAttributes<HTMLInputElement>
+  | React.SelectHTMLAttributes<HTMLSelectElement>
+  | React.TextareaHTMLAttributes<HTMLTextAreaElement>
+
+export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
 
 export type ModifiedFields = Record<string, boolean>
 
@@ -70,7 +75,7 @@ export interface FormState<T extends Fields, R> {
 
 export interface UseFormHook<T extends Fields, R> extends FormState<T, R> {
   clearErrors(): void;
-  getAttributes(name: string): HTMLAttributes<FieldElement> | undefined;
+  getAttributes(name: string): FieldAttributes | undefined;
   getInitialValue<V>(name: string): V | undefined;
   getValue<V>(name: string, defaultValue?: V): V;
   handleChange(event: React.FormEvent<FieldElement>, options: FieldChangeOptions): void;
@@ -99,7 +104,7 @@ export interface UseFormOptions<T, R> {
   modifiedClass: string;
   nullify: boolean;
   onChange?(mutation: Fields, values: Partial<T>): Partial<T>;
-  initializeField?(name: string): HTMLAttributes<FieldElement>;
+  initializeField?(name: string): FieldAttributes | undefined;
   load?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
   validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
@@ -193,8 +198,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    */
   const getAttributes = useCallback((
     name: string,
-    defaultAttributes?: HTMLAttributes<FieldElement>,
-  ): HTMLAttributes<FieldElement> | undefined => (
+    defaultAttributes?: FieldAttributes,
+  ): FieldAttributes | undefined => (
     typeof initializeFieldRef.current === 'function'
       ? initializeFieldRef.current(name)
       : defaultAttributes
