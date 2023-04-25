@@ -71,7 +71,7 @@ function onSubmit(values) {
 function SignInForm() {
   const form = useForm({
     // WARNING: initialValues does not update the form when values change.
-    // If you want to change initialValues, use form.initValues() or pass onLoad to useForm()
+    // If you want to change initialValues, use form.initValues() or pass load to useForm()
     initialValues: {
       username: null,
       password: null,
@@ -97,7 +97,7 @@ There are several ways to load a form:
 
 * Loading values in the parent component then passing them to the form component ;
 * Loading values inside the form component ;
-* Loading values using the `onLoad` option in `useForm()` ;
+* Loading values using the `load` option in `useForm()` ;
 
 ### Loading values in the parent component then passing them to the form component
 
@@ -200,7 +200,7 @@ function UserFormPage() {
 }
 ```
 
-### Loading values using the `onLoad` option in `useForm()`
+### Loading values using the `load` option in `useForm()`
 
 ```js
 import { useCallback } from 'react';
@@ -221,10 +221,11 @@ function UserFormPage(props) {
 
   const form = useForm({
     initialValues,
-    // WARNING: onLoad is called every time it changes,
+    // WARNING: load is called every time it changes,
     // in this case the form will be updated when the id changes.
-    onLoad: useCallback(() => loadUser(params.id), [params.id]),
-    onSubmit: (values) => { /* do something with values */
+    load: useCallback(() => loadUser(params.id), [params.id]),
+    onSubmit: (values) => {
+      /* do something with values */
     },
   });
 
@@ -400,10 +401,8 @@ const form = useForm({
     // and return attributes dynamically.
     return { required: true };
   },
-  onLoad() {
-    // returns a promise with the form data.
-    return loadFormValues();
-  },
+  // returns a promise with the form data.
+  load: loadFormValues,
   // required, needs to return a promise
   onSubmit(values) {
     return new Promise((resolve) => {
@@ -466,9 +465,9 @@ const {
   invalidClass,
   // the loading error (if any)
   loadError,
-  // tells if the onLoad function was successful
+  // tells if the load function was successful
   loaded,
-  // tells if the onLoad function is running
+  // tells if the load function is running
   loading,
   // tells if the form was modified
   modified,

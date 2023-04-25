@@ -100,7 +100,7 @@ export interface UseFormOptions<T, R> {
   nullify: boolean;
   onChange?(mutation: Fields, values: Partial<T>): Partial<T>;
   onInitializeField?(name: string): HTMLAttributes<FieldElement>;
-  onLoad?(): Promise<T>;
+  load?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
   validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
   validateField?(name: string, value: unknown, values?: T): Promise<void | Error | undefined>;
@@ -121,7 +121,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     nullify = false,
     onChange,
     onInitializeField,
-    onLoad,
+    load: loadFunc,
     onSubmit,
     validate: validateFunc,
     validateField: validateFieldFunc,
@@ -140,8 +140,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   if (typeof onInitializeField !== 'undefined' && typeof onInitializeField !== 'function') {
     throw new Error('onInitializeField must be a function');
   }
-  if (typeof onLoad !== 'undefined' && typeof onLoad !== 'function') {
-    throw new Error('onLoad must be a function');
+  if (typeof loadFunc !== 'undefined' && typeof loadFunc !== 'function') {
+    throw new Error('load must be a function');
   }
   if (typeof validateFunc !== 'undefined' && typeof validateFunc !== 'function') {
     throw new Error('validate must be a function');
@@ -168,7 +168,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
       initialized: isInitialized,
       initialValues: initialValues || {},
       loaded: false,
-      loading: typeof onLoad === 'function',
+      loading: typeof loadFunc === 'function',
       modified: false,
       modifiedFields: {},
       submitCount: 0,
@@ -489,9 +489,9 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   // Load initial values using a function.
   useEffect(() => {
     let mounted = true;
-    if (typeof onLoad === 'function') {
+    if (typeof loadFunc === 'function') {
       dispatch({ type: ACTION_LOAD });
-      onLoad()
+      loadFunc()
         .then((result) => {
           if (mounted) {
             initValues(result);
@@ -505,7 +505,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     return () => {
       mounted = false;
     };
-  }, [initValues, onLoad]);
+  }, [initValues, loadFunc]);
 
   useEffect((): void => {
     onInitializeFieldRef.current = onInitializeField;
