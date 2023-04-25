@@ -131,22 +131,22 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   } = options;
 
   // Checks options.
-  if (onChange != null && typeof onChange !== 'function') {
-    throw new Error('onChange must be a function');
-  }
   if (typeof onSubmit !== 'function') {
     throw new Error('onSubmit must be a function');
   }
-  if (typeof onInitializeField !== 'undefined' && typeof onInitializeField !== 'function') {
+  if (onChange && typeof onChange !== 'function') {
+    throw new Error('onChange must be a function');
+  }
+  if (onInitializeField && typeof onInitializeField !== 'function') {
     throw new Error('onInitializeField must be a function');
   }
-  if (typeof loadFunc !== 'undefined' && typeof loadFunc !== 'function') {
+  if (loadFunc && typeof loadFunc !== 'function') {
     throw new Error('load must be a function');
   }
-  if (typeof validateFunc !== 'undefined' && typeof validateFunc !== 'function') {
+  if (validateFunc && typeof validateFunc !== 'function') {
     throw new Error('validate must be a function');
   }
-  if (typeof validateFieldFunc !== 'undefined' && typeof validateFieldFunc !== 'function') {
+  if (validateFieldFunc && typeof validateFieldFunc !== 'function') {
     throw new Error('validateField function');
   }
 
