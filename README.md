@@ -275,7 +275,7 @@ These functions should be located in another file and imported when needed.
 // The function returned initializes the field's attributes using the schema.
 // Example: if a field is required in the schema, it will also be required in the form.
 export function createFieldInitializer(schema) {
-  // called by onInitializeField
+  // called by initializeField
   return (name) => {
     const field = schema.getField(name);
     return field ? {
@@ -292,8 +292,7 @@ export function createFieldInitializer(schema) {
 // The function returned validates the field's value using the schema.
 export function createFieldValidator(schema) {
   // called by validateField
-  // todo inverse value and name
-  return (value, name, values) => {
+  return (name, value, values) => {
     schema.getField(name).validate(value, {
       context: values,
       rootOnly: true,
@@ -329,7 +328,7 @@ function authenticate(username, password) {
   });
 }
 
-const onInitializeField = createFieldInitializer(SignInFormSchema);
+const initializeField = createFieldInitializer(SignInFormSchema);
 const validate = createFormValidator(SignInFormSchema);
 const validateField = createFieldValidator(SignInFormSchema);
 
@@ -339,7 +338,7 @@ function SignInForm() {
       username: null,
       password: null,
     },
-    onInitializeField,
+    initializeField,
     validate,
     validateField,
     onSubmit: (values) => authenticate(values.username, values.password),
@@ -395,7 +394,7 @@ const form = useForm({
   // optional
   validateDelay: 200,
   // optional
-  onInitializeField(name) {
+  initializeField(name) {
     // returns field attributes based on name...
     // usefull if you want to centralize this process
     // and return attributes dynamically.
@@ -430,8 +429,7 @@ const form = useForm({
     });
   },
   // optional, needs to return a promise
-  // todo inverse value and name
-  validateField(value, name, formValues) {
+  validateField(name, value, formValues) {
     return new Promise((resolve, reject) => {
       // resolve with no error
       resolve();

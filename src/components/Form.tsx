@@ -23,8 +23,8 @@ function Form<T extends Fields, R>(props: FormProps<T, R> & React.FormHTMLAttrib
   return (
     <FormContext.Provider value={context}>
       <form
-        {...others}
         method="post"
+        {...others}
         onReset={handleReset}
         onSubmit={handleSubmit}
       >

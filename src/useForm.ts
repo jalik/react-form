@@ -99,7 +99,7 @@ export interface UseFormOptions<T, R> {
   modifiedClass: string;
   nullify: boolean;
   onChange?(mutation: Fields, values: Partial<T>): Partial<T>;
-  onInitializeField?(name: string): HTMLAttributes<FieldElement>;
+  initializeField?(name: string): HTMLAttributes<FieldElement>;
   load?(): Promise<T>;
   onSubmit?(values: Partial<T>): Promise<R>;
   validate?(values: Partial<T>, modifiedFields: ModifiedFields): Promise<void | FormErrors>;
@@ -120,7 +120,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     modifiedClass = 'field-modified',
     nullify = false,
     onChange,
-    onInitializeField,
+    initializeField: initializeFieldFunc,
     load: loadFunc,
     onSubmit,
     validate: validateFunc,
@@ -137,8 +137,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   if (onChange && typeof onChange !== 'function') {
     throw new Error('onChange must be a function');
   }
-  if (onInitializeField && typeof onInitializeField !== 'function') {
-    throw new Error('onInitializeField must be a function');
+  if (initializeFieldFunc && typeof initializeFieldFunc !== 'function') {
+    throw new Error('initializeField must be a function');
   }
   if (loadFunc && typeof loadFunc !== 'function') {
     throw new Error('load must be a function');
@@ -151,11 +151,11 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   }
 
   // Defines function references.
-  const onInitializeFieldRef = useRef(onInitializeField);
+  const initializeFieldRef = useRef(initializeFieldFunc);
+  const isInitialized = initialValues != null;
   const onSubmitRef = useRef(onSubmit);
   const validateFieldRef = useRef(validateFieldFunc);
   const validateRef = useRef(validateFunc);
-  const isInitialized = initialValues != null;
 
   // Defines the form state.
   const [state, dispatch] = useReducer(
@@ -195,8 +195,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     name: string,
     defaultAttributes?: HTMLAttributes<FieldElement>,
   ): HTMLAttributes<FieldElement> | undefined => (
-    typeof onInitializeFieldRef.current === 'function'
-      ? onInitializeFieldRef.current(name)
+    typeof initializeFieldRef.current === 'function'
+      ? initializeFieldRef.current(name)
       : defaultAttributes
   ), []);
 
@@ -508,8 +508,8 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
   }, [initValues, loadFunc]);
 
   useEffect((): void => {
-    onInitializeFieldRef.current = onInitializeField;
-  }, [onInitializeField]);
+    initializeFieldRef.current = initializeFieldFunc;
+  }, [initializeFieldFunc]);
 
   useEffect(() => {
     onSubmitRef.current = onSubmit;
