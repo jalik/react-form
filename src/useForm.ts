@@ -252,8 +252,11 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    * Removes a field.
    */
   const remove = useCallback((name: string): void => {
+    // Ignore action if form disabled
+    if (disabled) return;
+
     dispatch({ type: ACTION_REMOVE, data: { name } });
-  }, []);
+  }, [disabled]);
 
   /**
    * Defines the field error.
@@ -333,6 +336,9 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
    * Defines several field values (use initValues() to set all form values).
    */
   const setValues = useCallback((values: Fields): void => {
+    // Ignore action if form disabled
+    if (disabled) return;
+
     let mutation = { ...values };
     if (transformRef.current) {
       // Merge changes with current values.
@@ -345,7 +351,7 @@ function useForm<T extends Fields, R>(options: UseFormOptions<T, R>): UseFormHoo
     }
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
     debouncedValidateFields(mutation);
-  }, [debouncedValidateFields, state.values]);
+  }, [debouncedValidateFields, disabled, state.values]);
 
   /**
    * Defines the value of a field.
