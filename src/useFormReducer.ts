@@ -31,7 +31,7 @@ const initialState: FormState<Values, any> = {
   errors: {},
   hasError: false,
   initialized: true,
-  initialValues: undefined,
+  initialValues: {},
   loadError: undefined,
   loaded: false,
   loading: false,
@@ -47,16 +47,16 @@ const initialState: FormState<Values, any> = {
   validateError: undefined,
   validated: false,
   validating: false,
-  values: undefined,
+  values: {},
 };
 
 export type FormAction<V, R> =
   { type: 'CLEAR_ERRORS' }
   | { type: 'CLEAR_TOUCH', data: { fieldNames: string[] } }
-  | { type: 'INIT_VALUES', data: { values: V } }
+  | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
   | { type: 'LOAD_FAIL', error: Error }
-  | { type: 'LOAD_SUCCESS', data: { values: V } }
+  | { type: 'LOAD_SUCCESS', data: { values: Partial<V> } }
   | { type: 'REMOVE', data: { name: string } }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fieldNames: string[] } }

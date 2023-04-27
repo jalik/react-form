@@ -60,7 +60,7 @@ export interface FormState<V extends Values, R> {
   errors: Errors;
   hasError: boolean;
   initialized: boolean;
-  initialValues?: V;
+  initialValues: Partial<V>;
   loadError?: Error;
   loaded: boolean;
   loading: boolean;
@@ -76,20 +76,20 @@ export interface FormState<V extends Values, R> {
   validateError?: Error;
   validated: boolean;
   validating: boolean;
-  values?: V;
+  values: Partial<V>;
 }
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clearErrors(): void;
   clearTouch(fields: string[]): void;
   getAttributes(name: string): FieldAttributes | undefined;
-  getInitialValue<V>(name: string): V | undefined;
-  getValue<V>(name: string, defaultValue?: V): V;
+  getInitialValue<T>(name: string): T | undefined;
+  getValue<T>(name: string, defaultValue?: T): T;
   handleBlur(event: React.FormEvent<FieldElement>): void; // todo React.FormEvent<any>
   handleChange(event: React.FormEvent<FieldElement>, options: FieldChangeOptions): void;
   handleReset(event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit(event: React.FormEvent<HTMLFormElement>): void;
-  initValues(values: V): void;
+  initValues(values: Partial<V>): void;
   invalidClass?: string;
   load(): void;
   modifiedClass?: string;
@@ -109,21 +109,21 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   validateOnSubmit: boolean;
 }
 
-export interface UseFormOptions<V, R> {
-  disabled: boolean;
-  initialValues: V;
-  invalidClass: string;
-  modifiedClass: string;
-  nullify: boolean;
+export interface UseFormOptions<V extends Values, R> {
+  disabled?: boolean;
+  initialValues?: Partial<V>;
+  invalidClass?: string;
+  modifiedClass?: string;
+  nullify?: boolean;
   initializeField?(name: string): FieldAttributes | undefined;
   load?(): Promise<V>;
-  onSubmit?(values: Partial<V>): Promise<R>;
-  submitDelay: number;
+  onSubmit(values: Partial<V>): Promise<R>;
+  submitDelay?: number;
   transform?(mutation: Values, values: Partial<V>): Partial<V>;
   validate?(values: Partial<V>, modifiedFields: ModifiedFields): Promise<void | Errors>;
-  validateField?(name: string, value: unknown, values?: V): Promise<void | Error | undefined>;
-  validClass: string;
-  validateDelay: number;
+  validateField?(name: string, value: unknown, values: Partial<V>): Promise<void | Error | undefined>;
+  validClass?: string;
+  validateDelay?: number;
   validateOnChange?: boolean;
   validateOnSubmit?: boolean;
 }
@@ -201,7 +201,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       touchedFields: {},
       validated: false,
       validating: false,
-      values: initialValues,
+      values: initialValues || {},
     },
     undefined,
   );
@@ -243,7 +243,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Defines initial values (after loading for example).
    */
-  const initValues = useCallback((values: V): void => {
+  const initValues = useCallback((values: Partial<V>): void => {
     dispatch({ type: ACTION_INIT_VALUES, data: { values } });
   }, [dispatch]);
 
@@ -415,7 +415,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       return Promise.reject(error);
     }
     dispatch({ type: ACTION_SUBMIT });
-    const promise: Promise<R> = onSubmitRef.current(clone<V>(state.values));
+    const promise: Promise<R> = onSubmitRef.current(clone(state.values));
 
     if (!(promise instanceof Promise)) {
       throw new Error('onSubmit must return a Promise');
