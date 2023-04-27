@@ -3,10 +3,11 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { Errors, FormState, Values } from './useForm';
+import { Errors, FormState, TouchedFields, Values } from './useForm';
 import { build, clone, resolve } from './utils';
 
 export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS';
+export const ACTION_CLEAR_TOUCH = 'CLEAR_TOUCH';
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
 export const ACTION_LOAD = 'LOAD';
 export const ACTION_LOAD_FAIL = 'LOAD_FAIL';
@@ -20,6 +21,7 @@ export const ACTION_SET_VALUES = 'SET_VALUES';
 export const ACTION_SUBMIT = 'SUBMIT';
 export const ACTION_SUBMIT_FAIL = 'SUBMIT_FAIL';
 export const ACTION_SUBMIT_SUCCESS = 'SUBMIT_SUCCESS';
+export const ACTION_TOUCH = 'TOUCH';
 export const ACTION_VALIDATE = 'VALIDATE';
 export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL';
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS';
@@ -40,6 +42,8 @@ const initialState: FormState<Values, any> = {
   submitResult: undefined,
   submitted: false,
   submitting: false,
+  touched: false,
+  touchedFields: {},
   validateError: undefined,
   validated: false,
   validating: false,
@@ -48,6 +52,7 @@ const initialState: FormState<Values, any> = {
 
 export type FormAction<V, R> =
   { type: 'CLEAR_ERRORS' }
+  | { type: 'CLEAR_TOUCH', data: { fieldNames: string[] } }
   | { type: 'INIT_VALUES', data: { values: V } }
   | { type: 'LOAD' }
   | { type: 'LOAD_FAIL', error: Error }
@@ -56,11 +61,12 @@ export type FormAction<V, R> =
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fieldNames: string[] } }
   | { type: 'SET_ERROR', data: { name: string, error: Error } }
-  | { type: 'SET_ERRORS', data: { errors: { [key: string]: Error } } }
+  | { type: 'SET_ERRORS', data: { errors: Errors } }
   | { type: 'SET_VALUES', data: { values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_FAIL', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
+  | { type: 'TOUCH', data: { fieldNames: string[] } }
   | { type: 'VALIDATE' }
   | { type: 'VALIDATE_FAIL', error: Error }
   | { type: 'VALIDATE_SUCCESS' }
@@ -78,6 +84,20 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         errors: {},
       };
       break;
+
+    case ACTION_CLEAR_TOUCH: {
+      const { data } = action;
+      const touchedFields: TouchedFields = { ...state.touchedFields };
+      data.fieldNames.forEach((name) => {
+        delete touchedFields[name];
+      });
+      nextState = {
+        ...state,
+        touched: Object.keys(touchedFields).length > 0,
+        touchedFields,
+      };
+      break;
+    }
 
     case ACTION_INIT_VALUES: {
       const { data } = action;
@@ -132,15 +152,19 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
     //  solution: handle array operations (append, prepend...) in reducer.
     case ACTION_REMOVE: {
       const { data } = action;
-      const modifiedFields = { ...state.modifiedFields };
       const errors = { ...state.errors };
+      const modifiedFields = { ...state.modifiedFields };
+      const touchedFields = { ...state.touchedFields };
       const values = clone(state.values);
 
+      if (typeof errors[data.name] !== 'undefined') {
+        delete errors[data.name];
+      }
       if (typeof modifiedFields[data.name] !== 'undefined') {
         delete modifiedFields[data.name];
       }
-      if (typeof errors[data.name] !== 'undefined') {
-        delete errors[data.name];
+      if (typeof touchedFields[data.name] !== 'undefined') {
+        delete touchedFields[data.name];
       }
       if (typeof resolve(data.name, state.values) !== 'undefined') {
         build(data.name, undefined, state.values);
@@ -149,6 +173,8 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         ...state,
         modified: Object.keys(modifiedFields).length > 0,
         modifiedFields,
+        touched: Object.keys(touchedFields).length > 0,
+        touchedFields,
         errors,
         values,
       };
@@ -163,19 +189,9 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       }
       nextState = {
         ...state,
+        ...initialState,
+        initialValues: state.initialValues,
         values: clone(state.initialValues),
-        // Reset form state.
-        errors: {},
-        modified: false,
-        modifiedFields: {},
-        submitCount: 0,
-        submitError: undefined,
-        submitResult: undefined,
-        submitted: false,
-        submitting: false,
-        validateError: undefined,
-        validated: false,
-        validating: false,
       };
       break;
 
@@ -185,8 +201,9 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         console.warn('Cannot reset form during validation.');
         return state;
       }
-      const modifiedFields = clone(state.modifiedFields);
-      const errors = clone(state.errors);
+      const errors = { ...state.errors };
+      const modifiedFields = { ...state.modifiedFields };
+      const touchedFields = { ...state.touchedFields };
       const initialValues = clone(state.initialValues);
       let values = clone(state.values);
 
@@ -194,8 +211,9 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       data.fieldNames.forEach((name: string) => {
         const initialValue = resolve(name, initialValues);
         values = build(name, initialValue, values);
-        delete modifiedFields[name];
         delete errors[name];
+        delete modifiedFields[name];
+        delete touchedFields[name];
       });
 
       nextState = {
@@ -204,6 +222,8 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         errors,
         modified: Object.keys(modifiedFields).length > 0,
         modifiedFields,
+        touched: Object.keys(touchedFields).length > 0,
+        touchedFields,
         // Reset form state.
         submitCount: 0,
         submitError: undefined,
@@ -316,9 +336,27 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         // Reset form state.
         modified: false,
         modifiedFields: {},
+        touched: false,
+        touchedFields: {},
         submitting: false,
       };
       break;
+
+    case ACTION_TOUCH: {
+      const { data } = action;
+      const touchedFields: TouchedFields = { ...state.touchedFields };
+      let touched = false;
+      data.fieldNames.forEach((name) => {
+        touchedFields[name] = true;
+        touched = true;
+      });
+      nextState = {
+        ...state,
+        touched,
+        touchedFields,
+      };
+      break;
+    }
 
     case ACTION_VALIDATE:
       nextState = {

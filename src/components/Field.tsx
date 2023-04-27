@@ -48,6 +48,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
     id,
     multiple,
     name,
+    onBlur,
     onChange,
     options,
     parser,
@@ -62,6 +63,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
     errors,
     getAttributes,
     getValue,
+    handleBlur,
     handleChange,
     invalidClass,
     modifiedClass,
@@ -85,7 +87,11 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
   // Get context value from field name
   const contextValue = useMemo(() => getValue(name), [getValue, name]);
 
-  const handleChangeCallback = useCallback((event: React.FormEvent<any>) => {
+  const handleFieldBlur = useCallback((event: React.FormEvent<any>) => {
+    handleBlur(event);
+  }, [handleBlur]);
+
+  const handleFieldChange = useCallback((event: React.FormEvent<any>) => {
     handleChange(event, { parser });
   }, [handleChange, parser]);
 
@@ -121,7 +127,8 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
       multiple,
       name,
       required: others.required || attributes?.required,
-      onChange: onChange || handleChangeCallback,
+      onBlur: onBlur || handleFieldBlur,
+      onChange: onChange || handleFieldChange,
       value: contextValue,
     };
 
@@ -152,7 +159,8 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
       }
     }
     return p;
-  }, [Component, attributes, classNames, contextValue, disabled, formDisabled, handleChangeCallback, id, multiple, name, onChange, others, parsedValue, type, value]);
+  }, [Component, attributes, classNames, contextValue, disabled, formDisabled, handleFieldBlur, handleFieldChange,
+    id, multiple, name, onBlur, onChange, others, parsedValue, type, value]);
 
   const finalOptions = useMemo(() => {
     const list = (options ? [...options] : []).map((option, index) => (

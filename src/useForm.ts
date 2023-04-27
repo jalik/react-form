@@ -3,10 +3,11 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import useDebouncePromise from './useDebouncePromise';
 import useFormReducer, {
   ACTION_CLEAR_ERRORS,
+  ACTION_CLEAR_TOUCH,
   ACTION_INIT_VALUES,
   ACTION_LOAD,
   ACTION_LOAD_FAIL,
@@ -20,6 +21,7 @@ import useFormReducer, {
   ACTION_SUBMIT,
   ACTION_SUBMIT_FAIL,
   ACTION_SUBMIT_SUCCESS,
+  ACTION_TOUCH,
   ACTION_VALIDATE,
   ACTION_VALIDATE_FAIL,
   ACTION_VALIDATE_SUCCESS,
@@ -41,6 +43,8 @@ export type FieldChangeOptions = {
 export type Errors = Record<string, Error>
 
 export type ModifiedFields = Record<string, boolean>
+
+export type TouchedFields = Record<string, boolean>
 
 export type Values = Record<string, unknown>
 
@@ -67,6 +71,8 @@ export interface FormState<V extends Values, R> {
   submitResult?: R;
   submitted: boolean;
   submitting: boolean;
+  touched: boolean;
+  touchedFields: TouchedFields;
   validateError?: Error;
   validated: boolean;
   validating: boolean;
@@ -75,9 +81,11 @@ export interface FormState<V extends Values, R> {
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clearErrors(): void;
+  clearTouch(fields: string[]): void;
   getAttributes(name: string): FieldAttributes | undefined;
   getInitialValue<V>(name: string): V | undefined;
   getValue<V>(name: string, defaultValue?: V): V;
+  handleBlur(event: React.FormEvent<FieldElement>): void; // todo React.FormEvent<any>
   handleChange(event: React.FormEvent<FieldElement>, options: FieldChangeOptions): void;
   handleReset(event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit(event: React.FormEvent<HTMLFormElement>): void;
@@ -92,6 +100,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   setErrors(errors: Errors): void;
   setValue(name: string, value?: unknown, validate?: boolean): void;
   setValues(values: Partial<V>, validate?: boolean): void;
+  touch(fields: string[]): void;
   validate(): Promise<void | Errors>;
   validateField(name: string, value?: unknown): Promise<void | Error | undefined>;
   validateFields(fields?: string[] | Partial<V>): Promise<void | Errors>;
@@ -188,6 +197,8 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       submitCount: 0,
       submitted: false,
       submitting: false,
+      touched: false,
+      touchedFields: {},
       validated: false,
       validating: false,
       values: initialValues,
@@ -370,6 +381,20 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   }, [setValues]);
 
   /**
+   * Clear touched fields.
+   */
+  const clearTouch = useCallback((fieldNames: string[]) => {
+    dispatch({ type: ACTION_CLEAR_TOUCH, data: { fieldNames } });
+  }, []);
+
+  /**
+   * Set touched fields.
+   */
+  const touch = useCallback((fieldNames: string[]) => {
+    dispatch({ type: ACTION_TOUCH, data: { fieldNames } });
+  }, []);
+
+  /**
    * Resets form values.
    */
   const reset = useCallback((fieldNames?: string[]): void => {
@@ -463,6 +488,13 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   ), [validateOnSubmit, state.validated, validate, submit]);
 
   const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay);
+
+  /**
+   * Handles leaving of a field.
+   */
+  const handleBlur = useCallback((event: React.FormEvent<FieldElement>): void => {
+    touch([event.currentTarget.name]);
+  }, [touch]);
 
   /**
    * Handles change of field value.
@@ -579,9 +611,11 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validateOnSubmit,
     // Methods
     clearErrors,
+    clearTouch,
     getAttributes,
     getInitialValue,
     getValue,
+    handleBlur,
     handleChange,
     handleReset,
     handleSubmit,
@@ -594,12 +628,14 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     setValue,
     setValues,
     submit: debouncedSubmit,
+    touch,
     validate,
     validateField,
     validateFields,
-  }), [state, invalidClass, modifiedClass, validClass, clearErrors, getAttributes, getInitialValue, getValue,
-    handleChange, handleReset, handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues,
-    debouncedSubmit, validate, validateField, validateFields, validateOnChange, validateOnSubmit]);
+  }), [state, invalidClass, modifiedClass, validClass, validateOnChange, validateOnSubmit, clearErrors, clearTouch,
+    getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit, initValues, load,
+    remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch, validate, validateField,
+    validateFields]);
 }
 
 export default useForm;
