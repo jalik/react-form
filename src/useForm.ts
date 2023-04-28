@@ -11,7 +11,7 @@ import useFormReducer, {
   ACTION_CLEAR_TOUCH,
   ACTION_INIT_VALUES,
   ACTION_LOAD,
-  ACTION_LOAD_FAIL,
+  ACTION_LOAD_ERROR,
   ACTION_LOAD_SUCCESS,
   ACTION_REMOVE,
   ACTION_RESET,
@@ -20,11 +20,11 @@ import useFormReducer, {
   ACTION_SET_ERRORS,
   ACTION_SET_VALUES,
   ACTION_SUBMIT,
-  ACTION_SUBMIT_FAIL,
+  ACTION_SUBMIT_ERROR,
   ACTION_SUBMIT_SUCCESS,
   ACTION_TOUCH,
   ACTION_VALIDATE,
-  ACTION_VALIDATE_FAIL,
+  ACTION_VALIDATE_ERROR,
   ACTION_VALIDATE_SUCCESS,
 } from './useFormReducer';
 import {
@@ -267,7 +267,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
           }
         })
         .catch((error) => {
-          dispatch({ type: ACTION_LOAD_FAIL, error });
+          dispatch({ type: ACTION_LOAD_ERROR, error });
           throw error;
         });
     }
@@ -329,7 +329,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         return errors;
       })
       .catch((error) => {
-        dispatch({ type: ACTION_VALIDATE_FAIL, error });
+        dispatch({ type: ACTION_VALIDATE_ERROR, error });
         throw error;
       })
       .finally(() => {
@@ -411,7 +411,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   const submit = useCallback((): Promise<void | R> => {
     if (!state.values) {
       const error = new Error('Nothing to submit, values are empty');
-      dispatch({ type: ACTION_SUBMIT_FAIL, error });
+      dispatch({ type: ACTION_SUBMIT_ERROR, error });
       return Promise.reject(error);
     }
     dispatch({ type: ACTION_SUBMIT });
@@ -428,7 +428,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         return result;
       })
       .catch((error: Error) => {
-        dispatch({ type: ACTION_SUBMIT_FAIL, error });
+        dispatch({ type: ACTION_SUBMIT_ERROR, error });
         throw error;
       });
   }, [state.values]);
@@ -446,7 +446,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     if (typeof validateRef.current === 'function') {
       if (!state.values) {
         const error = new Error('Nothing to validate, values are empty');
-        dispatch({ type: ACTION_VALIDATE_FAIL, error });
+        dispatch({ type: ACTION_VALIDATE_ERROR, error });
         return Promise.reject(error);
       }
       promise = validateRef.current(clone(state.values), { ...state.modifiedFields });
@@ -468,7 +468,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         }
       })
       .catch((error) => {
-        dispatch({ type: ACTION_VALIDATE_FAIL, error });
+        dispatch({ type: ACTION_VALIDATE_ERROR, error });
         throw error;
       });
   }, [setErrors, state.modifiedFields, state.values]);

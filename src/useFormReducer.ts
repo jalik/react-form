@@ -11,7 +11,7 @@ export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS';
 export const ACTION_CLEAR_TOUCH = 'CLEAR_TOUCH';
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
 export const ACTION_LOAD = 'LOAD';
-export const ACTION_LOAD_FAIL = 'LOAD_FAIL';
+export const ACTION_LOAD_ERROR = 'LOAD_ERROR';
 export const ACTION_LOAD_SUCCESS = 'LOAD_SUCCESS';
 export const ACTION_REMOVE = 'REMOVE';
 export const ACTION_RESET = 'RESET';
@@ -20,11 +20,11 @@ export const ACTION_SET_ERROR = 'SET_ERROR';
 export const ACTION_SET_ERRORS = 'SET_ERRORS';
 export const ACTION_SET_VALUES = 'SET_VALUES';
 export const ACTION_SUBMIT = 'SUBMIT';
-export const ACTION_SUBMIT_FAIL = 'SUBMIT_FAIL';
+export const ACTION_SUBMIT_ERROR = 'SUBMIT_ERROR';
 export const ACTION_SUBMIT_SUCCESS = 'SUBMIT_SUCCESS';
 export const ACTION_TOUCH = 'TOUCH';
 export const ACTION_VALIDATE = 'VALIDATE';
-export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL';
+export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR';
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS';
 
 const initialState: FormState<Values, any> = {
@@ -57,7 +57,7 @@ export type FormAction<V, R> =
   | { type: 'CLEAR_TOUCH', data: { fieldNames: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
-  | { type: 'LOAD_FAIL', error: Error }
+  | { type: 'LOAD_ERROR', error: Error }
   | { type: 'LOAD_SUCCESS', data: { values: Partial<V> } }
   | { type: 'REMOVE', data: { name: string } }
   | { type: 'RESET' }
@@ -66,11 +66,11 @@ export type FormAction<V, R> =
   | { type: 'SET_ERRORS', data: { errors: Errors } }
   | { type: 'SET_VALUES', data: { values: Values } }
   | { type: 'SUBMIT' }
-  | { type: 'SUBMIT_FAIL', error: Error }
+  | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
   | { type: 'TOUCH', data: { fieldNames: string[] } }
   | { type: 'VALIDATE' }
-  | { type: 'VALIDATE_FAIL', error: Error }
+  | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_SUCCESS' }
 
 /**
@@ -132,7 +132,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       };
       break;
 
-    case ACTION_LOAD_FAIL:
+    case ACTION_LOAD_ERROR:
       nextState = {
         ...state,
         disabled: false,
@@ -324,7 +324,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       };
       break;
 
-    case ACTION_SUBMIT_FAIL:
+    case ACTION_SUBMIT_ERROR:
       nextState = {
         ...state,
         disabled: false,
@@ -380,7 +380,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       };
       break;
 
-    case ACTION_VALIDATE_FAIL:
+    case ACTION_VALIDATE_ERROR:
       nextState = {
         ...state,
         validating: false,
