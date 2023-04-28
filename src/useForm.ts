@@ -85,8 +85,8 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   getAttributes(name: string): FieldAttributes | undefined;
   getInitialValue<T>(name: string): T | undefined;
   getValue<T>(name: string, defaultValue?: T): T;
-  handleBlur(event: React.FormEvent<FieldElement>): void; // todo React.FormEvent<any>
-  handleChange(event: React.FormEvent<FieldElement>, options: FieldChangeOptions): void;
+  handleBlur(event: React.FocusEvent<FieldElement>): void;
+  handleChange(event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
   handleReset(event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit(event: React.FormEvent<HTMLFormElement>): void;
   initValues(values: Partial<V>): void;
@@ -500,8 +500,8 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    * Handles change of field value.
    */
   const handleChange = useCallback((
-    event: React.FormEvent<FieldElement>,
-    options: FieldChangeOptions,
+    event: React.ChangeEvent<FieldElement>,
+    options?: FieldChangeOptions,
   ): void => {
     const { parser } = options || {};
     const { currentTarget } = event;

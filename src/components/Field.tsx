@@ -91,7 +91,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
     handleBlur(event);
   }, [handleBlur]);
 
-  const handleFieldChange = useCallback((event: React.FormEvent<any>) => {
+  const handleFieldChange = useCallback((event: React.ChangeEvent<FieldElement>) => {
     handleChange(event, { parser });
   }, [handleChange, parser]);
 
