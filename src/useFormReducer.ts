@@ -59,20 +59,20 @@ export const initialState: FormState<Values, any> = {
 export type FormAction<V, R> =
   { type: 'CLEAR' }
   | { type: 'CLEAR_ERRORS' }
-  | { type: 'CLEAR_TOUCH', data: { fieldNames: string[] } }
+  | { type: 'CLEAR_TOUCH', data: { fields: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
   | { type: 'LOAD_ERROR', error: Error }
   | { type: 'LOAD_SUCCESS', data: { values: Partial<V> } }
   | { type: 'REMOVE', data: { name: string } }
   | { type: 'RESET' }
-  | { type: 'RESET_VALUES', data: { fieldNames: string[] } }
+  | { type: 'RESET_VALUES', data: { fields: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors } }
   | { type: 'SET_VALUES', data: { values: Values, validate?: boolean } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
-  | { type: 'TOUCH', data: { fieldNames: string[] } }
+  | { type: 'TOUCH', data: { fields: string[] } }
   | { type: 'VALIDATE', data?: { field?: string } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
@@ -106,7 +106,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
     case ACTION_CLEAR_TOUCH: {
       const { data } = action;
       const touchedFields: TouchedFields = { ...state.touchedFields };
-      data.fieldNames.forEach((name) => {
+      data.fields.forEach((name) => {
         delete touchedFields[name];
       });
       nextState = {
@@ -237,7 +237,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       let values = clone(state.values);
 
       const { data } = action;
-      data.fieldNames.forEach((name: string) => {
+      data.fields.forEach((name: string) => {
         const initialValue = resolve(name, initialValues);
         values = build(name, initialValue, values);
         delete errors[name];
@@ -365,7 +365,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       const touchedFields: TouchedFields = { ...state.touchedFields };
       let { touched } = state;
 
-      data.fieldNames.forEach((name) => {
+      data.fields.forEach((name) => {
         touchedFields[name] = true;
         touched = true;
       });
@@ -373,7 +373,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...state,
         // Trigger validation if needed
-        needValidation: state.validateOnTouch ? [...data.fieldNames] : state.needValidation,
+        needValidation: state.validateOnTouch ? [...data.fields] : state.needValidation,
         touched,
         touchedFields,
       };

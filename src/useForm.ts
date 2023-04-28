@@ -386,35 +386,35 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Clear touched fields.
    */
-  const clearTouch = useCallback((fieldNames: string[]) => {
-    dispatch({ type: ACTION_CLEAR_TOUCH, data: { fieldNames } });
+  const clearTouch = useCallback((fields: string[]) => {
+    dispatch({ type: ACTION_CLEAR_TOUCH, data: { fields } });
   }, []);
 
   /**
    * Set touched fields.
    */
-  const touch = useCallback((fieldNames: string[]) => {
+  const touch = useCallback((fields: string[]) => {
     let canDispatch = false;
 
     // Check if we really need to dispatch the event
-    for (let i = 0; i < fieldNames.length; i += 1) {
-      if (!state.touchedFields[fieldNames[i]]) {
+    for (let i = 0; i < fields.length; i += 1) {
+      if (!state.touchedFields[fields[i]]) {
         canDispatch = true;
         break;
       }
     }
 
     if (canDispatch) {
-      dispatch({ type: ACTION_TOUCH, data: { fieldNames } });
+      dispatch({ type: ACTION_TOUCH, data: { fields } });
     }
   }, [state.touchedFields]);
 
   /**
    * Resets form values.
    */
-  const reset = useCallback((fieldNames?: string[]): void => {
-    if (fieldNames) {
-      dispatch({ type: ACTION_RESET_VALUES, data: { fieldNames } });
+  const reset = useCallback((fields?: string[]): void => {
+    if (fields) {
+      dispatch({ type: ACTION_RESET_VALUES, data: { fields } });
     } else {
       dispatch({ type: ACTION_RESET });
     }
