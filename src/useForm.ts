@@ -26,6 +26,7 @@ import useFormReducer, {
   ACTION_VALIDATE_ERROR,
   ACTION_VALIDATE_FAIL,
   ACTION_VALIDATE_SUCCESS,
+  initialState,
 } from './useFormReducer';
 import {
   build,
@@ -67,6 +68,7 @@ export interface FormState<V extends Values, R> {
   loading: boolean;
   modified: boolean;
   modifiedFields: ModifiedFields;
+  needValidation: boolean | string[];
   submitCount: number;
   submitError?: Error;
   submitResult?: R;
@@ -76,6 +78,10 @@ export interface FormState<V extends Values, R> {
   touchedFields: TouchedFields;
   validateError?: Error;
   validated: boolean;
+  validateOnBlur: boolean;
+  validateOnChange: boolean;
+  validateOnInit: boolean;
+  validateOnSubmit: boolean;
   validating: boolean;
   values: Partial<V>;
 }
@@ -107,10 +113,6 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   validateField(name: string): Promise<void | Error | undefined>;
   validateFields(fields?: string[]): Promise<void | Errors | undefined>;
   validClass?: string;
-  validateOnBlur: boolean;
-  validateOnChange: boolean;
-  validateOnInit: boolean;
-  validateOnSubmit: boolean;
 }
 
 export interface UseFormOptions<V extends Values, R> {
@@ -191,24 +193,17 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   const [state, dispatch] = useReducer(
     useFormReducer<V, R>,
     {
+      ...initialState,
       // Disables fields if default values are undefined.
       disabled: disabled || !initialValues,
-      errors: {},
-      hasError: false,
-      initialized: false,
+      initialized: initialValues != null,
       initialValues: initialValues || {},
-      loaded: false,
       loading: typeof loadFunc === 'function',
-      modified: false,
-      modifiedFields: {},
-      submitCount: 0,
-      submitted: false,
-      submitting: false,
-      touched: false,
-      touchedFields: {},
-      validated: false,
-      validating: false,
       values: initialValues || {},
+      validateOnBlur,
+      validateOnChange,
+      validateOnInit,
+      validateOnSubmit,
     },
     undefined,
   );
@@ -301,6 +296,8 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    * Validates one or more fields by passing field names.
    */
   const validateFields = useCallback((fields: string[]): Promise<void | Errors | undefined> => {
+    dispatch({ type: ACTION_VALIDATE, data: {} });
+
     const validate = validateFieldRef.current;
     const promises = validate
       ? fields.map((name: string) => {
@@ -324,18 +321,23 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
             errors = { ...errors, [name]: error };
           }
         });
+        dispatch({
+          type: ACTION_VALIDATE_FAIL,
+          data: {
+            // Keep existing errors.
+            errors: {
+              ...state.errors,
+              ...errors,
+            },
+          },
+        });
         return errors;
       })
       .catch((error) => {
         dispatch({ type: ACTION_VALIDATE_ERROR, error });
         throw error;
-      })
-      .finally(() => {
-        setErrors({ ...state.errors, ...errors });
       });
-  }, [getValue, setErrors, state.errors, state.values]);
-
-  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay);
+  }, [getValue, state.errors, state.values]);
 
   /**
    * Validates a field value.
@@ -365,22 +367,14 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       mutation = transformRef.current(mutation, nextValues);
     }
 
-    const shouldValidate = validate || (validate !== false && validateOnChange);
-
     dispatch({
       type: ACTION_SET_VALUES,
       data: {
-        // Do not clear errors when validation is triggered
-        // to avoid errors to disappear/appear quickly during typing.
-        clearErrors: !shouldValidate,
+        validate: validate || (validate !== false && validateOnChange),
         values: mutation,
       },
     });
-
-    if (shouldValidate) {
-      debouncedValidateFields(Object.keys(mutation));
-    }
-  }, [debouncedValidateFields, disabled, state.values, validateOnChange]);
+  }, [disabled, state.values, validateOnChange]);
 
   /**
    * Defines the value of a field.
@@ -506,22 +500,14 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    */
   const initValues = useCallback((values: Partial<V>): void => {
     dispatch({ type: ACTION_INIT_VALUES, data: { values } });
-
-    if (validateOnInit) {
-      validate();
-    }
-  }, [validate, validateOnInit]);
+  }, []);
 
   /**
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
     touch([event.currentTarget.name]);
-
-    if (validateOnBlur) {
-      validateField(event.currentTarget.name);
-    }
-  }, [touch, validateField, validateOnBlur]);
+  }, [touch]);
 
   /**
    * Handles change of field value.
@@ -623,6 +609,16 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     }
   }, [initValues, initialValues, state.initialized]);
 
+  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay);
+
+  useEffect(() => {
+    if (state.needValidation === true) {
+      validate();
+    } else if (state.needValidation instanceof Array && state.needValidation.length > 0) {
+      debouncedValidateFields(state.needValidation);
+    }
+  }, [debouncedValidateFields, state.needValidation, validate]);
+
   // Load initial values using a function.
   useEffect(() => {
     load();
@@ -634,10 +630,6 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     invalidClass,
     modifiedClass,
     validClass,
-    validateOnBlur,
-    validateOnChange,
-    validateOnInit,
-    validateOnSubmit,
     // Methods
     clear,
     clearErrors,
@@ -662,7 +654,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validate,
     validateField,
     validateFields,
-  }), [state, invalidClass, modifiedClass, validClass, validateOnBlur, validateOnChange, validateOnSubmit, clear,
+  }), [state, invalidClass, modifiedClass, validClass, clear,
     clearErrors, clearTouch, getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset,
     handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch,
     validate, validateField, validateFields]);

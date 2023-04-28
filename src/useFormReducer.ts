@@ -27,17 +27,18 @@ export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR';
 export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL';
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS';
 
-const initialState: FormState<Values, any> = {
+export const initialState: FormState<Values, any> = {
   disabled: false,
   errors: {},
   hasError: false,
-  initialized: true,
+  initialized: false,
   initialValues: {},
   loadError: undefined,
   loaded: false,
   loading: false,
   modified: false,
   modifiedFields: {},
+  needValidation: false,
   submitCount: 0,
   submitError: undefined,
   submitResult: undefined,
@@ -48,6 +49,10 @@ const initialState: FormState<Values, any> = {
   validateError: undefined,
   validated: false,
   validating: false,
+  validateOnBlur: false,
+  validateOnChange: false,
+  validateOnInit: false,
+  validateOnSubmit: true,
   values: {},
 };
 
@@ -63,12 +68,12 @@ export type FormAction<V, R> =
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fieldNames: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors } }
-  | { type: 'SET_VALUES', data: { values: Values, clearErrors?: boolean } }
+  | { type: 'SET_VALUES', data: { values: Values, validate?: boolean } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
   | { type: 'TOUCH', data: { fieldNames: string[] } }
-  | { type: 'VALIDATE' }
+  | { type: 'VALIDATE', data?: { field?: string } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
   | { type: 'VALIDATE_SUCCESS' }
@@ -82,9 +87,12 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
   switch (action.type) {
     case ACTION_CLEAR:
       nextState = {
-        ...state,
         ...initialState,
         initialValues: {},
+        validateOnBlur: state.validateOnBlur,
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
         values: {},
       };
       break;
@@ -112,11 +120,16 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
     case ACTION_INIT_VALUES: {
       const { data } = action;
       nextState = {
-        ...state,
         ...initialState,
         disabled: false,
         initialized: true,
         initialValues: clone(data.values),
+        // Trigger validation if needed
+        needValidation: state.validateOnInit,
+        validateOnBlur: state.validateOnBlur,
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
         values: data.values,
       };
       break;
@@ -145,7 +158,6 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
     case ACTION_LOAD_SUCCESS: {
       const { data } = action;
       nextState = {
-        ...state,
         ...initialState,
         disabled: false,
         initialized: true,
@@ -153,6 +165,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         loadError: undefined,
         loaded: true,
         loading: false,
+        validateOnBlur: state.validateOnBlur,
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
         values: data.values,
       };
       break;
@@ -198,9 +214,12 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         return state;
       }
       nextState = {
-        ...state,
         ...initialState,
         initialValues: state.initialValues,
+        validateOnBlur: state.validateOnBlur,
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
         values: clone(state.initialValues),
       };
       break;
@@ -275,9 +294,9 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         values = build(name, value, values);
         modifiedFields[name] = value !== resolve(name, state.initialValues);
 
-        // Allow not clearing errors,
-        // so error messages are not popping during typing.
-        if (data.clearErrors) {
+        // Do not clear errors when validation is triggered
+        // to avoid errors to disappear/appear quickly during typing.
+        if (!data.validate) {
           delete errors[name];
         }
       });
@@ -285,6 +304,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...state,
         values,
+        needValidation: data.validate === true ? Object.keys(data.values) : state.needValidation,
         modified: true,
         submitted: false,
         // Invalidate form.
@@ -352,21 +372,25 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
 
       nextState = {
         ...state,
+        // Trigger validation if needed
+        needValidation: state.validateOnBlur ? [...data.fieldNames] : state.needValidation,
         touched,
         touchedFields,
       };
       break;
     }
 
-    case ACTION_VALIDATE:
+    case ACTION_VALIDATE: {
+      const { data } = action;
       nextState = {
         ...state,
-        validating: true,
-        validated: false,
-        // Disable form.
-        disabled: true,
+        needValidation: false,
+        validated: data?.field ? state.validated : false,
+        validating: data?.field ? state.validating : true,
+        disabled: data?.field ? state.disabled : true,
       };
       break;
+    }
 
     case ACTION_VALIDATE_ERROR:
       nextState = {
@@ -377,14 +401,24 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       };
       break;
 
-    case ACTION_VALIDATE_FAIL:
+    case ACTION_VALIDATE_FAIL: {
+      const errors: Errors = {};
+      const { data } = action;
+
+      Object.keys(data.errors).forEach((name) => {
+        // Ignore undefined/null errors
+        if (data.errors[name]) {
+          errors[name] = data.errors[name];
+        }
+      });
       nextState = {
         ...state,
         disabled: false,
-        errors: { ...action.data.errors },
+        errors,
         validating: false,
       };
       break;
+    }
 
     case ACTION_VALIDATE_SUCCESS:
       nextState = {
