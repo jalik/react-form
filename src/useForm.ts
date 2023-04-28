@@ -41,7 +41,7 @@ export type FieldChangeOptions = {
   parser?(value: unknown, target: HTMLElement): any
 }
 
-export type Errors = Record<string, Error>
+export type Errors = Record<string, Error | undefined>
 
 export type ModifiedFields = Record<string, boolean>
 
@@ -104,8 +104,8 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   setValues(values: Partial<V>, validate?: boolean): void;
   touch(fields: string[]): void;
   validate(): Promise<void | Errors>;
-  validateField(name: string, value?: unknown): Promise<void | Error | undefined>;
-  validateFields(fields?: string[] | Partial<V>): Promise<void | Errors>;
+  validateField(name: string): Promise<void | Error | undefined>;
+  validateFields(fields?: string[]): Promise<void | Errors>;
   validClass?: string;
   validateOnChange: boolean;
   validateOnSubmit: boolean;
@@ -299,44 +299,26 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   }, []);
 
   /**
-   * Validates a field value.
+   * Validates one or more fields by passing field names.
    */
-  const validateField = useCallback((name: string, value?: unknown): Promise<void | Error | undefined> => {
-    if (typeof validateFieldRef.current === 'function') {
-      try {
-        const result = validateFieldRef.current(name, value, state.values);
-
-        if (result != null && result instanceof Promise) {
-          return result;
-        }
-        return Promise.resolve(result);
-      } catch (error) {
-        return Promise.reject(error);
-      }
-    }
-    return Promise.resolve(undefined);
-  }, [state.values]);
-
-  /**
-   * Validates one or more fields by passing field names or names and values.
-   */
-  const validateFields = useCallback((fieldsOrFieldsAndValues: string[] | Partial<V>): Promise<void | Errors> => {
+  const validateFields = useCallback((fields: string[]): Promise<void | Errors> => {
     const errors: Errors = {};
     const promises: Promise<[string, void | Error | undefined]>[] = [];
 
-    if (fieldsOrFieldsAndValues instanceof Array) {
-      fieldsOrFieldsAndValues.forEach((name: string): void => {
-        promises.push(
-          validateField(name, getValue(name))
-            .then((error) => [name, error]),
-        );
-      });
-    } else {
-      Object.entries(fieldsOrFieldsAndValues).forEach(([name, value]): void => {
-        promises.push(
-          validateField(name, value)
-            .then((error) => [name, error]),
-        );
+    const validate = validateFieldRef.current;
+
+    if (typeof validate === 'function') {
+      fields.forEach((name: string): void => {
+        let result: Promise<void | Error | undefined> = Promise.resolve(undefined);
+        try {
+          result = validate(name, getValue(name), state.values);
+        } catch (error) {
+          result = Promise.reject(error);
+        }
+        if (!result) {
+          throw new Error('validateField() must return a Promise');
+        }
+        promises.push(result.then((error) => [name, error]));
       });
     }
 
@@ -347,6 +329,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
             errors[name] = error;
           }
         });
+        return errors;
       })
       .catch((error) => {
         dispatch({ type: ACTION_VALIDATE_FAIL, error });
@@ -354,9 +337,19 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       .finally(() => {
         setErrors({ ...state.errors, ...errors });
       });
-  }, [getValue, setErrors, state.errors, validateField]);
+  }, [getValue, setErrors, state.errors, state.values]);
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay);
+
+  /**
+   * Validates a field value.
+   */
+  const validateField = useCallback((name: string): Promise<void | Error> => {
+    return validateFields([name]).then((errors: void | Errors) => {
+      const err: Record<string, Error | undefined> = { ...errors };
+      return err[name];
+    });
+  }, [validateFields]);
 
   /**
    * Defines several field values (use initValues() to set all form values).
@@ -378,7 +371,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
 
     if (validate || (validate !== false && validateOnChange)) {
-      debouncedValidateFields(mutation);
+      debouncedValidateFields(Object.keys(mutation));
     }
   }, [debouncedValidateFields, disabled, state.values, validateOnChange]);
 
