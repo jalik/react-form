@@ -481,6 +481,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         } else {
           dispatch({ type: ACTION_VALIDATE_SUCCESS });
         }
+        return errors;
       })
       .catch((error) => {
         dispatch({ type: ACTION_VALIDATE_ERROR, error });
