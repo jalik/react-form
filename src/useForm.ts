@@ -109,6 +109,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   validClass?: string;
   validateOnBlur: boolean;
   validateOnChange: boolean;
+  validateOnInit: boolean;
   validateOnSubmit: boolean;
 }
 
@@ -129,6 +130,7 @@ export interface UseFormOptions<V extends Values, R> {
   validateDelay?: number;
   validateOnBlur?: boolean;
   validateOnChange?: boolean;
+  validateOnInit?: boolean;
   validateOnSubmit?: boolean;
 }
 
@@ -153,6 +155,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validateDelay = 200,
     validateOnBlur = false,
     validateOnChange = false,
+    validateOnInit = false,
     validateOnSubmit = true,
   } = options;
 
@@ -178,7 +181,6 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc);
-  const isInitialized = initialValues != null;
   const mountedRef = useRef(false);
   const onSubmitRef = useRef(onSubmit);
   const transformRef = useRef(transformFunc);
@@ -190,10 +192,10 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     useFormReducer<V, R>,
     {
       // Disables fields if default values are undefined.
-      disabled: disabled || !isInitialized,
+      disabled: disabled || !initialValues,
       errors: {},
       hasError: false,
-      initialized: isInitialized,
+      initialized: false,
       initialValues: initialValues || {},
       loaded: false,
       loading: typeof loadFunc === 'function',
@@ -251,13 +253,6 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     const value = resolve(name, clone(state.values));
     return typeof value !== 'undefined' ? value : defaultValue;
   }, [state.values]);
-
-  /**
-   * Defines initial values (after loading for example).
-   */
-  const initValues = useCallback((values: Partial<V>): void => {
-    dispatch({ type: ACTION_INIT_VALUES, data: { values } });
-  }, [dispatch]);
 
   /**
    * Loads and set initial values.
@@ -498,6 +493,17 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay);
 
   /**
+   * Defines initial values (after loading for example).
+   */
+  const initValues = useCallback((values: Partial<V>): void => {
+    dispatch({ type: ACTION_INIT_VALUES, data: { values } });
+
+    if (validateOnInit) {
+      validate();
+    }
+  }, [validate, validateOnInit]);
+
+  /**
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
@@ -621,6 +627,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validClass,
     validateOnBlur,
     validateOnChange,
+    validateOnInit,
     validateOnSubmit,
     // Methods
     clear,
