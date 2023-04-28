@@ -3,23 +3,22 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
+import { HTMLAttributes } from 'react';
 import useFormContext from '../useFormContext';
 
 export interface FieldErrorProps {
-  component: any,
+  component?: any,
   name: string;
 }
 
-function FieldError(props: FieldErrorProps): JSX.Element | null {
-  const { component, name, ...others } = props;
+function FieldError(props: HTMLAttributes<HTMLElement> & FieldErrorProps): JSX.Element | null {
+  const { component: Component, name, ...others } = props;
   const { errors } = useFormContext();
   const error = errors[name];
 
   if (!error) {
     return null;
   }
-
-  const Component = component || 'span';
 
   return (
     <Component {...others}>
@@ -29,7 +28,7 @@ function FieldError(props: FieldErrorProps): JSX.Element | null {
 }
 
 FieldError.defaultProps = {
-  component: null,
+  component: 'span',
 };
 
 export default FieldError;
