@@ -394,8 +394,20 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    * Set touched fields.
    */
   const touch = useCallback((fieldNames: string[]) => {
-    dispatch({ type: ACTION_TOUCH, data: { fieldNames } });
-  }, []);
+    let canDispatch = false;
+
+    // Check if we really need to dispatch the event
+    for (let i = 0; i < fieldNames.length; i += 1) {
+      if (!state.touchedFields[fieldNames[i]]) {
+        canDispatch = true;
+        break;
+      }
+    }
+
+    if (canDispatch) {
+      dispatch({ type: ACTION_TOUCH, data: { fieldNames } });
+    }
+  }, [state.touchedFields]);
 
   /**
    * Resets form values.
