@@ -49,10 +49,10 @@ export const initialState: FormState<Values, any> = {
   validateError: undefined,
   validated: false,
   validating: false,
-  validateOnBlur: false,
   validateOnChange: false,
   validateOnInit: false,
   validateOnSubmit: true,
+  validateOnTouch: false,
   values: {},
 };
 
@@ -89,10 +89,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...initialState,
         initialValues: {},
-        validateOnBlur: state.validateOnBlur,
         validateOnChange: state.validateOnChange,
         validateOnInit: state.validateOnInit,
         validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch,
         values: {},
       };
       break;
@@ -126,10 +126,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         initialValues: clone(data.values),
         // Trigger validation if needed
         needValidation: state.validateOnInit,
-        validateOnBlur: state.validateOnBlur,
         validateOnChange: state.validateOnChange,
         validateOnInit: state.validateOnInit,
         validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch,
         values: data.values,
       };
       break;
@@ -165,10 +165,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         loadError: undefined,
         loaded: true,
         loading: false,
-        validateOnBlur: state.validateOnBlur,
         validateOnChange: state.validateOnChange,
         validateOnInit: state.validateOnInit,
         validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch,
         values: data.values,
       };
       break;
@@ -216,10 +216,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...initialState,
         initialValues: state.initialValues,
-        validateOnBlur: state.validateOnBlur,
         validateOnChange: state.validateOnChange,
         validateOnInit: state.validateOnInit,
         validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch,
         values: clone(state.initialValues),
       };
       break;
@@ -373,7 +373,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...state,
         // Trigger validation if needed
-        needValidation: state.validateOnBlur ? [...data.fieldNames] : state.needValidation,
+        needValidation: state.validateOnTouch ? [...data.fieldNames] : state.needValidation,
         touched,
         touchedFields,
       };

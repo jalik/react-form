@@ -78,10 +78,10 @@ export interface FormState<V extends Values, R> {
   touchedFields: TouchedFields;
   validateError?: Error;
   validated: boolean;
-  validateOnBlur: boolean;
   validateOnChange: boolean;
   validateOnInit: boolean;
   validateOnSubmit: boolean;
+  validateOnTouch: boolean;
   validating: boolean;
   values: Partial<V>;
 }
@@ -130,10 +130,10 @@ export interface UseFormOptions<V extends Values, R> {
   validateField?(name: string, value: unknown, values: Partial<V>): Promise<void | Error | undefined>;
   validClass?: string;
   validateDelay?: number;
-  validateOnBlur?: boolean;
   validateOnChange?: boolean;
   validateOnInit?: boolean;
   validateOnSubmit?: boolean;
+  validateOnTouch?: boolean;
 }
 
 /**
@@ -155,10 +155,10 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validateField: validateFieldFunc,
     validClass = 'field-valid',
     validateDelay = 200,
-    validateOnBlur = false,
     validateOnChange = false,
     validateOnInit = false,
     validateOnSubmit = true,
+    validateOnTouch = false,
   } = options;
 
   // Checks options.
@@ -200,10 +200,10 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       initialValues: initialValues || {},
       loading: typeof loadFunc === 'function',
       values: initialValues || {},
-      validateOnBlur,
       validateOnChange,
       validateOnInit,
       validateOnSubmit,
+      validateOnTouch,
     },
     undefined,
   );
