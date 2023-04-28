@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-type DebouncedFunction<T> = (...args: any[]) => Promise<T | void>
+type DebouncedFunction<T> = (...args: any[]) => Promise<void | T>
 
 /**
  * Avoids wasting function calls by waiting for the last call.
@@ -15,7 +15,7 @@ function useDebouncePromise<T>(func: DebouncedFunction<T>, delay = 50): Debounce
   const timerRef = useRef<NodeJS.Timeout>();
 
   const debouncedFunc = useCallback((...args: unknown[]) => (
-    new Promise<T | void>((resolve) => {
+    new Promise<void | T>((resolve) => {
       timerRef.current = setTimeout(() => {
         resolve(funcRef.current(...args));
       }, delay);
