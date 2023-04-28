@@ -33,6 +33,7 @@ import {
   clone,
   getCheckedValues,
   getSelectedValues,
+  hasDefinedValues,
   isMultipleFieldElement,
   parseInputValue,
   resolve,
@@ -296,7 +297,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    * Validates one or more fields by passing field names.
    */
   const validateFields = useCallback((fields: string[]): Promise<void | Errors | undefined> => {
-    dispatch({ type: ACTION_VALIDATE, data: {} });
+    dispatch({ type: ACTION_VALIDATE });
 
     const validate = validateFieldRef.current;
     const promises = validate
@@ -451,14 +452,13 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Validates form values.
    */
-  const validate = useCallback((): Promise<void | Errors | undefined> => {
-    // todo tells when the submission will follow the validation
-    //  see comment in ACTION_VALIDATED case of formReducer.js
-    dispatch({ type: ACTION_VALIDATE });
-
+  const validate = useCallback((options?: { beforeSubmit?: boolean }): Promise<void | Errors | undefined> => {
+    const { beforeSubmit = false } = options || {};
     let promise;
 
     if (typeof validateRef.current === 'function') {
+      dispatch({ type: ACTION_VALIDATE });
+
       if (!state.values) {
         const error = new Error('Nothing to validate, values are empty');
         dispatch({ type: ACTION_VALIDATE_ERROR, error });
@@ -480,30 +480,36 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
 
     return promise
       .then((errors) => {
-        if (errors && Object.keys(errors).length > 0) {
-          dispatch({ type: ACTION_VALIDATE_FAIL, data: { errors } });
+        if (errors && hasDefinedValues(errors)) {
+          dispatch({
+            type: ACTION_VALIDATE_FAIL,
+            data: { errors },
+          });
         } else {
-          dispatch({ type: ACTION_VALIDATE_SUCCESS });
+          dispatch({
+            type: ACTION_VALIDATE_SUCCESS,
+            data: { beforeSubmit },
+          });
         }
         return errors;
       })
       .catch((error) => {
-        dispatch({ type: ACTION_VALIDATE_ERROR, error });
+        dispatch({
+          type: ACTION_VALIDATE_ERROR,
+          error,
+        });
         throw error;
       });
   }, [state.modifiedFields, state.touchedFields, state.values, validateFields]);
 
   /**
    * Validates if necessary and submits form.
-   * todo disable form during validation and submission without re-enabling it between both,
-   *  from: validate:disabled => validated:enabled => submit:disabled => submitted:enabled
-   *  to: validate:disabled => validated => submit => submitted:enabled
    */
   const validateAndSubmit = useCallback((): Promise<void | R> => (
     !state.validated && validateOnSubmit
-      ? validate()
+      ? validate({ beforeSubmit: true })
         .then((errors) => {
-          if (!errors || (typeof errors === 'object' && Object.keys(errors).length === 0)) {
+          if (!errors || !hasDefinedValues(errors)) {
             return submit();
           }
           return undefined;

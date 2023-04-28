@@ -167,6 +167,14 @@ export function getSelectedValues(element: HTMLSelectElement): string[] {
 }
 
 /**
+ * Checks if an object contains attributes with values different of null and undefined.
+ * @param obj
+ */
+export function hasDefinedValues(obj: Record<string, unknown>): boolean {
+  return Object.values(obj).filter((value) => value != null).length > 0;
+}
+
+/**
  * Returns an empty string when value is null.
  */
 export function inputValue<T>(value?: T): NonNullable<string | T> {

@@ -4,7 +4,7 @@
  */
 
 import { Errors, FormState, TouchedFields, Values } from './useForm';
-import { build, clone, resolve } from './utils';
+import { build, clone, hasDefinedValues, resolve } from './utils';
 
 export const ACTION_CLEAR = 'CLEAR';
 export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS';
@@ -76,7 +76,7 @@ export type FormAction<V, R> =
   | { type: 'VALIDATE', data?: { field?: string } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
-  | { type: 'VALIDATE_SUCCESS' }
+  | { type: 'VALIDATE_SUCCESS', data: { beforeSubmit?: boolean } }
 
 /**
  * Form reducers.
@@ -100,6 +100,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...state,
         errors: {},
+        hasError: false,
       };
       break;
 
@@ -111,7 +112,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       });
       nextState = {
         ...state,
-        touched: Object.keys(touchedFields).length > 0,
+        touched: hasDefinedValues(touchedFields),
         touchedFields,
       };
       break;
@@ -197,11 +198,12 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       }
       nextState = {
         ...state,
-        modified: Object.keys(modifiedFields).length > 0,
+        modified: hasDefinedValues(modifiedFields),
         modifiedFields,
-        touched: Object.keys(touchedFields).length > 0,
+        touched: hasDefinedValues(touchedFields),
         touchedFields,
         errors,
+        hasError: hasDefinedValues(errors),
         values,
       };
       break;
@@ -249,9 +251,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         ...state,
         values,
         errors,
-        modified: Object.keys(modifiedFields).length > 0,
+        hasError: hasDefinedValues(errors),
+        modified: hasDefinedValues(modifiedFields),
         modifiedFields,
-        touched: Object.keys(touchedFields).length > 0,
+        touched: hasDefinedValues(touchedFields),
         touchedFields,
         // Reset form state.
         submitCount: 0,
@@ -280,6 +283,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...state,
         errors,
+        hasError: hasDefinedValues(data.errors),
       };
       break;
     }
@@ -316,6 +320,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         modifiedFields,
         // Clear fields error.
         errors,
+        hasError: hasDefinedValues(errors),
       };
       break;
     }
@@ -415,6 +420,7 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         ...state,
         disabled: false,
         errors,
+        hasError: hasDefinedValues(data.errors),
         validating: false,
       };
       break;
@@ -423,19 +429,17 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
     case ACTION_VALIDATE_SUCCESS:
       nextState = {
         ...state,
+        errors: {},
+        hasError: false,
         validated: true,
         validating: false,
         validateError: undefined,
-        // todo let form disabled if submission planned after validation
-        disabled: false,
-        errors: {},
+        // Let form disabled if submission planned after validation
+        disabled: action.data.beforeSubmit === true,
       };
       break;
   }
-  return {
-    ...nextState,
-    hasError: nextState.errors && Object.keys(nextState.errors).length > 0,
-  };
+  return nextState;
 }
 
 export default useFormReducer;
