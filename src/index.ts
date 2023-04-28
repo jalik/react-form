@@ -13,7 +13,7 @@ import useFieldArray from './useFieldArray';
 import useForm from './useForm';
 import useFormContext from './useFormContext';
 
-import { getFieldId } from './utils';
+import { getFieldId, inputValue, passArgs } from './utils';
 
 export {
   Button,
@@ -22,6 +22,8 @@ export {
   Form,
   Option,
   getFieldId,
+  inputValue,
+  passArgs,
   useFieldArray,
   useForm,
   useFormContext,

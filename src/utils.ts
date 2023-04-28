@@ -169,7 +169,7 @@ export function getSelectedValues(element: HTMLSelectElement): string[] {
 /**
  * Returns an empty string when value is null.
  */
-export function inputValue(value?: string | number | boolean | unknown): string | unknown {
+export function inputValue<T>(value?: T): NonNullable<string | T> {
   return value == null ? '' : value;
 }
 
@@ -231,6 +231,17 @@ export function parseInputValue(input: FieldElement): string | number | readonly
     }
   }
   return value;
+}
+
+/**
+ * Pass arguments to function when it is called.
+ * @param func
+ * @param args
+ */
+export function passArgs<T>(func: (event: T, ...args: unknown[]) => void, ...args: unknown[]) {
+  return (event: T): void => {
+    func(event, ...args);
+  };
 }
 
 /**
