@@ -107,6 +107,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   validateField(name: string): Promise<void | Error | undefined>;
   validateFields(fields?: string[]): Promise<void | Errors>;
   validClass?: string;
+  validateOnBlur: boolean;
   validateOnChange: boolean;
   validateOnSubmit: boolean;
 }
@@ -126,6 +127,7 @@ export interface UseFormOptions<V extends Values, R> {
   validateField?(name: string, value: unknown, values: Partial<V>): Promise<void | Error | undefined>;
   validClass?: string;
   validateDelay?: number;
+  validateOnBlur?: boolean;
   validateOnChange?: boolean;
   validateOnSubmit?: boolean;
 }
@@ -149,6 +151,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validateField: validateFieldFunc,
     validClass = 'field-valid',
     validateDelay = 200,
+    validateOnBlur = false,
     validateOnChange = false,
     validateOnSubmit = true,
   } = options;
@@ -496,7 +499,11 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
     touch([event.currentTarget.name]);
-  }, [touch]);
+
+    if (validateOnBlur) {
+      validateField(event.currentTarget.name);
+    }
+  }, [touch, validateField, validateOnBlur]);
 
   /**
    * Handles change of field value.
@@ -609,6 +616,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     invalidClass,
     modifiedClass,
     validClass,
+    validateOnBlur,
     validateOnChange,
     validateOnSubmit,
     // Methods
@@ -635,10 +643,10 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validate,
     validateField,
     validateFields,
-  }), [state, invalidClass, modifiedClass, validClass, validateOnChange, validateOnSubmit, clear, clearErrors,
-    clearTouch, getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
-    initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch, validate,
-    validateField, validateFields]);
+  }), [state, invalidClass, modifiedClass, validClass, validateOnBlur, validateOnChange, validateOnSubmit, clear,
+    clearErrors, clearTouch, getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset,
+    handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch,
+    validate, validateField, validateFields]);
 }
 
 export default useForm;
