@@ -87,7 +87,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
   // Get context value from field name
   const contextValue = useMemo(() => getValue(name), [getValue, name]);
 
-  const handleFieldBlur = useCallback((event: React.FormEvent<any>) => {
+  const handleFieldBlur = useCallback((event: React.FocusEvent<FieldElement>) => {
     handleBlur(event);
   }, [handleBlur]);
 

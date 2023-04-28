@@ -492,7 +492,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Handles leaving of a field.
    */
-  const handleBlur = useCallback((event: React.FormEvent<FieldElement>): void => {
+  const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
     touch([event.currentTarget.name]);
   }, [touch]);
 
