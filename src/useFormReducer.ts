@@ -25,6 +25,7 @@ export const ACTION_SUBMIT_SUCCESS = 'SUBMIT_SUCCESS';
 export const ACTION_TOUCH = 'TOUCH';
 export const ACTION_VALIDATE = 'VALIDATE';
 export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR';
+export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL';
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS';
 
 const initialState: FormState<Values, any> = {
@@ -64,13 +65,14 @@ export type FormAction<V, R> =
   | { type: 'RESET_VALUES', data: { fieldNames: string[] } }
   | { type: 'SET_ERROR', data: { name: string, error: Error } }
   | { type: 'SET_ERRORS', data: { errors: Errors } }
-  | { type: 'SET_VALUES', data: { values: Values } }
+  | { type: 'SET_VALUES', data: { values: Values, clearErrors?: boolean } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
   | { type: 'TOUCH', data: { fieldNames: string[] } }
   | { type: 'VALIDATE' }
   | { type: 'VALIDATE_ERROR', error: Error }
+  | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
   | { type: 'VALIDATE_SUCCESS' }
 
 /**
@@ -269,15 +271,15 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       const errors: Errors = {};
 
       Object.keys(data.errors).forEach((name) => {
-        errors[name] = data.errors[name];
+        // Ignore undefined/null errors
+        if (data.errors[name]) {
+          errors[name] = data.errors[name];
+        }
       });
 
       nextState = {
         ...state,
         errors,
-        validated: false,
-        validating: false,
-        disabled: false,
       };
       break;
     }
@@ -291,7 +293,12 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       Object.entries(data.values).forEach(([name, value]) => {
         values = build(name, value, values);
         modifiedFields[name] = value !== resolve(name, state.initialValues);
-        delete errors[name];
+
+        // Allow not clearing errors,
+        // so error messages are not popping during typing.
+        if (data.clearErrors) {
+          delete errors[name];
+        }
       });
 
       nextState = {
@@ -386,6 +393,15 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         validating: false,
         validateError: action.error,
         disabled: false,
+      };
+      break;
+
+    case ACTION_VALIDATE_FAIL:
+      nextState = {
+        ...state,
+        disabled: false,
+        errors: { ...action.data.errors },
+        validating: false,
       };
       break;
 

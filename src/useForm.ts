@@ -25,6 +25,7 @@ import useFormReducer, {
   ACTION_TOUCH,
   ACTION_VALIDATE,
   ACTION_VALIDATE_ERROR,
+  ACTION_VALIDATE_FAIL,
   ACTION_VALIDATE_SUCCESS,
 } from './useFormReducer';
 import {
@@ -321,9 +322,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         results.forEach((result) => {
           if (result) {
             const [name, error] = result;
-            if (error != null) {
-              errors = { ...errors, [name]: error };
-            }
+            errors = { ...errors, [name]: error };
           }
         });
         return errors;
@@ -366,9 +365,20 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       // Allow changing values on the fly
       mutation = transformRef.current(mutation, nextValues);
     }
-    dispatch({ type: ACTION_SET_VALUES, data: { values: mutation } });
 
-    if (validate || (validate !== false && validateOnChange)) {
+    const shouldValidate = validate || (validate !== false && validateOnChange);
+
+    dispatch({
+      type: ACTION_SET_VALUES,
+      data: {
+        // Do not clear errors when validation is triggered
+        // to avoid errors to disappear/appear quickly during typing.
+        clearErrors: !shouldValidate,
+        values: mutation,
+      },
+    });
+
+    if (shouldValidate) {
       debouncedValidateFields(Object.keys(mutation));
     }
   }, [debouncedValidateFields, disabled, state.values, validateOnChange]);
@@ -461,8 +471,8 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
 
     return promise
       .then((errors) => {
-        if (typeof errors === 'object' && errors !== null && Object.keys(errors).length > 0) {
-          setErrors(errors);
+        if (errors && Object.keys(errors).length > 0) {
+          dispatch({ type: ACTION_VALIDATE_FAIL, data: { errors } });
         } else {
           dispatch({ type: ACTION_VALIDATE_SUCCESS });
         }
@@ -471,7 +481,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         dispatch({ type: ACTION_VALIDATE_ERROR, error });
         throw error;
       });
-  }, [setErrors, state.modifiedFields, state.values]);
+  }, [state.modifiedFields, state.values]);
 
   /**
    * Validates if necessary and submits form.
