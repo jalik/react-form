@@ -6,19 +6,15 @@
 import React, { useCallback, useMemo } from 'react';
 import useFormContext from '../useFormContext';
 
-export const TYPE_BUTTON = 'button';
-export const TYPE_RESET = 'reset';
-export const TYPE_SUBMIT = 'submit';
-
 export interface ButtonsProps extends React.Component {
-  component: any,
+  component?: any,
   type?: 'button' | 'reset' | 'submit',
 }
 
 function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonElement>): JSX.Element {
   const {
     children,
-    component,
+    component: Component,
     disabled,
     onClick,
     type,
@@ -38,26 +34,24 @@ function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonEleme
     disabled
     || formDisabled
     || submitting
-    || (type === TYPE_RESET && !modified)
-    || (type === TYPE_SUBMIT && !modified)
+    || (type === 'reset' && !modified)
+    || (type === 'submit' && !modified)
   ), [disabled, formDisabled, modified, submitting, type]);
 
   const handleClick = useCallback((ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    // Avoid submitting parent forms
+    // Prevent submission.
     ev.preventDefault();
+    // Prevent parent form submission.
     ev.stopPropagation();
 
     if (onClick) {
       onClick(ev);
-    } else if (type === TYPE_SUBMIT) {
+    } else if (type === 'submit') {
       submit();
-    } else if (type === TYPE_RESET) {
+    } else if (type === 'reset') {
       reset();
     }
   }, [onClick, reset, submit, type]);
-
-  // Allows rendering of a custom component.
-  const Component = component || 'button';
 
   return (
     <Component
@@ -74,6 +68,7 @@ function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonEleme
 Button.defaultProps = {
   children: null,
   component: null,
+  type: 'button',
 };
 
 export default Button;
