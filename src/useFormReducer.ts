@@ -16,7 +16,6 @@ export const ACTION_LOAD_SUCCESS = 'LOAD_SUCCESS';
 export const ACTION_REMOVE = 'REMOVE';
 export const ACTION_RESET = 'RESET';
 export const ACTION_RESET_VALUES = 'RESET_VALUES';
-export const ACTION_SET_ERROR = 'SET_ERROR';
 export const ACTION_SET_ERRORS = 'SET_ERRORS';
 export const ACTION_SET_VALUES = 'SET_VALUES';
 export const ACTION_SUBMIT = 'SUBMIT';
@@ -63,7 +62,6 @@ export type FormAction<V, R> =
   | { type: 'REMOVE', data: { name: string } }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fieldNames: string[] } }
-  | { type: 'SET_ERROR', data: { name: string, error: Error } }
   | { type: 'SET_ERRORS', data: { errors: Errors } }
   | { type: 'SET_VALUES', data: { values: Values, clearErrors?: boolean } }
   | { type: 'SUBMIT' }
@@ -245,23 +243,6 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
         validateError: undefined,
         validated: false,
         validating: false,
-      };
-      break;
-    }
-
-    case ACTION_SET_ERROR: {
-      const { data } = action;
-      const errors: Errors = {};
-
-      if (data.error != null) {
-        errors[data.name] = data.error;
-      }
-      nextState = {
-        ...state,
-        errors,
-        validated: false,
-        validating: false,
-        disabled: false,
       };
       break;
     }

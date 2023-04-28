@@ -16,7 +16,6 @@ import useFormReducer, {
   ACTION_REMOVE,
   ACTION_RESET,
   ACTION_RESET_VALUES,
-  ACTION_SET_ERROR,
   ACTION_SET_ERRORS,
   ACTION_SET_VALUES,
   ACTION_SUBMIT,
@@ -288,7 +287,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    * Defines the field error.
    */
   const setError = useCallback((name: string, error: Error): void => {
-    dispatch({ type: ACTION_SET_ERROR, data: { error, name } });
+    dispatch({ type: ACTION_SET_ERRORS, data: { errors: { [name]: error } } });
   }, []);
 
   /**
