@@ -4,26 +4,22 @@
  */
 
 import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react';
-import { FieldAttributes } from '../useForm';
+import { FieldAttributes, FieldElement } from '../useForm';
 import useFormContext from '../useFormContext';
 import { getFieldId, inputValue } from '../utils';
 import Option, { OptionProps } from './Option';
 
-export const CHECKBOX = 'checkbox';
-export const RADIO = 'radio';
-export const SELECT = 'select';
-export const TEXT = 'text';
-export const TEXTAREA = 'textarea';
+type FieldType = HTMLInputTypeAttribute | 'select' | 'textarea'
 
 /**
  * Returns true if the type is checkable.
  */
 function isCheckable(type: HTMLInputTypeAttribute): boolean {
-  return [CHECKBOX, RADIO].indexOf(type) !== -1;
+  return type === 'checkbox' || type === 'radio';
 }
 
 export interface FieldProps<T> {
-  component: any;
+  component?: any;
   disabled?: boolean;
   emptyOptionLabel?: string;
   multiple?: boolean;
@@ -32,13 +28,13 @@ export interface FieldProps<T> {
   parser?(value: string): T;
   required?: boolean;
   // todo add formatter
-  type?: HTMLInputTypeAttribute | 'select' | 'textarea';
+  type?: FieldType;
   // todo remove
   validator?<T>(value: T): Error | undefined;
-  value: unknown;
+  value?: string | T;
 }
 
-function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
+function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
   const {
     children,
     className,
@@ -132,10 +128,10 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
       value: contextValue,
     };
 
-    if (value === null && type === RADIO) {
+    if (value === null && type === 'radio') {
       // Pass null value for radio only
       p.value = '';
-    } else if (value === '' && type === RADIO) {
+    } else if (value === '' && type === 'radio') {
       // Pass null value for radio only
       p.value = '';
     } else if (Component != null) {
@@ -153,7 +149,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
         p.required = false;
       } else {
         // Get checked state from checkbox without value or by comparing checkbox value and context value.
-        p.checked = (value == null || value === '') && typeof contextValue === 'boolean' && type === CHECKBOX
+        p.checked = (value == null || value === '') && typeof contextValue === 'boolean' && type === 'checkbox'
           ? contextValue
           : contextValue === parsedValue;
       }
@@ -205,7 +201,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
   }
 
   // Renders a select field.
-  if (type === SELECT) {
+  if (type === 'select') {
     return (
       <select {...finalProps} value={String(finalProps.value)}>
         {children}
@@ -217,7 +213,7 @@ function Field<T>(props: FieldProps<T> & FieldAttributes): JSX.Element {
   }
 
   // Renders a textarea field.
-  if (type === TEXTAREA) {
+  if (type === 'textarea') {
     return (
       <textarea {...finalProps} value={String(finalProps.value)} />
     );
