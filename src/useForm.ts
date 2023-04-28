@@ -470,8 +470,12 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         throw new Error(`validate() must return a Promise`);
       }
     } else {
-      // Validation is not set, so we don't return any errors to let normal form submission happen.
-      promise = Promise.resolve<Errors>({});
+      // Validate touched and modified fields only, since we don't have a global validation function.
+      // todo validate registered fields
+      return validateFields(Object.keys({
+        ...state.modifiedFields,
+        ...state.touchedFields,
+      }));
     }
 
     return promise
@@ -487,7 +491,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         dispatch({ type: ACTION_VALIDATE_ERROR, error });
         throw error;
       });
-  }, [state.modifiedFields, state.values]);
+  }, [state.modifiedFields, state.touchedFields, state.values, validateFields]);
 
   /**
    * Validates if necessary and submits form.
@@ -496,13 +500,14 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    *  to: validate:disabled => validated => submit => submitted:enabled
    */
   const validateAndSubmit = useCallback((): Promise<void | R> => (
-    validateOnSubmit && !state.validated
-      ? validate().then((errors) => {
-        if (!errors || (typeof errors === 'object' && Object.keys(errors).length === 0)) {
-          return submit();
-        }
-        return undefined;
-      })
+    !state.validated && validateOnSubmit
+      ? validate()
+        .then((errors) => {
+          if (!errors || (typeof errors === 'object' && Object.keys(errors).length === 0)) {
+            return submit();
+          }
+          return undefined;
+        })
       : submit()
   ), [validateOnSubmit, state.validated, validate, submit]);
 
