@@ -355,11 +355,13 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
     case ACTION_TOUCH: {
       const { data } = action;
       const touchedFields: TouchedFields = { ...state.touchedFields };
-      let touched = false;
+      let { touched } = state;
+
       data.fieldNames.forEach((name) => {
         touchedFields[name] = true;
         touched = true;
       });
+
       nextState = {
         ...state,
         touched,
