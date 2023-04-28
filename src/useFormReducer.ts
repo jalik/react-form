@@ -6,6 +6,7 @@
 import { Errors, FormState, TouchedFields, Values } from './useForm';
 import { build, clone, resolve } from './utils';
 
+export const ACTION_CLEAR = 'CLEAR';
 export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS';
 export const ACTION_CLEAR_TOUCH = 'CLEAR_TOUCH';
 export const ACTION_INIT_VALUES = 'INIT_VALUES';
@@ -51,7 +52,8 @@ const initialState: FormState<Values, any> = {
 };
 
 export type FormAction<V, R> =
-  { type: 'CLEAR_ERRORS' }
+  { type: 'CLEAR' }
+  | { type: 'CLEAR_ERRORS' }
   | { type: 'CLEAR_TOUCH', data: { fieldNames: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
@@ -78,6 +80,14 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
   let nextState: FormState<V, R>;
 
   switch (action.type) {
+    case ACTION_CLEAR:
+      nextState = {
+        ...state,
+        ...initialState,
+        initialValues: {},
+        values: {},
+      };
+      break;
     case ACTION_CLEAR_ERRORS:
       nextState = {
         ...state,

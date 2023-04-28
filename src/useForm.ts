@@ -6,6 +6,7 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import useDebouncePromise from './useDebouncePromise';
 import useFormReducer, {
+  ACTION_CLEAR,
   ACTION_CLEAR_ERRORS,
   ACTION_CLEAR_TOUCH,
   ACTION_INIT_VALUES,
@@ -80,6 +81,7 @@ export interface FormState<V extends Values, R> {
 }
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
+  clear(): void;
   clearErrors(): void;
   clearTouch(fields: string[]): void;
   getAttributes(name: string): FieldAttributes | undefined;
@@ -205,6 +207,13 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     },
     undefined,
   );
+
+  /**
+   * Clears form.
+   */
+  const clear = useCallback((): void => {
+    dispatch({ type: ACTION_CLEAR });
+  }, []);
 
   /**
    * Clears all errors.
@@ -610,6 +619,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validateOnChange,
     validateOnSubmit,
     // Methods
+    clear,
     clearErrors,
     clearTouch,
     getAttributes,
@@ -632,10 +642,10 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validate,
     validateField,
     validateFields,
-  }), [state, invalidClass, modifiedClass, validClass, validateOnChange, validateOnSubmit, clearErrors, clearTouch,
-    getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit, initValues, load,
-    remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch, validate, validateField,
-    validateFields]);
+  }), [state, invalidClass, modifiedClass, validClass, validateOnChange, validateOnSubmit, clear, clearErrors,
+    clearTouch, getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
+    initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch, validate,
+    validateField, validateFields]);
 }
 
 export default useForm;
