@@ -73,7 +73,7 @@ export type FormAction<V, R> =
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
   | { type: 'TOUCH', data: { fields: string[] } }
-  | { type: 'VALIDATE', data?: { field?: string } }
+  | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
   | { type: 'VALIDATE_SUCCESS', data: { beforeSubmit?: boolean } }
@@ -390,9 +390,10 @@ function useFormReducer<V extends Values, R>(state: FormState<V, R>, action: For
       nextState = {
         ...state,
         needValidation: false,
-        validated: data?.field ? state.validated : false,
-        validating: data?.field ? state.validating : true,
-        disabled: data?.field ? state.disabled : true,
+        // todo keep track of validating fields
+        disabled: data?.fields ? state.disabled : true,
+        validated: data?.fields ? state.validated : false,
+        validating: data?.fields ? state.validating : true,
       };
       break;
     }

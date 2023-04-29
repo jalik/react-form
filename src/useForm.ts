@@ -297,7 +297,7 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
    * Validates one or more fields by passing field names.
    */
   const validateFields = useCallback((fields: string[]): Promise<void | Errors | undefined> => {
-    dispatch({ type: ACTION_VALIDATE });
+    dispatch({ type: ACTION_VALIDATE, data: { fields } });
 
     const validate = validateFieldRef.current;
     const promises = validate
