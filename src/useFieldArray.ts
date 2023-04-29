@@ -61,8 +61,8 @@ function useFieldArray<T, F extends Values>(options: UseFieldArrayOptions<T, F>)
    */
   const array = useMemo(() => {
     const value = getValue<T[]>(name, []);
-    fields.current = synchronizeItems(value, fields.current);
-    return value;
+    fields.current = value ? synchronizeItems(value, fields.current) : [];
+    return value || [];
   }, [getValue, name]);
 
   /**

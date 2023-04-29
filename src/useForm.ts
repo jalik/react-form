@@ -93,7 +93,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clearTouch(fields: string[]): void;
   getAttributes(name: string): FieldAttributes | undefined;
   getInitialValue<T>(name: string): T | undefined;
-  getValue<T>(name: string, defaultValue?: T): T;
+  getValue<T>(name: string, defaultValue?: T): T | undefined;
   handleBlur(event: React.FocusEvent<FieldElement>): void;
   handleChange(event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
   handleReset(event: React.FormEvent<HTMLFormElement>): void;
@@ -238,15 +238,15 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
   /**
    * Returns the initial value of a field.
    */
-  const getInitialValue = useCallback((name: string): any => (
-    resolve(name, clone(state.initialValues))
+  const getInitialValue = useCallback(<T>(name: string): T | undefined => (
+    resolve<T>(name, clone(state.initialValues))
   ), [state.initialValues]);
 
   /**
-   * Returns a copy of field value.
+   * Returns the value of a field.
    */
-  const getValue = useCallback((name: string, defaultValue?: unknown): any => {
-    const value = resolve(name, clone(state.values));
+  const getValue = useCallback(<T>(name: string, defaultValue?: T): T | undefined => {
+    const value = resolve<T>(name, clone(state.values));
     return typeof value !== 'undefined' ? value : defaultValue;
   }, [state.values]);
 
