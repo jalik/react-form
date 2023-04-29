@@ -18,16 +18,16 @@ function isCheckable(type: HTMLInputTypeAttribute): boolean {
   return type === 'checkbox' || type === 'radio';
 }
 
-export interface FieldProps<T> {
+export interface FieldProps<T = string> {
   component?: any;
   disabled?: boolean;
   emptyOptionLabel?: string;
+  formatter?(value: T | string): string | undefined;
   multiple?: boolean;
   name: string;
   options?: string[] | number[] | boolean[] | OptionProps[];
   parser?(value: string): T;
   required?: boolean;
-  // todo add formatter
   type?: FieldType;
   // todo remove
   validator?<T>(value: T): Error | undefined;
@@ -41,6 +41,7 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
     component: Component,
     disabled,
     emptyOptionLabel,
+    formatter,
     id,
     multiple,
     name,
@@ -80,8 +81,19 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
     console.warn(`${name}: attributes "parser" and "onChange" cannot be set together`);
   }
 
+  const formatValue = useCallback((value: T | string) => {
+    if (value != null && value !== '') {
+      if (formatter) {
+        return formatter(value);
+      } else {
+        return String(value);
+      }
+    }
+    return '';
+  }, [formatter]);
+
   // Get context value from field name
-  const contextValue = useMemo(() => getValue(name), [getValue, name]);
+  const contextValue = useMemo(() => getValue<T>(name), [getValue, name]);
 
   const handleFieldBlur = useCallback((event: React.FocusEvent<FieldElement>) => {
     handleBlur(event);
@@ -114,7 +126,7 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
   const parsedValue = useMemo(() => parser && typeof value === 'string' ? parser(value) : value, [parser, value]);
 
   const finalProps = useMemo(() => {
-    const p: { [key: string]: unknown } = {
+    const p: { [key: string]: any } = {
       ...attributes,
       ...others,
       className: classNames.join(' '),
@@ -128,19 +140,15 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
       value: contextValue,
     };
 
-    if (value === null && type === 'radio') {
-      // Pass null value for radio only
-      p.value = '';
-    } else if (value === '' && type === 'radio') {
-      // Pass null value for radio only
-      p.value = '';
-    } else if (Component != null) {
-      // Pass raw value or raw context value to custom component
-      p.value = inputValue(value != null && value !== '' ? value : contextValue);
-    } else {
-      // Pass string value to classic form element
-      p.value = String(inputValue(value != null && value !== '' ? value : contextValue));
+    if (value === null || value === '') {
+      if (type === 'radio') {
+        // Convert null value for radio only
+        p.value = '';
+      }
     }
+
+    // Allow formatting value.
+    p.value = inputValue(formatValue(p.value));
 
     if (type && isCheckable(type)) {
       if (contextValue instanceof Array) {
@@ -155,8 +163,8 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
       }
     }
     return p;
-  }, [Component, attributes, classNames, contextValue, disabled, formDisabled, handleFieldBlur, handleFieldChange,
-    id, multiple, name, onBlur, onChange, others, parsedValue, type, value]);
+  }, [attributes, classNames, contextValue, disabled, formDisabled, formatValue, handleFieldBlur,
+    handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, type, value]);
 
   const finalOptions = useMemo(() => {
     const list = (options ? [...options] : []).map((option, index) => (

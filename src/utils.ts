@@ -177,7 +177,7 @@ export function hasDefinedValues(obj: Record<string, unknown>): boolean {
 /**
  * Returns an empty string when value is null.
  */
-export function inputValue<T>(value?: T): NonNullable<string | T> {
+export function inputValue<T>(value?: T): string | T {
   return value == null ? '' : value;
 }
 
