@@ -75,9 +75,19 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   setError (name: string, error?: Error): void;
   setErrors (errors: Errors): void;
   setInitialValues (values: Partial<V>): void;
-  setTouchedFields (fields: string[], options?: { validate?: boolean }): void;
-  setValue (name: string, value?: unknown, validate?: boolean): void;
-  setValues (values: Values | Partial<V>, validate?: boolean): void;
+  setTouchedFields (
+    fields: string[],
+    options?: { validate?: boolean }
+  ): void;
+  setValue (
+    name: string,
+    value?: unknown,
+    options?: { validate?: boolean }
+  ): void;
+  setValues (
+    values: Values | Partial<V>,
+    options?: { partial?: boolean, validate?: boolean }
+  ): void;
   validate (): Promise<void | Errors | undefined>;
   validateField (name: string): Promise<void | Error | undefined>;
   validateFields (fields?: string[]): Promise<void | Errors | undefined>;
@@ -359,7 +369,13 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Defines several field values (use setInitialValues() to set all form values).
    */
-  const setValues = useCallback((values: Values | Partial<V>, validate = undefined): void => {
+  const setValues = useCallback((
+    values: Values | Partial<V>,
+    opts?: {
+      partial?: boolean,
+      validate?: boolean
+    }
+  ): void => {
     // Ignore action if form disabled
     if (disabled) return
 
@@ -381,7 +397,8 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     dispatch({
       type: ACTION_SET_VALUES,
       data: {
-        validate: validate || (validate !== false && validateOnChange),
+        partial: opts?.partial,
+        validate: opts?.validate || (opts?.validate !== false && validateOnChange),
         values: mutation
       }
     })
@@ -390,8 +407,15 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Defines the value of a field.
    */
-  const setValue = useCallback((name: string, value?: unknown, validate = undefined): void => {
-    setValues({ [name]: value }, validate)
+  const setValue = useCallback((
+    name: string,
+    value?: unknown,
+    opts?: { validate?: boolean }
+  ): void => {
+    setValues({ [name]: value }, {
+      partial: true,
+      validate: opts?.validate
+    })
   }, [setValues])
 
   /**

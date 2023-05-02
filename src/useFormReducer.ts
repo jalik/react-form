@@ -97,11 +97,11 @@ export type FormAction<V, R> =
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors } }
-  | { type: 'SET_VALUES', data: { values: Values, validate?: boolean } }
+  | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate?: boolean } }
+  | { type: 'SET_VALUES', data: { partial?: boolean, validate?: boolean, values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
-  | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate?: boolean } }
   | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
@@ -356,12 +356,14 @@ function useFormReducer<V extends Values, R> (
 
     case ACTION_SET_VALUES: {
       const { data } = action
-      const modifiedFields = clone(state.modifiedFields)
       const errors = clone(state.errors)
-      let values = clone(state.values)
+      const modifiedFields = clone(state.modifiedFields)
+      let values = data.partial ? clone(state.values) : {}
 
       Object.entries(data.values).forEach(([name, value]) => {
         values = build(name, value, values)
+
+        // Compare initial value to detect change.
         modifiedFields[name] = value !== resolve(name, state.initialValues)
 
         // Do not clear errors when validation is triggered

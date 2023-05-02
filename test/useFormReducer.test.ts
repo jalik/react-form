@@ -68,7 +68,10 @@ const stateWithInitialValuesAndModifiedFields = {
     username: true,
     gender: true
   },
-  values: { username: 'jalik1234' }
+  values: {
+    username: 'jalik1234',
+    gender: 'male'
+  }
 }
 
 const stateWithInitialValuesAndErrors = {
@@ -93,7 +96,7 @@ const stateValidatedWithSubmitError = {
 
 describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_CLEAR}"`, () => {
-    describe('with fields option missing or empty', () => {
+    describe('with data.fields empty or undefined', () => {
       const action: FormAction<Values, unknown> = {
         type: ACTION_CLEAR
       }
@@ -106,7 +109,7 @@ describe('useFormReducer(state, action)', () => {
       })
     })
 
-    describe('with fields option not empty', () => {
+    describe('with data.fields not empty', () => {
       const action: FormAction<Values, unknown> = {
         type: ACTION_CLEAR,
         data: { fields: ['username'] }
@@ -148,7 +151,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_CLEAR_ERRORS}"`, () => {
-    describe('with fields option missing or empty', () => {
+    describe('with data.fields empty or undefined', () => {
       const action: FormAction<Values, unknown> = {
         type: ACTION_CLEAR_ERRORS
       }
@@ -164,7 +167,7 @@ describe('useFormReducer(state, action)', () => {
       })
     })
 
-    describe('with fields option not empty', () => {
+    describe('with data.fields not empty', () => {
       const action: FormAction<Values, unknown> = {
         type: ACTION_CLEAR_ERRORS,
         data: { fields: ['username'] }
@@ -187,7 +190,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_CLEAR_TOUCHED_FIELDS}"`, () => {
-    describe('with empty or missing fields option', () => {
+    describe('with data.fields empty or undefined', () => {
       const action: FormAction<Values, unknown> = {
         type: ACTION_CLEAR_TOUCHED_FIELDS
       }
@@ -203,7 +206,7 @@ describe('useFormReducer(state, action)', () => {
       })
     })
 
-    describe('with fields option not empty', () => {
+    describe('with data.fields not empty', () => {
       const action: FormAction<Values, unknown> = {
         type: ACTION_CLEAR_TOUCHED_FIELDS,
         data: { fields: ['username'] }
@@ -449,18 +452,114 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SET_VALUES}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const baseAction: FormAction<Values, unknown> = {
       type: ACTION_SET_VALUES,
       data: { values: { username: 'naruto' } }
     }
 
-    describe('with { data: { validate: false } }', () => {
+    describe('with data.partial = false', () => {
+      const action = {
+        ...baseAction,
+        data: {
+          ...baseAction.data,
+          partial: false
+        }
+      }
+
+      it('should set all values', () => {
+        const state = stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        const errors = clone(state.errors)
+        const modifiedFields = clone(state.modifiedFields)
+        const { data } = action
+        let values = {}
+
+        Object.entries(data.values).forEach(([name, value]) => {
+          values = build(name, value, values)
+
+          // Compare initial value to detect change.
+          modifiedFields[name] = value !== resolve(name, state.initialValues)
+
+          // Do not clear errors when validation is triggered
+          // to avoid errors to disappear/appear quickly during typing.
+          if (!data.validate) {
+            delete errors[name]
+          }
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors),
+          modified: true,
+          modifiedFields,
+          needValidation: data.validate === true
+            ? Object.keys(data.values)
+            : state.needValidation,
+          validated: false,
+          values
+        })
+      })
+    })
+
+    describe('with data.partial = true', () => {
+      const action = {
+        ...baseAction,
+        data: {
+          ...baseAction.data,
+          partial: true
+        }
+      }
+
+      it('should set selected fields values', () => {
+        const state = stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        const errors = clone(state.errors)
+        const modifiedFields = clone(state.modifiedFields)
+        const { data } = action
+        let values = clone(state.values)
+
+        Object.entries(data.values).forEach(([name, value]) => {
+          values = build(name, value, values)
+
+          // Compare initial value to detect change.
+          modifiedFields[name] = value !== resolve(name, state.initialValues)
+
+          // Do not clear errors when validation is triggered
+          // to avoid errors to disappear/appear quickly during typing.
+          if (!data.validate) {
+            delete errors[name]
+          }
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors),
+          modified: true,
+          modifiedFields,
+          needValidation: data.validate === true
+            ? Object.keys(data.values)
+            : state.needValidation,
+          validated: false,
+          values
+        })
+      })
+    })
+
+    describe('with data.validate = false', () => {
+      const action = {
+        ...baseAction,
+        data: {
+          ...baseAction.data,
+          validate: false
+        }
+      }
+
       it('should set values', () => {
         const state = stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
         const errors = { ...state.errors }
         const modifiedFields = { ...state.modifiedFields }
-        let values = { ...state.values }
+        let values = {}
         Object.entries(action.data.values).forEach(([name, value]) => {
           values = build(name, value, values)
           modifiedFields[name] = value !== resolve(name, state.initialValues)
@@ -478,8 +577,16 @@ describe('useFormReducer(state, action)', () => {
       })
     })
 
-    describe('with { data: { validate: true } }', () => {
-      it('should set values', () => {
+    describe('with data.validate = true', () => {
+      const action = {
+        ...baseAction,
+        data: {
+          ...baseAction.data,
+          validate: true
+        }
+      }
+
+      it('should set values and trigger validation', () => {
         const state = stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, {
           ...action,
@@ -490,7 +597,7 @@ describe('useFormReducer(state, action)', () => {
         })
         const errors = { ...state.errors }
         const modifiedFields = { ...state.modifiedFields }
-        let values = { ...state.values }
+        let values = {}
         Object.entries(action.data.values).forEach(([name, value]) => {
           values = build(name, value, values)
           modifiedFields[name] = value !== resolve(name, state.initialValues)
