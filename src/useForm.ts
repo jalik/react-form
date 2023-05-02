@@ -17,11 +17,11 @@ import useFormReducer, {
   ACTION_RESET,
   ACTION_RESET_VALUES,
   ACTION_SET_ERRORS,
+  ACTION_SET_TOUCHED_FIELDS,
   ACTION_SET_VALUES,
   ACTION_SUBMIT,
   ACTION_SUBMIT_ERROR,
   ACTION_SUBMIT_SUCCESS,
-  ACTION_TOUCH,
   ACTION_VALIDATE,
   ACTION_VALIDATE_ERROR,
   ACTION_VALIDATE_FAIL,
@@ -75,7 +75,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   setError (name: string, error?: Error): void;
   setErrors (errors: Errors): void;
   setInitialValues (values: Partial<V>): void;
-  setTouchedFields (fields: string[]): void;
+  setTouchedFields (fields: string[], options?: { validate?: boolean }): void;
   setValue (name: string, value?: unknown, validate?: boolean): void;
   setValues (values: Values | Partial<V>, validate?: boolean): void;
   validate (): Promise<void | Errors | undefined>;
@@ -391,7 +391,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Clear touched fields.
    */
-  const clearTouchedFields = useCallback((fields: string[]) => {
+  const clearTouchedFields = useCallback((fields: string[]): void => {
     dispatch({
       type: ACTION_CLEAR_TOUCH,
       data: { fields }
@@ -401,7 +401,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Sets touched fields.
    */
-  const setTouchedFields = useCallback((fields: string[]) => {
+  const setTouchedFields = useCallback((
+    fields: string[],
+    opts?: { validate?: boolean }
+  ): void => {
     let canDispatch = false
 
     // Check if we really need to dispatch the event
@@ -413,9 +416,13 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     }
 
     if (canDispatch) {
+      const { validate = false } = { ...opts }
       dispatch({
-        type: ACTION_TOUCH,
-        data: { fields }
+        type: ACTION_SET_TOUCHED_FIELDS,
+        data: {
+          fields,
+          validate
+        }
       })
     }
   }, [state.touchedFields])

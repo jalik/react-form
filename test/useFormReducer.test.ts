@@ -16,11 +16,11 @@ import useFormReducer, {
   ACTION_RESET,
   ACTION_RESET_VALUES,
   ACTION_SET_ERRORS,
+  ACTION_SET_TOUCHED_FIELDS,
   ACTION_SET_VALUES,
   ACTION_SUBMIT,
   ACTION_SUBMIT_ERROR,
   ACTION_SUBMIT_SUCCESS,
-  ACTION_TOUCH,
   ACTION_VALIDATE,
   ACTION_VALIDATE_ERROR,
   ACTION_VALIDATE_FAIL,
@@ -468,9 +468,9 @@ describe('useFormReducer(state, action)', () => {
     })
   })
 
-  describe(`with action "${ACTION_TOUCH}"`, () => {
+  describe(`with action "${ACTION_SET_TOUCHED_FIELDS}"`, () => {
     const action: FormAction<Values, unknown> = {
-      type: ACTION_TOUCH,
+      type: ACTION_SET_TOUCHED_FIELDS,
       data: { fields: ['username'] }
     }
 
@@ -494,9 +494,32 @@ describe('useFormReducer(state, action)', () => {
     })
 
     describe('with validateOnTouch = true', () => {
-      it('should set touched fields', () => {
+      it('should set touched fields and add them to validation', () => {
         const state = stateWithInitialValues
         const newState = useFormReducer(state, action)
+        const touchedFields = { ...state.touchedFields }
+        action.data.fields.forEach((name) => {
+          touchedFields[name] = true
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          needValidation: [...action.data.fields],
+          touched: true,
+          touchedFields
+        })
+      })
+    })
+
+    describe('with option validate = true', () => {
+      it('should set touched fields and add them to validation', () => {
+        const state = stateWithInitialValues
+        const newState = useFormReducer(state, {
+          ...action,
+          data: {
+            ...action.data,
+            validate: true
+          }
+        })
         const touchedFields = { ...state.touchedFields }
         action.data.fields.forEach((name) => {
           touchedFields[name] = true

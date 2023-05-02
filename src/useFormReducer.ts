@@ -16,11 +16,11 @@ export const ACTION_REMOVE = 'REMOVE'
 export const ACTION_RESET = 'RESET'
 export const ACTION_RESET_VALUES = 'RESET_VALUES'
 export const ACTION_SET_ERRORS = 'SET_ERRORS'
+export const ACTION_SET_TOUCHED_FIELDS = 'SET_TOUCHED_FIELDS'
 export const ACTION_SET_VALUES = 'SET_VALUES'
 export const ACTION_SUBMIT = 'SUBMIT'
 export const ACTION_SUBMIT_ERROR = 'SUBMIT_ERROR'
 export const ACTION_SUBMIT_SUCCESS = 'SUBMIT_SUCCESS'
-export const ACTION_TOUCH = 'TOUCH'
 export const ACTION_VALIDATE = 'VALIDATE'
 export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR'
 export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL'
@@ -101,7 +101,7 @@ export type FormAction<V, R> =
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
-  | { type: 'TOUCH', data: { fields: string[] } }
+  | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate?: boolean } }
   | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
@@ -356,7 +356,7 @@ function useFormReducer<V extends Values, R> (
       }
       break
 
-    case ACTION_TOUCH: {
+    case ACTION_SET_TOUCHED_FIELDS: {
       const { data } = action
       const touchedFields: TouchedFields = { ...state.touchedFields }
 
@@ -367,7 +367,9 @@ function useFormReducer<V extends Values, R> (
       nextState = {
         ...state,
         // Trigger validation if needed
-        needValidation: state.validateOnTouch ? [...data.fields] : state.needValidation,
+        needValidation: state.validateOnTouch || data.validate
+          ? [...data.fields]
+          : state.needValidation,
         touched: true,
         touchedFields
       }
