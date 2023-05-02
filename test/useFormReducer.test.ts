@@ -7,7 +7,7 @@ import { describe, expect, it } from '@jest/globals'
 import useFormReducer, {
   ACTION_CLEAR,
   ACTION_CLEAR_ERRORS,
-  ACTION_CLEAR_TOUCH,
+  ACTION_CLEAR_TOUCHED_FIELDS,
   ACTION_INIT_VALUES,
   ACTION_LOAD,
   ACTION_LOAD_ERROR,
@@ -186,21 +186,41 @@ describe('useFormReducer(state, action)', () => {
     })
   })
 
-  describe(`with action "${ACTION_CLEAR_TOUCH}"`, () => {
-    const action: FormAction<Values, unknown> = {
-      type: ACTION_CLEAR_TOUCH,
-      data: { fields: ['username'] }
-    }
+  describe(`with action "${ACTION_CLEAR_TOUCHED_FIELDS}"`, () => {
+    describe('with empty or missing fields option', () => {
+      const action: FormAction<Values, unknown> = {
+        type: ACTION_CLEAR_TOUCHED_FIELDS
+      }
 
-    it('should clear touched fields', () => {
-      const state = stateWithInitialValuesAndErrors
-      const newState = useFormReducer(state, action)
-      const touchedFields = { ...state.touchedFields }
-      delete touchedFields.username
-      expect(newState).toStrictEqual({
-        ...state,
-        touched: hasDefinedValues(touchedFields),
-        touchedFields
+      it('should clear all touched fields', () => {
+        const state = stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        expect(newState).toStrictEqual({
+          ...state,
+          touched: false,
+          touchedFields: {}
+        })
+      })
+    })
+
+    describe('with fields option not empty', () => {
+      const action: FormAction<Values, unknown> = {
+        type: ACTION_CLEAR_TOUCHED_FIELDS,
+        data: { fields: ['username'] }
+      }
+
+      it('should clear selected touched fields', () => {
+        const state = stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        const touchedFields = { ...state.touchedFields }
+        action.data.fields.forEach((name) => {
+          delete touchedFields[name]
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          touched: hasDefinedValues(touchedFields),
+          touchedFields
+        })
       })
     })
   })

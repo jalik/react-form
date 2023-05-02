@@ -7,7 +7,7 @@ import { build, clone, hasDefinedValues, resolve } from './utils'
 
 export const ACTION_CLEAR = 'CLEAR'
 export const ACTION_CLEAR_ERRORS = 'CLEAR_ERRORS'
-export const ACTION_CLEAR_TOUCH = 'CLEAR_TOUCH'
+export const ACTION_CLEAR_TOUCHED_FIELDS = 'CLEAR_TOUCHED_FIELDS'
 export const ACTION_INIT_VALUES = 'INIT_VALUES'
 export const ACTION_LOAD = 'LOAD'
 export const ACTION_LOAD_ERROR = 'LOAD_ERROR'
@@ -88,7 +88,7 @@ export const initialState = {
 export type FormAction<V, R> =
   { type: 'CLEAR', data?: { fields?: string[] } }
   | { type: 'CLEAR_ERRORS', data?: { fields?: string[] } }
-  | { type: 'CLEAR_TOUCH', data: { fields: string[] } }
+  | { type: 'CLEAR_TOUCHED_FIELDS', data?: { fields?: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
   | { type: 'LOAD_ERROR', error: Error }
@@ -182,16 +182,25 @@ function useFormReducer<V extends Values, R> (
       break
     }
 
-    case ACTION_CLEAR_TOUCH: {
+    case ACTION_CLEAR_TOUCHED_FIELDS: {
       const { data } = action
-      const touchedFields: TouchedFields = { ...state.touchedFields }
-      data.fields.forEach((name) => {
-        delete touchedFields[name]
-      })
-      nextState = {
-        ...state,
-        touched: hasDefinedValues(touchedFields),
-        touchedFields
+
+      if (data?.fields?.length) {
+        const touchedFields: TouchedFields = { ...state.touchedFields }
+        data.fields.forEach((name) => {
+          delete touchedFields[name]
+        })
+        nextState = {
+          ...state,
+          touched: hasDefinedValues(touchedFields),
+          touchedFields
+        }
+      } else {
+        nextState = {
+          ...state,
+          touched: false,
+          touchedFields: {}
+        }
       }
       break
     }

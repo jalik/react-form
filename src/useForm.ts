@@ -8,7 +8,7 @@ import useDebouncePromise from './useDebouncePromise'
 import useFormReducer, {
   ACTION_CLEAR,
   ACTION_CLEAR_ERRORS,
-  ACTION_CLEAR_TOUCH,
+  ACTION_CLEAR_TOUCHED_FIELDS,
   ACTION_INIT_VALUES,
   ACTION_LOAD,
   ACTION_LOAD_ERROR,
@@ -58,7 +58,7 @@ export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaEl
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear (fields?: string[]): void;
   clearErrors (fields?: string[]): void;
-  clearTouchedFields (fields: string[]): void;
+  clearTouchedFields (fields?: string[]): void;
   getAttributes (name: string): FieldAttributes | undefined;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
@@ -397,9 +397,9 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Clear touched fields.
    */
-  const clearTouchedFields = useCallback((fields: string[]): void => {
+  const clearTouchedFields = useCallback((fields?: string[]): void => {
     dispatch({
-      type: ACTION_CLEAR_TOUCH,
+      type: ACTION_CLEAR_TOUCHED_FIELDS,
       data: { fields }
     })
   }, [])
