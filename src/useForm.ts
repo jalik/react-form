@@ -66,7 +66,6 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   handleChange (event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
-  initValues (values: Partial<V>): void; // todo rename to setInitialValues()
   invalidClass?: string;
   load (): void;
   modifiedClass?: string;
@@ -75,6 +74,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   submit (): Promise<void | R>;
   setError (name: string, error?: Error): void;
   setErrors (errors: Errors): void;
+  setInitialValues (values: Partial<V>): void;
   setTouchedFields (fields: string[]): void;
   setValue (name: string, value?: unknown, validate?: boolean): void;
   setValues (values: Values | Partial<V>, validate?: boolean): void;
@@ -351,7 +351,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   ), [validateFields])
 
   /**
-   * Defines several field values (use initValues() to set all form values).
+   * Defines several field values (use setInitialValues() to set all form values).
    */
   const setValues = useCallback((values: Values | Partial<V>, validate = undefined): void => {
     // Ignore action if form disabled
@@ -550,7 +550,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Defines initial values (after loading for example).
    */
-  const initValues = useCallback((values: Partial<V>): void => {
+  const setInitialValues = useCallback((values: Partial<V>): void => {
     dispatch({
       type: ACTION_INIT_VALUES,
       data: { values }
@@ -663,9 +663,9 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
 
   useEffect(() => {
     if (initialValues && !state.initialized) {
-      initValues(initialValues)
+      setInitialValues(initialValues)
     }
-  }, [initValues, initialValues, state.initialized])
+  }, [setInitialValues, initialValues, state.initialized])
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
 
@@ -699,7 +699,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     handleChange,
     handleReset,
     handleSubmit,
-    initValues,
+    setInitialValues: setInitialValues,
     load,
     removeFields,
     reset,
@@ -714,7 +714,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     validateFields
   }), [state, invalidClass, modifiedClass, validClass, clear, clearErrors, clearTouchedFields,
     getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
-    initValues, load, removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
+    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
     setTouchedFields, validate, validateField, validateFields])
 }
 
