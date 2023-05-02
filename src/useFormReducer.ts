@@ -370,9 +370,7 @@ function useFormReducer<V extends Values, R> (
       nextState = {
         ...state,
         submitting: true,
-        // Disable fields when submitting form.
-        disabled: true,
-        // Reset previous form submitting result.
+        submitCount: state.submitCount + 1,
         submitError: undefined,
         submitResult: undefined
       }
