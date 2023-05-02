@@ -3,39 +3,39 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react'
 
-type DebouncedFunction<T> = (...args: any[]) => Promise<void | T>
+type DebouncedFunction<T> = (...args: any[]) => Promise<void | T>;
 
 /**
  * Avoids wasting function calls by waiting for the last call.
  */
-function useDebouncePromise<T>(func: DebouncedFunction<T>, delay = 50): DebouncedFunction<T> {
-  const funcRef = useRef(func);
-  const timerRef = useRef<NodeJS.Timeout>();
+function useDebouncePromise<T> (func: DebouncedFunction<T>, delay = 50): DebouncedFunction<T> {
+  const funcRef = useRef(func)
+  const timerRef = useRef<NodeJS.Timeout>()
 
   const debouncedFunc = useCallback((...args: unknown[]) => (
     new Promise<void | T>((resolve) => {
       timerRef.current = setTimeout(() => {
-        resolve(funcRef.current(...args));
-      }, delay);
+        resolve(funcRef.current(...args))
+      }, delay)
     })
-  ), [delay]);
+  ), [delay])
 
   useEffect(() => {
-    funcRef.current = func;
-  }, [func]);
+    funcRef.current = func
+  }, [func])
 
-  useEffect(() => (
+  useEffect(() =>
     () => {
       // Clear timeout.
       if (timerRef.current != null) {
-        clearTimeout(timerRef.current);
+        clearTimeout(timerRef.current)
       }
     }
-  ), [delay]);
+  , [delay])
 
-  return debouncedFunc;
+  return debouncedFunc
 }
 
-export default useDebouncePromise;
+export default useDebouncePromise

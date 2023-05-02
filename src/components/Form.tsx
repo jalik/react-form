@@ -3,22 +3,25 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React from 'react';
-import { UseFormHook, Values } from '../useForm';
-import { FormContext } from '../useFormContext';
+import React from 'react'
+import { UseFormHook } from '../useForm'
+import { FormContext } from '../useFormContext'
+import { Values } from '../useFormReducer'
 
 export interface FormProps<V extends Values, R> {
   context: UseFormHook<V, R>;
 }
 
-function Form<V extends Values, R>(props: FormProps<V, R> & React.FormHTMLAttributes<HTMLFormElement>): JSX.Element {
+function Form<V extends Values, R> (
+  props: FormProps<V, R> & React.FormHTMLAttributes<HTMLFormElement>
+): JSX.Element {
   const {
     children,
     context,
     ...others
-  } = props;
+  } = props
 
-  const { handleReset, handleSubmit } = context;
+  const { handleReset, handleSubmit } = context
 
   return (
     <FormContext.Provider value={context}>
@@ -31,7 +34,7 @@ function Form<V extends Values, R>(props: FormProps<V, R> & React.FormHTMLAttrib
         {children}
       </form>
     </FormContext.Provider>
-  );
+  )
 }
 
-export default Form;
+export default Form

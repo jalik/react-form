@@ -3,23 +3,23 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React from 'react';
-import { inputValue } from '../utils';
+import React from 'react'
+import { inputValue } from '../utils'
 
 export interface OptionProps {
-  disabled: boolean;
+  disabled?: boolean;
   key?: React.Key;
   label?: string | number | boolean;
   value: string | number | boolean;
 }
 
-function Option(props: OptionProps): JSX.Element {
+function Option (props: OptionProps): JSX.Element {
   const {
     disabled,
     label,
     value,
     ...others
-  } = props;
+  } = props
 
   return (
     <option
@@ -29,11 +29,13 @@ function Option(props: OptionProps): JSX.Element {
     >
       {label || value}
     </option>
-  );
+  )
 }
 
 Option.defaultProps = {
   disabled: false,
-};
+  key: undefined,
+  label: undefined
+}
 
-export default Option;
+export default Option

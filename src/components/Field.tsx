@@ -3,19 +3,19 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react';
-import { FieldAttributes, FieldElement } from '../useForm';
-import useFormContext from '../useFormContext';
-import { getFieldId, inputValue } from '../utils';
-import Option, { OptionProps } from './Option';
+import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
+import { FieldAttributes, FieldElement } from '../useForm'
+import useFormContext from '../useFormContext'
+import { getFieldId, inputValue } from '../utils'
+import Option, { OptionProps } from './Option'
 
-type FieldType = HTMLInputTypeAttribute | 'select' | 'textarea'
+type FieldType = HTMLInputTypeAttribute | 'select' | 'textarea';
 
 /**
  * Returns true if the type is checkable.
  */
-function isCheckable(type: HTMLInputTypeAttribute): boolean {
-  return type === 'checkbox' || type === 'radio';
+function isCheckable (type: HTMLInputTypeAttribute): boolean {
+  return type === 'checkbox' || type === 'radio'
 }
 
 export interface FieldProps<T = string> {
@@ -29,12 +29,10 @@ export interface FieldProps<T = string> {
   parser?(value: string): T;
   required?: boolean;
   type?: FieldType;
-  // todo remove
-  validator?<T>(value: T): Error | undefined;
   value?: string | T;
 }
 
-function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
+function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
   const {
     children,
     className,
@@ -51,9 +49,8 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
     parser,
     type,
     value,
-    validator,
     ...others
-  } = props;
+  } = props
 
   const {
     disabled: formDisabled,
@@ -66,64 +63,60 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
     modifiedClass,
     modifiedFields,
     remove,
-    validClass,
-  } = useFormContext();
-
-  // Check deprecated attributes
-  if (validator) {
-    // eslint-disable-next-line no-console
-    console.warn(`${name}: attribute "validator" is deprecated`);
-  }
+    validClass
+  } = useFormContext()
 
   // Check incompatible attributes
   if (onChange && parser) {
     // eslint-disable-next-line no-console
-    console.warn(`${name}: attributes "parser" and "onChange" cannot be set together`);
+    console.warn(`${name}: attributes "parser" and "onChange" cannot be set together`)
   }
 
-  const formatValue = useCallback((value: T | string) => {
-    if (value != null && value !== '') {
+  const formatValue = useCallback((val: T | string) => {
+    if (val != null && val !== '') {
       if (formatter) {
-        return formatter(value);
-      } else {
-        return String(value);
+        return formatter(val)
       }
+      return String(val)
     }
-    return '';
-  }, [formatter]);
+    return ''
+  }, [formatter])
 
   // Get context value from field name
-  const contextValue = useMemo(() => getValue<T>(name), [getValue, name]);
+  const contextValue = useMemo(() => getValue<T>(name), [getValue, name])
 
   const handleFieldBlur = useCallback((event: React.FocusEvent<FieldElement>) => {
-    handleBlur(event);
-  }, [handleBlur]);
+    handleBlur(event)
+  }, [handleBlur])
 
   const handleFieldChange = useCallback((event: React.ChangeEvent<FieldElement>) => {
-    handleChange(event, { parser });
-  }, [handleChange, parser]);
+    handleChange(event, { parser })
+  }, [handleChange, parser])
 
   // Get field attributes (compute only once).
   const attributes = useMemo(() => (
     getAttributes(name)
-  ), [getAttributes, name]);
+  ), [getAttributes, name])
 
   // Prepare field classes.
   const classNames = useMemo(() => {
-    const classes = [className];
+    const classes = [className]
 
     // Adds CSS classes corresponding to field state.
     if (modifiedFields[name]) {
-      classes.push(modifiedClass);
-      classes.push(errors[name] ? invalidClass : validClass);
+      classes.push(modifiedClass)
+      classes.push(errors[name] ? invalidClass : validClass)
     } else if (typeof errors[name] !== 'undefined') {
-      classes.push(invalidClass);
+      classes.push(invalidClass)
     }
-    return classes;
-  }, [className, errors, invalidClass, modifiedClass, modifiedFields, name, validClass]);
+    return classes
+  }, [className, errors, invalidClass, modifiedClass, modifiedFields, name, validClass])
 
-  // Get parsed value if parser is passed, so we can compare parsed value to field value (if checked).
-  const parsedValue = useMemo(() => parser && typeof value === 'string' ? parser(value) : value, [parser, value]);
+  // Get parsed value if parser is passed,
+  // so we can compare parsed value to field value (if checked).
+  const parsedValue = useMemo(() => (
+    parser && typeof value === 'string' ? parser(value) : value
+  ), [parser, value])
 
   const finalProps = useMemo(() => {
     const p: { [key: string]: any } = {
@@ -137,41 +130,42 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
       required: others.required || attributes?.required,
       onBlur: onBlur || handleFieldBlur,
       onChange: onChange || handleFieldChange,
-      value: contextValue,
-    };
+      value: contextValue
+    }
 
     if (value === null || value === '') {
       if (type === 'radio') {
         // Convert null value for radio only
-        p.value = '';
+        p.value = ''
       }
     }
 
     // Allow formatting value.
-    p.value = inputValue(formatValue(p.value));
+    p.value = inputValue(formatValue(p.value))
 
     if (type && isCheckable(type)) {
       if (contextValue instanceof Array) {
-        p.checked = contextValue.indexOf(parsedValue) !== -1;
+        p.checked = contextValue.indexOf(parsedValue) !== -1
         // Remove required attribute on multiple fields.
-        p.required = false;
+        p.required = false
       } else {
-        // Get checked state from checkbox without value or by comparing checkbox value and context value.
+        // Get checked state from checkbox without value
+        // or by comparing checkbox value and context value.
         p.checked = (value == null || value === '') && typeof contextValue === 'boolean' && type === 'checkbox'
           ? contextValue
-          : contextValue === parsedValue;
+          : contextValue === parsedValue
       }
     }
-    return p;
+    return p
   }, [attributes, classNames, contextValue, disabled, formDisabled, formatValue, handleFieldBlur,
-    handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, type, value]);
+    handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, type, value])
 
   const finalOptions = useMemo(() => {
     const list = (options ? [...options] : []).map((option, index) => (
       typeof option === 'object' && option != null
         ? { ...option, key: `${option.label}_${option.value}` }
         : { key: `${index}_${option}`, label: option, value: option }
-    ));
+    ))
 
     if (list.length > 0) {
       // Adds an empty value to avoid selection of the first value by default.
@@ -180,17 +174,17 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
           disabled: false,
           key: 'empty',
           label: emptyOptionLabel,
-          value: '',
-        });
+          value: ''
+        })
       }
     }
-    return list;
-  }, [children, emptyOptionLabel, multiple, options]);
+    return list
+  }, [children, emptyOptionLabel, multiple, options])
 
   // Removes the field when unmounted, to clean errors and stuffs like that.
   useEffect(() => () => {
-    remove(name);
-  }, [name, remove]);
+    remove(name)
+  }, [name, remove])
 
   // Renders a custom component.
   if (Component != null) {
@@ -202,10 +196,9 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
             <Option key={key} {...option} />
           ))}
         </Component>
-      );
-    } else {
-      return <Component {...finalProps} type={type} />;
+      )
     }
+    return <Component {...finalProps} type={type} />
   }
 
   // Renders a select field.
@@ -217,14 +210,14 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
           <Option key={key} {...option} />
         ))}
       </select>
-    );
+    )
   }
 
   // Renders a textarea field.
   if (type === 'textarea') {
     return (
       <textarea {...finalProps} value={String(finalProps.value)} />
-    );
+    )
   }
 
   // By default, renders an input field.
@@ -234,11 +227,20 @@ function Field<T>(props: FieldAttributes & FieldProps<T>): JSX.Element {
       type={type}
       value={String(finalProps.value)}
     />
-  );
+  )
 }
 
 Field.defaultProps = {
+  component: undefined,
+  disabled: false,
   emptyOptionLabel: '...',
-};
+  formatter: undefined,
+  multiple: false,
+  options: undefined,
+  parser: undefined,
+  required: false,
+  type: undefined,
+  value: undefined
+}
 
-export default Field;
+export default Field

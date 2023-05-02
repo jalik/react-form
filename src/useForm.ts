@@ -3,8 +3,8 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
-import useDebouncePromise from './useDebouncePromise';
+import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import useDebouncePromise from './useDebouncePromise'
 import useFormReducer, {
   ACTION_CLEAR,
   ACTION_CLEAR_ERRORS,
@@ -26,8 +26,12 @@ import useFormReducer, {
   ACTION_VALIDATE_ERROR,
   ACTION_VALIDATE_FAIL,
   ACTION_VALIDATE_SUCCESS,
+  Errors,
+  FormState,
   initialState,
-} from './useFormReducer';
+  ModifiedFields,
+  Values
+} from './useFormReducer'
 import {
   build,
   clone,
@@ -36,56 +40,19 @@ import {
   hasDefinedValues,
   isMultipleFieldElement,
   parseInputValue,
-  resolve,
-} from './utils';
+  resolve
+} from './utils'
 
 export type FieldChangeOptions = {
   parser?(value: unknown, target: HTMLElement): any
-}
-
-export type Errors = Record<string, void | Error | undefined>
-
-export type ModifiedFields = Record<string, boolean>
-
-export type TouchedFields = Record<string, boolean>
-
-export type Values = Record<string, unknown>
+};
 
 export type FieldAttributes =
   React.InputHTMLAttributes<HTMLInputElement>
   | React.SelectHTMLAttributes<HTMLSelectElement>
-  | React.TextareaHTMLAttributes<HTMLTextAreaElement>
+  | React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-
-export interface FormState<V extends Values, R> {
-  disabled: boolean;
-  errors: Errors;
-  hasError: boolean;
-  initialized: boolean;
-  initialValues: Partial<V>;
-  loadError?: Error;
-  loaded: boolean;
-  loading: boolean;
-  modified: boolean;
-  modifiedFields: ModifiedFields;
-  needValidation: boolean | string[];
-  submitCount: number;
-  submitError?: Error;
-  submitResult?: R;
-  submitted: boolean;
-  submitting: boolean;
-  touched: boolean;
-  touchedFields: TouchedFields;
-  validateError?: Error;
-  validated: boolean;
-  validateOnChange: boolean;
-  validateOnInit: boolean;
-  validateOnSubmit: boolean;
-  validateOnTouch: boolean;
-  validating: boolean;
-  values: Partial<V>;
-}
+export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear(): void;
@@ -127,8 +94,15 @@ export interface UseFormOptions<V extends Values, R> {
   onSubmit(values: Partial<V>): Promise<void | R>;
   submitDelay?: number;
   transform?(mutation: Values, values: Partial<V>): Partial<V>;
-  validate?(values: Partial<V>, modifiedFields: ModifiedFields): Promise<void | Errors | undefined>;
-  validateField?(name: string, value: unknown, values: Partial<V>): Promise<void | Error | undefined>;
+  validate?(
+    values: Partial<V>,
+    modifiedFields: ModifiedFields,
+  ): Promise<void | Errors | undefined>;
+  validateField?(
+    name: string,
+    value: unknown,
+    values: Partial<V>,
+  ): Promise<void | Error | undefined>;
   validClass?: string;
   validateDelay?: number;
   validateOnChange?: boolean;
@@ -140,7 +114,7 @@ export interface UseFormOptions<V extends Values, R> {
 /**
  * Manage form state and actions.
  */
-function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHook<V, R> {
+function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHook<V, R> {
   const {
     disabled = false,
     initialValues,
@@ -159,36 +133,36 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     validateOnChange = false,
     validateOnInit = false,
     validateOnSubmit = true,
-    validateOnTouch = false,
-  } = options;
+    validateOnTouch = false
+  } = options
 
   // Checks options.
   if (typeof onSubmit !== 'function') {
-    throw new Error('onSubmit must be a function');
+    throw new Error('onSubmit must be a function')
   }
   if (transformFunc && typeof transformFunc !== 'function') {
-    throw new Error('transform must be a function');
+    throw new Error('transform must be a function')
   }
   if (initializeFieldFunc && typeof initializeFieldFunc !== 'function') {
-    throw new Error('initializeField must be a function');
+    throw new Error('initializeField must be a function')
   }
   if (loadFunc && typeof loadFunc !== 'function') {
-    throw new Error('load must be a function');
+    throw new Error('load must be a function')
   }
   if (validateFunc && typeof validateFunc !== 'function') {
-    throw new Error('validate must be a function');
+    throw new Error('validate must be a function')
   }
   if (validateFieldFunc && typeof validateFieldFunc !== 'function') {
-    throw new Error('validateField function');
+    throw new Error('validateField function')
   }
 
   // Defines function references.
-  const initializeFieldRef = useRef(initializeFieldFunc);
-  const mountedRef = useRef(false);
-  const onSubmitRef = useRef(onSubmit);
-  const transformRef = useRef(transformFunc);
-  const validateFieldRef = useRef(validateFieldFunc);
-  const validateRef = useRef(validateFunc);
+  const initializeFieldRef = useRef(initializeFieldFunc)
+  const mountedRef = useRef(false)
+  const onSubmitRef = useRef(onSubmit)
+  const transformRef = useRef(transformFunc)
+  const validateFieldRef = useRef(validateFieldFunc)
+  const validateRef = useRef(validateFunc)
 
   // Defines the form state.
   const [state, dispatch] = useReducer(
@@ -204,278 +178,283 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       validateOnChange,
       validateOnInit,
       validateOnSubmit,
-      validateOnTouch,
+      validateOnTouch
     },
-    undefined,
-  );
+    undefined
+  )
 
   /**
    * Clears form.
    */
   const clear = useCallback((): void => {
-    dispatch({ type: ACTION_CLEAR });
-  }, []);
+    dispatch({ type: ACTION_CLEAR })
+  }, [])
 
   /**
    * Clears all errors.
    */
   const clearErrors = useCallback((): void => {
-    dispatch({ type: ACTION_CLEAR_ERRORS });
-  }, []);
+    dispatch({ type: ACTION_CLEAR_ERRORS })
+  }, [])
 
   /**
    * Returns attributes of a field.
    */
   const getAttributes = useCallback((
     name: string,
-    defaultAttributes?: FieldAttributes,
+    defaultAttributes?: FieldAttributes
   ): FieldAttributes | undefined => (
     typeof initializeFieldRef.current === 'function'
       ? initializeFieldRef.current(name)
       : defaultAttributes
-  ), []);
+  ), [])
 
   /**
    * Returns the initial value of a field.
    */
   const getInitialValue = useCallback(<T>(name: string): T | undefined => (
     resolve<T>(name, clone(state.initialValues))
-  ), [state.initialValues]);
+  ), [state.initialValues])
 
   /**
    * Returns the value of a field.
    */
   const getValue = useCallback(<T>(name: string, defaultValue?: T): T | undefined => {
-    const value = resolve<T>(name, clone(state.values));
-    return typeof value !== 'undefined' ? value : defaultValue;
-  }, [state.values]);
+    const value = resolve<T>(name, clone(state.values))
+    return typeof value !== 'undefined' ? value : defaultValue
+  }, [state.values])
 
   /**
    * Loads and set initial values.
    */
   const load = useCallback((): void => {
     if (loadFunc) {
-      dispatch({ type: ACTION_LOAD });
+      dispatch({ type: ACTION_LOAD })
       loadFunc()
         .then((result) => {
           if (mountedRef && result) {
-            dispatch({ type: ACTION_LOAD_SUCCESS, data: { values: result } });
+            dispatch({ type: ACTION_LOAD_SUCCESS, data: { values: result } })
           }
         })
         .catch((error) => {
-          dispatch({ type: ACTION_LOAD_ERROR, error });
-          throw error;
-        });
+          dispatch({ type: ACTION_LOAD_ERROR, error })
+          throw error
+        })
     }
-  }, [loadFunc]);
+  }, [loadFunc])
 
   /**
    * Removes a field.
    */
   const remove = useCallback((name: string): void => {
     // Ignore action if form disabled
-    if (disabled) return;
+    if (disabled) return
 
-    dispatch({ type: ACTION_REMOVE, data: { name } });
-  }, [disabled]);
+    dispatch({ type: ACTION_REMOVE, data: { name } })
+  }, [disabled])
 
   /**
    * Defines the field error.
    */
   const setError = useCallback((name: string, error: Error): void => {
-    dispatch({ type: ACTION_SET_ERRORS, data: { errors: { [name]: error } } });
-  }, []);
+    dispatch({ type: ACTION_SET_ERRORS, data: { errors: { [name]: error } } })
+  }, [])
 
   /**
    * Defines form field errors.
    */
   const setErrors = useCallback((errors: Errors): void => {
-    dispatch({ type: ACTION_SET_ERRORS, data: { errors } });
-  }, []);
+    dispatch({ type: ACTION_SET_ERRORS, data: { errors } })
+  }, [])
 
   /**
    * Validates one or more fields by passing field names.
    */
   const validateFields = useCallback((fields: string[]): Promise<void | Errors | undefined> => {
-    dispatch({ type: ACTION_VALIDATE, data: { fields } });
+    dispatch({ type: ACTION_VALIDATE, data: { fields } })
 
-    const validate = validateFieldRef.current;
+    const validate = validateFieldRef.current
     const promises = validate
       ? fields.map((name: string) => {
-        const result = validate(name, getValue(name), state.values);
+        const result = validate(name, getValue(name), state.values)
 
         if (!result) {
-          throw new Error('validateField() must return a Promise');
+          throw new Error('validateField() must return a Promise')
         }
-        return result.then((error): [string, void | Error | undefined] => [name, error]);
+        return result.then((error): [string, void | Error | undefined] => [name, error])
       })
-      : [];
+      : []
 
-    let errors: Errors = {};
+    let errors: Errors = {}
 
     return Promise
       .all(promises)
       .then((results) => {
         results.forEach((result) => {
           if (result) {
-            const [name, error] = result;
-            errors = { ...errors, [name]: error };
+            const [name, error] = result
+            errors = { ...errors, [name]: error }
           }
-        });
+        })
         dispatch({
           type: ACTION_VALIDATE_FAIL,
           data: {
             // Keep existing errors.
             errors: {
               ...state.errors,
-              ...errors,
-            },
-          },
-        });
-        return errors;
+              ...errors
+            }
+          }
+        })
+        return errors
       })
       .catch((error) => {
-        dispatch({ type: ACTION_VALIDATE_ERROR, error });
-        throw error;
-      });
-  }, [getValue, state.errors, state.values]);
+        dispatch({ type: ACTION_VALIDATE_ERROR, error })
+        throw error
+      })
+  }, [getValue, state.errors, state.values])
 
   /**
    * Validates a field value.
    */
-  const validateField = useCallback((name: string): Promise<void | Error | undefined> => {
-    return validateFields([name]).then((errors: void | Errors | undefined) => {
-      const err: Record<string, void | Error | undefined> = { ...errors };
-      return err[name];
-    });
-  }, [validateFields]);
+  const validateField = useCallback((name: string): Promise<void | Error | undefined> => (
+    validateFields([name])
+      .then((errors: void | Errors | undefined) => {
+        const err: Record<string, void | Error | undefined> = { ...errors }
+        return err[name]
+      })
+  ), [validateFields])
 
   /**
    * Defines several field values (use initValues() to set all form values).
    */
   const setValues = useCallback((values: Values, validate = undefined): void => {
     // Ignore action if form disabled
-    if (disabled) return;
+    if (disabled) return
 
-    let mutation = { ...values };
+    let mutation = { ...values }
     if (transformRef.current) {
       // Merge changes with current values.
-      let nextValues = clone(state.values) || {};
-      Object.entries(mutation).forEach(([name, value]) => {
-        nextValues = build(name, value, nextValues);
-      });
+      let nextValues = clone(state.values) || {}
+      Object.entries(mutation)
+        .forEach(([name, value]) => {
+          nextValues = build(name, value, nextValues)
+        })
       // Allow changing values on the fly
-      mutation = transformRef.current(mutation, nextValues);
+      mutation = transformRef.current(mutation, nextValues)
     }
 
     dispatch({
       type: ACTION_SET_VALUES,
       data: {
         validate: validate || (validate !== false && validateOnChange),
-        values: mutation,
-      },
-    });
-  }, [disabled, state.values, validateOnChange]);
+        values: mutation
+      }
+    })
+  }, [disabled, state.values, validateOnChange])
 
   /**
    * Defines the value of a field.
    */
   const setValue = useCallback((name: string, value?: unknown, validate = undefined): void => {
-    setValues({ [name]: value }, validate);
-  }, [setValues]);
+    setValues({ [name]: value }, validate)
+  }, [setValues])
 
   /**
    * Clear touched fields.
    */
   const clearTouch = useCallback((fields: string[]) => {
-    dispatch({ type: ACTION_CLEAR_TOUCH, data: { fields } });
-  }, []);
+    dispatch({ type: ACTION_CLEAR_TOUCH, data: { fields } })
+  }, [])
 
   /**
    * Set touched fields.
    */
   const touch = useCallback((fields: string[]) => {
-    let canDispatch = false;
+    let canDispatch = false
 
     // Check if we really need to dispatch the event
     for (let i = 0; i < fields.length; i += 1) {
       if (!state.touchedFields[fields[i]]) {
-        canDispatch = true;
-        break;
+        canDispatch = true
+        break
       }
     }
 
     if (canDispatch) {
-      dispatch({ type: ACTION_TOUCH, data: { fields } });
+      dispatch({ type: ACTION_TOUCH, data: { fields } })
     }
-  }, [state.touchedFields]);
+  }, [state.touchedFields])
 
   /**
    * Resets form values.
    */
   const reset = useCallback((fields?: string[]): void => {
     if (fields) {
-      dispatch({ type: ACTION_RESET_VALUES, data: { fields } });
+      dispatch({ type: ACTION_RESET_VALUES, data: { fields } })
     } else {
-      dispatch({ type: ACTION_RESET });
+      dispatch({ type: ACTION_RESET })
     }
-  }, []);
+  }, [])
 
   /**
    * Submits form.
    */
   const submit = useCallback((): Promise<void | R> => {
     if (!state.values) {
-      const error = new Error('Nothing to submit, values are empty');
-      dispatch({ type: ACTION_SUBMIT_ERROR, error });
-      return Promise.reject(error);
+      const error = new Error('Nothing to submit, values are empty')
+      dispatch({ type: ACTION_SUBMIT_ERROR, error })
+      return Promise.reject(error)
     }
-    dispatch({ type: ACTION_SUBMIT });
-    const promise = onSubmitRef.current(clone(state.values));
+    dispatch({ type: ACTION_SUBMIT })
+    const promise = onSubmitRef.current(clone(state.values))
 
     if (!(promise instanceof Promise)) {
-      throw new Error('onSubmit must return a Promise');
+      throw new Error('onSubmit must return a Promise')
     }
     return promise
       .then((result) => {
         if (result) {
-          dispatch({ type: ACTION_SUBMIT_SUCCESS, data: { result } });
+          dispatch({ type: ACTION_SUBMIT_SUCCESS, data: { result } })
         }
-        return result;
+        return result
       })
       .catch((error: Error) => {
-        dispatch({ type: ACTION_SUBMIT_ERROR, error });
-        throw error;
-      });
-  }, [state.values]);
+        dispatch({ type: ACTION_SUBMIT_ERROR, error })
+        throw error
+      })
+  }, [state.values])
 
   /**
    * Validates form values.
    */
-  const validate = useCallback((options?: { beforeSubmit?: boolean }): Promise<void | Errors | undefined> => {
-    const { beforeSubmit = false } = options || {};
-    let promise;
+  const validate = useCallback((opts?: {
+    beforeSubmit?: boolean
+  }): Promise<void | Errors | undefined> => {
+    const { beforeSubmit = false } = opts || {}
+    let promise
 
     if (typeof validateRef.current === 'function') {
-      dispatch({ type: ACTION_VALIDATE });
+      dispatch({ type: ACTION_VALIDATE })
 
       if (!state.values) {
-        const error = new Error('Nothing to validate, values are empty');
-        dispatch({ type: ACTION_VALIDATE_ERROR, error });
-        return Promise.reject(error);
+        const error = new Error('Nothing to validate, values are empty')
+        dispatch({ type: ACTION_VALIDATE_ERROR, error })
+        return Promise.reject(error)
       }
-      promise = validateRef.current(clone(state.values), { ...state.modifiedFields });
+      promise = validateRef.current(clone(state.values), { ...state.modifiedFields })
 
       if (!(promise instanceof Promise)) {
-        throw new Error(`validate() must return a Promise`);
+        throw new Error('validate() must return a Promise')
       }
     } else {
-      // Validate touched and modified fields only, since we don't have a global validation function.
+      // Validate touched and modified fields only,
+      // since we don't have a global validation function.
       // todo validate registered fields
       return validateFields(Object.keys({
         ...state.modifiedFields,
-        ...state.touchedFields,
-      }));
+        ...state.touchedFields
+      }))
     }
 
     return promise
@@ -483,24 +462,24 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
         if (errors && hasDefinedValues(errors)) {
           dispatch({
             type: ACTION_VALIDATE_FAIL,
-            data: { errors },
-          });
+            data: { errors }
+          })
         } else {
           dispatch({
             type: ACTION_VALIDATE_SUCCESS,
-            data: { beforeSubmit },
-          });
+            data: { beforeSubmit }
+          })
         }
-        return errors;
+        return errors
       })
       .catch((error) => {
         dispatch({
           type: ACTION_VALIDATE_ERROR,
-          error,
-        });
-        throw error;
-      });
-  }, [state.modifiedFields, state.touchedFields, state.values, validateFields]);
+          error
+        })
+        throw error
+      })
+  }, [state.modifiedFields, state.touchedFields, state.values, validateFields])
 
   /**
    * Validates if necessary and submits form.
@@ -510,143 +489,143 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
       ? validate({ beforeSubmit: true })
         .then((errors) => {
           if (!errors || !hasDefinedValues(errors)) {
-            return submit();
+            return submit()
           }
-          return undefined;
+          return undefined
         })
       : submit()
-  ), [validateOnSubmit, state.validated, validate, submit]);
+  ), [validateOnSubmit, state.validated, validate, submit])
 
-  const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay);
+  const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay)
 
   /**
    * Defines initial values (after loading for example).
    */
   const initValues = useCallback((values: Partial<V>): void => {
-    dispatch({ type: ACTION_INIT_VALUES, data: { values } });
-  }, []);
+    dispatch({ type: ACTION_INIT_VALUES, data: { values } })
+  }, [])
 
   /**
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
-    touch([event.currentTarget.name]);
-  }, [touch]);
+    touch([event.currentTarget.name])
+  }, [touch])
 
   /**
    * Handles change of field value.
    */
   const handleChange = useCallback((
     event: React.ChangeEvent<FieldElement>,
-    options?: FieldChangeOptions,
+    opts?: FieldChangeOptions
   ): void => {
-    const { parser } = options || {};
-    const { currentTarget } = event;
-    const { name, type } = currentTarget;
-    let value;
+    const { parser } = opts || {}
+    const { currentTarget } = event
+    const { name, type } = currentTarget
+    let value
 
     // Parses value using a custom parser or using the native parser (smart typing).
     const parsedValue = typeof parser === 'function'
       ? parser(currentTarget.value, currentTarget)
-      : parseInputValue(currentTarget);
+      : parseInputValue(currentTarget)
 
     // Handles array value (checkboxes, select-multiple).
-    const el = currentTarget.form?.elements.namedItem(name);
+    const el = currentTarget.form?.elements.namedItem(name)
     if (el && isMultipleFieldElement(el)) {
       if (currentTarget instanceof HTMLInputElement) {
-        value = getCheckedValues(currentTarget);
+        value = getCheckedValues(currentTarget)
       } else if (currentTarget instanceof HTMLSelectElement) {
-        value = getSelectedValues(currentTarget);
+        value = getSelectedValues(currentTarget)
       }
     } else if (type === 'checkbox' && currentTarget instanceof HTMLInputElement) {
       if (currentTarget.value === '') {
         // Checkbox has no value defined, so we use the checked state instead.
-        value = currentTarget.checked;
+        value = currentTarget.checked
       } else if (typeof parsedValue === 'boolean') {
         // Checkbox has a boolean value.
-        value = currentTarget.checked ? parsedValue : !parsedValue;
+        value = currentTarget.checked ? parsedValue : !parsedValue
       } else {
         // Checkbox value other than boolean.
-        value = currentTarget.checked ? parsedValue : undefined;
+        value = currentTarget.checked ? parsedValue : undefined
       }
     } else {
-      value = parsedValue;
+      value = parsedValue
     }
 
     // Replaces empty string with null.
     if (value === '' && nullify) {
-      value = null;
+      value = null
     }
 
-    setValue(name, value);
-  }, [nullify, setValue]);
+    setValue(name, value)
+  }, [nullify, setValue])
 
   /**
    * Handles form reset.
    */
   const handleReset = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    event.stopPropagation();
-    reset();
-  }, [reset]);
+    event.preventDefault()
+    event.stopPropagation()
+    reset()
+  }, [reset])
 
   /**
    * Handles form submit.
    */
   const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    event.stopPropagation();
-    validateAndSubmit();
-  }, [validateAndSubmit]);
+    event.preventDefault()
+    event.stopPropagation()
+    validateAndSubmit()
+  }, [validateAndSubmit])
 
   // Keep track of mount state.
   useEffect(() => {
-    mountedRef.current = true;
+    mountedRef.current = true
     return () => {
-      mountedRef.current = false;
-    };
-  }, []);
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect((): void => {
-    initializeFieldRef.current = initializeFieldFunc;
-  }, [initializeFieldFunc]);
+    initializeFieldRef.current = initializeFieldFunc
+  }, [initializeFieldFunc])
 
   useEffect(() => {
-    onSubmitRef.current = onSubmit;
-  }, [onSubmit]);
+    onSubmitRef.current = onSubmit
+  }, [onSubmit])
 
   useEffect((): void => {
-    transformRef.current = transformFunc;
-  }, [transformFunc]);
+    transformRef.current = transformFunc
+  }, [transformFunc])
 
   useEffect(() => {
-    validateFieldRef.current = validateFieldFunc;
-  }, [validateFieldFunc]);
+    validateFieldRef.current = validateFieldFunc
+  }, [validateFieldFunc])
 
   useEffect(() => {
-    validateRef.current = validateFunc;
-  }, [validateFunc]);
+    validateRef.current = validateFunc
+  }, [validateFunc])
 
   useEffect(() => {
     if (initialValues && !state.initialized) {
-      initValues(initialValues);
+      initValues(initialValues)
     }
-  }, [initValues, initialValues, state.initialized]);
+  }, [initValues, initialValues, state.initialized])
 
-  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay);
+  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
 
   useEffect(() => {
     if (state.needValidation === true) {
-      validate();
+      validate()
     } else if (state.needValidation instanceof Array && state.needValidation.length > 0) {
-      debouncedValidateFields(state.needValidation);
+      debouncedValidateFields(state.needValidation)
     }
-  }, [debouncedValidateFields, state.needValidation, validate]);
+  }, [debouncedValidateFields, state.needValidation, validate])
 
   // Load initial values using a function.
   useEffect(() => {
-    load();
-  }, [load]);
+    load()
+  }, [load])
 
   return useMemo(() => ({
     ...state,
@@ -677,11 +656,11 @@ function useForm<V extends Values, R>(options: UseFormOptions<V, R>): UseFormHoo
     touch,
     validate,
     validateField,
-    validateFields,
-  }), [state, invalidClass, modifiedClass, validClass, clear,
-    clearErrors, clearTouch, getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset,
-    handleSubmit, initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit, touch,
-    validate, validateField, validateFields]);
+    validateFields
+  }), [state, invalidClass, modifiedClass, validClass, clear, clearErrors, clearTouch,
+    getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
+    initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
+    touch, validate, validateField, validateFields])
 }
 
-export default useForm;
+export default useForm

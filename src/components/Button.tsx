@@ -3,15 +3,15 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React, { useCallback, useMemo } from 'react';
-import useFormContext from '../useFormContext';
+import React, { useCallback, useMemo } from 'react'
+import useFormContext from '../useFormContext'
 
 export interface ButtonsProps extends React.Component {
   component?: any,
   type?: 'button' | 'reset' | 'submit',
 }
 
-function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonElement>): JSX.Element {
+function Button (props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonElement>): JSX.Element {
   const {
     children,
     component: Component,
@@ -19,39 +19,39 @@ function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonEleme
     onClick,
     type,
     ...others
-  } = props;
+  } = props
 
   const {
     disabled: formDisabled,
     modified,
     reset,
     submit,
-    submitting,
-  } = useFormContext();
+    submitting
+  } = useFormContext()
 
   // Disable button when form is disabled, submitting, or unmodified.
   const isDisabled = useMemo(() => (
-    disabled
-    || formDisabled
-    || submitting
-    || (type === 'reset' && !modified)
-    || (type === 'submit' && !modified)
-  ), [disabled, formDisabled, modified, submitting, type]);
+    disabled ||
+    formDisabled ||
+    submitting ||
+    (type === 'reset' && !modified) ||
+    (type === 'submit' && !modified)
+  ), [disabled, formDisabled, modified, submitting, type])
 
   const handleClick = useCallback((ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // Prevent submission.
-    ev.preventDefault();
+    ev.preventDefault()
     // Prevent parent form submission.
-    ev.stopPropagation();
+    ev.stopPropagation()
 
     if (onClick) {
-      onClick(ev);
+      onClick(ev)
     } else if (type === 'submit') {
-      submit();
+      submit()
     } else if (type === 'reset') {
-      reset();
+      reset()
     }
-  }, [onClick, reset, submit, type]);
+  }, [onClick, reset, submit, type])
 
   return (
     <Component
@@ -62,13 +62,13 @@ function Button(props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonEleme
     >
       {children}
     </Component>
-  );
+  )
 }
 
 Button.defaultProps = {
   children: null,
   component: null,
-  type: 'button',
-};
+  type: 'button'
+}
 
-export default Button;
+export default Button

@@ -3,19 +3,20 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { createContext, useContext } from 'react';
-import { UseFormHook, Values } from './useForm';
+import { createContext, useContext } from 'react'
+import { UseFormHook } from './useForm'
+import { Values } from './useFormReducer'
 
 /**
  * The default form context.
  */
-export const FormContext = createContext<any>(undefined);
+export const FormContext = createContext<any>(undefined)
 
 /**
  * Returns the form context.
  */
-function useFormContext<V extends Values, R>(): UseFormHook<V, R> {
-  return useContext<UseFormHook<V, R>>(FormContext);
+function useFormContext<V extends Values, R> (): UseFormHook<V, R> {
+  return useContext<UseFormHook<V, R>>(FormContext)
 }
 
-export default useFormContext;
+export default useFormContext
