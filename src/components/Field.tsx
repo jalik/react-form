@@ -62,7 +62,7 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
     invalidClass,
     modifiedClass,
     modifiedFields,
-    remove,
+    removeFields,
     validClass
   } = useFormContext()
 
@@ -161,18 +161,19 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
     handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, type, value])
 
   const finalOptions = useMemo(() => {
-    const list = (options ? [...options] : []).map((option, index) => (
-      typeof option === 'object' && option != null
-        ? {
-            ...option,
-            key: `${option.label}_${option.value}`
-          }
-        : {
-            key: `${index}_${option}`,
-            label: option,
-            value: option
-          }
-    ))
+    const list = (options ? [...options] : []).map((option, index) => {
+      if (typeof option === 'object' && option != null) {
+        return {
+          ...option,
+          key: `${option.label}_${option.value}`
+        }
+      }
+      return {
+        key: `${index}_${option}`,
+        label: option,
+        value: option
+      }
+    })
 
     if (list.length > 0) {
       // Adds an empty value to avoid selection of the first value by default.
@@ -190,8 +191,8 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
 
   // Removes the field when unmounted, to clean errors and stuffs like that.
   useEffect(() => () => {
-    remove(name)
-  }, [name, remove])
+    removeFields([name])
+  }, [name, removeFields])
 
   // Renders a custom component.
   if (Component != null) {

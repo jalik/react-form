@@ -58,7 +58,7 @@ export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaEl
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear (): void;
   clearErrors (): void;
-  clearTouch (fields: string[]): void;
+  clearTouchedFields (fields: string[]): void;
   getAttributes (name: string): FieldAttributes | undefined;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
@@ -70,14 +70,14 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   invalidClass?: string;
   load (): void;
   modifiedClass?: string;
-  remove (fields: string[]): void;
-  reset (): void;
+  removeFields (fields: string[]): void;
+  reset (fields?: string[]): void;
   submit (): Promise<void | R>;
   setError (name: string, error?: Error): void;
   setErrors (errors: Errors): void;
+  setTouchedFields (fields: string[]): void;
   setValue (name: string, value?: unknown, validate?: boolean): void;
   setValues (values: Values | Partial<V>, validate?: boolean): void;
-  touch (fields: string[]): void;
   validate (): Promise<void | Errors | undefined>;
   validateField (name: string): Promise<void | Error | undefined>;
   validateFields (fields?: string[]): Promise<void | Errors | undefined>;
@@ -251,9 +251,9 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   }, [loadFunc])
 
   /**
-   * Removes one or more fields definitely.
+   * Removes fields definitely (also removes errors, modified/touched states, etc).
    */
-  const remove = useCallback((fields: string[]): void => {
+  const removeFields = useCallback((fields: string[]): void => {
     // Ignore action if form disabled
     if (disabled) return
 
@@ -391,7 +391,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Clear touched fields.
    */
-  const clearTouch = useCallback((fields: string[]) => {
+  const clearTouchedFields = useCallback((fields: string[]) => {
     dispatch({
       type: ACTION_CLEAR_TOUCH,
       data: { fields }
@@ -399,9 +399,9 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   }, [])
 
   /**
-   * Set touched fields.
+   * Sets touched fields.
    */
-  const touch = useCallback((fields: string[]) => {
+  const setTouchedFields = useCallback((fields: string[]) => {
     let canDispatch = false
 
     // Check if we really need to dispatch the event
@@ -561,8 +561,8 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
-    touch([event.currentTarget.name])
-  }, [touch])
+    setTouchedFields([event.currentTarget.name])
+  }, [setTouchedFields])
 
   /**
    * Handles change of field value.
@@ -691,7 +691,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     // Methods
     clear,
     clearErrors,
-    clearTouch,
+    clearTouchedFields,
     getAttributes,
     getInitialValue,
     getValue,
@@ -701,21 +701,21 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     handleSubmit,
     initValues,
     load,
-    remove,
+    removeFields,
     reset,
     setError,
     setErrors,
     setValue,
     setValues,
     submit: debouncedSubmit,
-    touch,
+    setTouchedFields,
     validate,
     validateField,
     validateFields
-  }), [state, invalidClass, modifiedClass, validClass, clear, clearErrors, clearTouch,
+  }), [state, invalidClass, modifiedClass, validClass, clear, clearErrors, clearTouchedFields,
     getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
-    initValues, load, remove, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
-    touch, validate, validateField, validateFields])
+    initValues, load, removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
+    setTouchedFields, validate, validateField, validateFields])
 }
 
 export default useForm
