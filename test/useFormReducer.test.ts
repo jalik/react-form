@@ -30,7 +30,7 @@ import useFormReducer, {
   initialState,
   Values
 } from '../src/useFormReducer'
-import { build, hasDefinedValues, resolve } from '../src/utils'
+import { build, clone, hasDefinedValues, resolve } from '../src/utils'
 
 const validationOptions = {
   validateOnChange: true,
@@ -78,15 +78,57 @@ const stateValidatedWithSubmitError = {
 
 describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_CLEAR}"`, () => {
-    const action: FormAction<Values, unknown> = {
-      type: ACTION_CLEAR
-    }
+    describe('with fields option missing or empty', () => {
+      const action: FormAction<Values, unknown> = {
+        type: ACTION_CLEAR
+      }
 
-    it('should clear values', () => {
-      const state =
-        stateWithInitialValuesAndErrors
-      const newState = useFormReducer(state, action)
-      expect(newState).toStrictEqual({ ...state, ...initialState })
+      it('should clear all values', () => {
+        const state =
+          stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        expect(newState).toStrictEqual({ ...state, ...initialState })
+      })
+    })
+
+    describe('with fields option not empty', () => {
+      const action: FormAction<Values, unknown> = {
+        type: ACTION_CLEAR,
+        data: { fields: ['username'] }
+      }
+
+      it('should clear fields values', () => {
+        const state =
+          stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        const errors = { ...state.errors }
+        const modifiedFields = { ...state.modifiedFields }
+        const touchedFields = { ...state.touchedFields }
+        let initialValues = clone(state.initialValues)
+        let values = clone(state.values)
+
+        action.data.fields.forEach((name: string) => {
+          delete errors[name]
+          delete modifiedFields[name]
+          delete touchedFields[name]
+          initialValues = build(name, undefined, initialValues)
+          values = build(name, undefined, values)
+        })
+
+        expect(newState).toStrictEqual({
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors),
+          initialValues,
+          modified: hasDefinedValues(modifiedFields),
+          modifiedFields,
+          touched: hasDefinedValues(touchedFields),
+          touchedFields,
+          values,
+          validateError: undefined,
+          validated: false
+        })
+      })
     })
   })
 

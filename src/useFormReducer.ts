@@ -86,7 +86,7 @@ export const initialState = {
 }
 
 export type FormAction<V, R> =
-  { type: 'CLEAR' }
+  { type: 'CLEAR', data?: { fields?: string[] } }
   | { type: 'CLEAR_ERRORS' }
   | { type: 'CLEAR_TOUCH', data: { fields: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
@@ -117,12 +117,45 @@ function useFormReducer<V extends Values, R> (
   let nextState: FormState<V, R>
 
   switch (action.type) {
-    case ACTION_CLEAR:
-      nextState = {
-        ...state,
-        ...initialState
+    case ACTION_CLEAR: {
+      const { data } = action
+
+      if (data?.fields?.length) {
+        const errors = { ...state.errors }
+        const modifiedFields = { ...state.modifiedFields }
+        const touchedFields = { ...state.touchedFields }
+        let initialValues = clone(state.initialValues)
+        let values = clone(state.values)
+
+        data.fields.forEach((name: string) => {
+          delete errors[name]
+          delete modifiedFields[name]
+          delete touchedFields[name]
+          initialValues = build(name, undefined, initialValues)
+          values = build(name, undefined, values)
+        })
+
+        nextState = {
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors),
+          initialValues,
+          modified: hasDefinedValues(modifiedFields),
+          modifiedFields,
+          touched: hasDefinedValues(touchedFields),
+          touchedFields,
+          values,
+          validateError: undefined,
+          validated: false
+        }
+      } else {
+        nextState = {
+          ...state,
+          ...initialState
+        }
       }
       break
+    }
 
     case ACTION_CLEAR_ERRORS:
       nextState = {

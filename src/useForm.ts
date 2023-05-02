@@ -56,7 +56,7 @@ export type FieldAttributes =
 export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
-  clear (): void;
+  clear (fields?: string[]): void;
   clearErrors (): void;
   clearTouchedFields (fields: string[]): void;
   getAttributes (name: string): FieldAttributes | undefined;
@@ -185,10 +185,13 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   )
 
   /**
-   * Clears form.
+   * Clears all values or selected fields only.
    */
-  const clear = useCallback((): void => {
-    dispatch({ type: ACTION_CLEAR })
+  const clear = useCallback((fields?: string[]): void => {
+    dispatch({
+      type: ACTION_CLEAR,
+      data: { fields }
+    })
   }, [])
 
   /**
@@ -706,7 +709,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     handleChange,
     handleReset,
     handleSubmit,
-    setInitialValues: setInitialValues,
+    setInitialValues,
     load,
     removeFields,
     reset,
