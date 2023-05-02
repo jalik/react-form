@@ -7,6 +7,58 @@ import { describe, expect, it } from '@jest/globals'
 import { build } from '../src/utils'
 
 describe('build(path, value, context)', () => {
+  describe('with invalid path', () => {
+    const context = {
+      my: { test: false },
+      list: [1, 2]
+    }
+
+    it('should throw an error', () => {
+      expect(() => {
+        build('my. test', true, context)
+      }).toThrow()
+
+      expect(() => {
+        build('my.', true, context)
+      }).toThrow()
+
+      expect(() => {
+        build('list0]', 3, context)
+      }).toThrow()
+
+      expect(() => {
+        build('list[0', 3, context)
+      }).toThrow()
+    })
+  })
+
+  describe('with undefined context', () => {
+    it('should return an object', () => {
+      expect(build('user.address', 'Tahiti', undefined))
+        .toStrictEqual({ user: { address: 'Tahiti' } })
+    })
+  })
+
+  describe('with undefined context attribute', () => {
+    it('should return an object', () => {
+      const result = build('user.address', 'Tahiti', { user: { address: undefined } })
+      expect(result).toStrictEqual({ user: { address: 'Tahiti' } })
+
+      expect(build('[user].address', 'Tahiti', { user: undefined }))
+        .toStrictEqual({ user: { address: 'Tahiti' } })
+
+      expect(build('[user].address', 'Tahiti', { user: { address: undefined } }))
+        .toStrictEqual({ user: { address: 'Tahiti' } })
+    })
+  })
+
+  describe('with syntaxChecked = true', () => {
+    it('should ignore syntax', () => {
+      const result = build('user.address', 'Tahiti', { user: { address: undefined } }, true)
+      expect(result).toStrictEqual({ user: { address: 'Tahiti' } })
+    })
+  })
+
   // Object mutation.
 
   it('should not mutate the original object', () => {

@@ -25,6 +25,26 @@ describe('resolve(path, context)', () => {
     string: 'text'
   }
 
+  describe('with invalid path', () => {
+    it('should throw an error', () => {
+      expect(() => {
+        resolve('object.field', '')
+      }).toThrow()
+
+      expect(() => {
+        resolve('object.field', 1337)
+      }).toThrow()
+
+      expect(() => {
+        resolve('object.field', false)
+      }).toThrow()
+
+      expect(() => {
+        resolve('object.field', [])
+      }).toThrow()
+    })
+  })
+
   // Undefined or null context.
 
   describe('resolve("", null)', () => {
