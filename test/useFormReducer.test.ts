@@ -46,22 +46,37 @@ const stateWithoutInitialValues = {
 
 const stateWithInitialValues = {
   ...stateWithoutInitialValues,
-  initialValues: { username: 'jalik' },
-  values: { username: 'jalik' }
+  initialValues: {
+    username: 'jalik',
+    gender: 'male'
+  },
+  values: {
+    username: 'jalik',
+    gender: 'male'
+  }
 }
 
 const stateWithInitialValuesAndModifiedFields = {
   ...stateWithInitialValues,
   modified: true,
-  modifiedFields: { username: true },
+  modifiedFields: {
+    username: true,
+    gender: true
+  },
   touched: true,
-  touchedFields: { username: true },
+  touchedFields: {
+    username: true,
+    gender: true
+  },
   values: { username: 'jalik1234' }
 }
 
 const stateWithInitialValuesAndErrors = {
   ...stateWithInitialValuesAndModifiedFields,
-  errors: { username: new Error('invalid username') },
+  errors: {
+    username: new Error('invalid username'),
+    gender: new Error('invalid gender')
+  },
   hasError: true
 }
 
@@ -97,7 +112,7 @@ describe('useFormReducer(state, action)', () => {
         data: { fields: ['username'] }
       }
 
-      it('should clear fields values', () => {
+      it('should clear selected fields values', () => {
         const state =
           stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
@@ -133,17 +148,40 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_CLEAR_ERRORS}"`, () => {
-    const action: FormAction<Values, unknown> = {
-      type: ACTION_CLEAR_ERRORS
-    }
+    describe('with fields option missing or empty', () => {
+      const action: FormAction<Values, unknown> = {
+        type: ACTION_CLEAR_ERRORS
+      }
 
-    it('should clear errors', () => {
-      const state = stateWithInitialValuesAndErrors
-      const newState = useFormReducer(state, action)
-      expect(newState).toStrictEqual({
-        ...state,
-        errors: {},
-        hasError: false
+      it('should clear all errors', () => {
+        const state = stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        expect(newState).toStrictEqual({
+          ...state,
+          errors: {},
+          hasError: false
+        })
+      })
+    })
+
+    describe('with fields option not empty', () => {
+      const action: FormAction<Values, unknown> = {
+        type: ACTION_CLEAR_ERRORS,
+        data: { fields: ['username'] }
+      }
+
+      it('should clear selected fields errors', () => {
+        const state = stateWithInitialValuesAndErrors
+        const newState = useFormReducer(state, action)
+        const errors = { ...state.errors }
+        action.data.fields.forEach((name: string) => {
+          delete errors[name]
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors)
+        })
       })
     })
   })

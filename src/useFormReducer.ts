@@ -87,7 +87,7 @@ export const initialState = {
 
 export type FormAction<V, R> =
   { type: 'CLEAR', data?: { fields?: string[] } }
-  | { type: 'CLEAR_ERRORS' }
+  | { type: 'CLEAR_ERRORS', data?: { fields?: string[] } }
   | { type: 'CLEAR_TOUCH', data: { fields: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
@@ -157,13 +157,30 @@ function useFormReducer<V extends Values, R> (
       break
     }
 
-    case ACTION_CLEAR_ERRORS:
-      nextState = {
-        ...state,
-        errors: {},
-        hasError: false
+    case ACTION_CLEAR_ERRORS: {
+      const { data } = action
+
+      if (data?.fields?.length) {
+        const errors = { ...state.errors }
+
+        data.fields.forEach((name: string) => {
+          delete errors[name]
+        })
+
+        nextState = {
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors)
+        }
+      } else {
+        nextState = {
+          ...state,
+          errors: {},
+          hasError: false
+        }
       }
       break
+    }
 
     case ACTION_CLEAR_TOUCH: {
       const { data } = action
