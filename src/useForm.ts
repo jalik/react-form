@@ -44,7 +44,7 @@ import {
 } from './utils'
 
 export type FieldChangeOptions = {
-  parser?(value: unknown, target: HTMLElement): any
+  parser? (value: unknown, target: HTMLElement): any
 };
 
 export type FieldAttributes =
@@ -55,31 +55,31 @@ export type FieldAttributes =
 export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
-  clear(): void;
-  clearErrors(): void;
-  clearTouch(fields: string[]): void;
-  getAttributes(name: string): FieldAttributes | undefined;
-  getInitialValue<T>(name: string): T | undefined;
-  getValue<T>(name: string, defaultValue?: T): T | undefined;
-  handleBlur(event: React.FocusEvent<FieldElement>): void;
-  handleChange(event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
-  handleReset(event: React.FormEvent<HTMLFormElement>): void;
-  handleSubmit(event: React.FormEvent<HTMLFormElement>): void;
-  initValues(values: Partial<V>): void;
+  clear (): void;
+  clearErrors (): void;
+  clearTouch (fields: string[]): void;
+  getAttributes (name: string): FieldAttributes | undefined;
+  getInitialValue<T> (name: string): T | undefined;
+  getValue<T> (name: string, defaultValue?: T): T | undefined;
+  handleBlur (event: React.FocusEvent<FieldElement>): void;
+  handleChange (event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
+  handleReset (event: React.FormEvent<HTMLFormElement>): void;
+  handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
+  initValues (values: Partial<V>): void;
   invalidClass?: string;
-  load(): void;
+  load (): void;
   modifiedClass?: string;
-  remove(name: string): void;
-  reset(): void;
-  submit(): Promise<void | R>;
-  setError(name: string, error?: Error): void;
-  setErrors(errors: Errors): void;
-  setValue(name: string, value?: unknown, validate?: boolean): void;
-  setValues(values: Partial<V>, validate?: boolean): void;
-  touch(fields: string[]): void;
-  validate(): Promise<void | Errors | undefined>;
-  validateField(name: string): Promise<void | Error | undefined>;
-  validateFields(fields?: string[]): Promise<void | Errors | undefined>;
+  remove (name: string): void;
+  reset (): void;
+  submit (): Promise<void | R>;
+  setError (name: string, error?: Error): void;
+  setErrors (errors: Errors): void;
+  setValue (name: string, value?: unknown, validate?: boolean): void;
+  setValues (values: Partial<V>, validate?: boolean): void;
+  touch (fields: string[]): void;
+  validate (): Promise<void | Errors | undefined>;
+  validateField (name: string): Promise<void | Error | undefined>;
+  validateFields (fields?: string[]): Promise<void | Errors | undefined>;
   validClass?: string;
 }
 
@@ -89,19 +89,19 @@ export interface UseFormOptions<V extends Values, R> {
   invalidClass?: string;
   modifiedClass?: string;
   nullify?: boolean;
-  initializeField?(name: string): FieldAttributes | undefined;
-  load?(): Promise<void | V>;
-  onSubmit(values: Partial<V>): Promise<void | R>;
+  initializeField? (name: string): FieldAttributes | undefined;
+  load? (): Promise<void | V>;
+  onSubmit (values: Partial<V>): Promise<void | R>;
   submitDelay?: number;
-  transform?(mutation: Values, values: Partial<V>): Partial<V>;
-  validate?(
+  transform? (mutation: Values, values: Partial<V>): Partial<V>;
+  validate? (
     values: Partial<V>,
-    modifiedFields: ModifiedFields,
+    modifiedFields: ModifiedFields
   ): Promise<void | Errors | undefined>;
-  validateField?(
+  validateField? (
     name: string,
     value: unknown,
-    values: Partial<V>,
+    values: Partial<V>
   ): Promise<void | Error | undefined>;
   validClass?: string;
   validateDelay?: number;
@@ -212,14 +212,14 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Returns the initial value of a field.
    */
-  const getInitialValue = useCallback(<T>(name: string): T | undefined => (
+  const getInitialValue = useCallback(<T> (name: string): T | undefined => (
     resolve<T>(name, clone(state.initialValues))
   ), [state.initialValues])
 
   /**
    * Returns the value of a field.
    */
-  const getValue = useCallback(<T>(name: string, defaultValue?: T): T | undefined => {
+  const getValue = useCallback(<T> (name: string, defaultValue?: T): T | undefined => {
     const value = resolve<T>(name, clone(state.values))
     return typeof value !== 'undefined' ? value : defaultValue
   }, [state.values])
@@ -233,11 +233,17 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
       loadFunc()
         .then((result) => {
           if (mountedRef && result) {
-            dispatch({ type: ACTION_LOAD_SUCCESS, data: { values: result } })
+            dispatch({
+              type: ACTION_LOAD_SUCCESS,
+              data: { values: result }
+            })
           }
         })
         .catch((error) => {
-          dispatch({ type: ACTION_LOAD_ERROR, error })
+          dispatch({
+            type: ACTION_LOAD_ERROR,
+            error
+          })
           throw error
         })
     }
@@ -250,28 +256,40 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     // Ignore action if form disabled
     if (disabled) return
 
-    dispatch({ type: ACTION_REMOVE, data: { name } })
+    dispatch({
+      type: ACTION_REMOVE,
+      data: { name }
+    })
   }, [disabled])
 
   /**
    * Defines the field error.
    */
   const setError = useCallback((name: string, error: Error): void => {
-    dispatch({ type: ACTION_SET_ERRORS, data: { errors: { [name]: error } } })
+    dispatch({
+      type: ACTION_SET_ERRORS,
+      data: { errors: { [name]: error } }
+    })
   }, [])
 
   /**
    * Defines form field errors.
    */
   const setErrors = useCallback((errors: Errors): void => {
-    dispatch({ type: ACTION_SET_ERRORS, data: { errors } })
+    dispatch({
+      type: ACTION_SET_ERRORS,
+      data: { errors }
+    })
   }, [])
 
   /**
    * Validates one or more fields by passing field names.
    */
   const validateFields = useCallback((fields: string[]): Promise<void | Errors | undefined> => {
-    dispatch({ type: ACTION_VALIDATE, data: { fields } })
+    dispatch({
+      type: ACTION_VALIDATE,
+      data: { fields }
+    })
 
     const validate = validateFieldRef.current
     const promises = validate
@@ -293,7 +311,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
         results.forEach((result) => {
           if (result) {
             const [name, error] = result
-            errors = { ...errors, [name]: error }
+            errors = {
+              ...errors,
+              [name]: error
+            }
           }
         })
         dispatch({
@@ -309,7 +330,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
         return errors
       })
       .catch((error) => {
-        dispatch({ type: ACTION_VALIDATE_ERROR, error })
+        dispatch({
+          type: ACTION_VALIDATE_ERROR,
+          error
+        })
         throw error
       })
   }, [getValue, state.errors, state.values])
@@ -364,7 +388,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
    * Clear touched fields.
    */
   const clearTouch = useCallback((fields: string[]) => {
-    dispatch({ type: ACTION_CLEAR_TOUCH, data: { fields } })
+    dispatch({
+      type: ACTION_CLEAR_TOUCH,
+      data: { fields }
+    })
   }, [])
 
   /**
@@ -382,7 +409,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     }
 
     if (canDispatch) {
-      dispatch({ type: ACTION_TOUCH, data: { fields } })
+      dispatch({
+        type: ACTION_TOUCH,
+        data: { fields }
+      })
     }
   }, [state.touchedFields])
 
@@ -391,7 +421,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
    */
   const reset = useCallback((fields?: string[]): void => {
     if (fields) {
-      dispatch({ type: ACTION_RESET_VALUES, data: { fields } })
+      dispatch({
+        type: ACTION_RESET_VALUES,
+        data: { fields }
+      })
     } else {
       dispatch({ type: ACTION_RESET })
     }
@@ -403,7 +436,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   const submit = useCallback((): Promise<void | R> => {
     if (!state.values) {
       const error = new Error('Nothing to submit, values are empty')
-      dispatch({ type: ACTION_SUBMIT_ERROR, error })
+      dispatch({
+        type: ACTION_SUBMIT_ERROR,
+        error
+      })
       return Promise.reject(error)
     }
     dispatch({ type: ACTION_SUBMIT })
@@ -415,12 +451,18 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     return promise
       .then((result) => {
         if (result) {
-          dispatch({ type: ACTION_SUBMIT_SUCCESS, data: { result } })
+          dispatch({
+            type: ACTION_SUBMIT_SUCCESS,
+            data: { result }
+          })
         }
         return result
       })
       .catch((error: Error) => {
-        dispatch({ type: ACTION_SUBMIT_ERROR, error })
+        dispatch({
+          type: ACTION_SUBMIT_ERROR,
+          error
+        })
         throw error
       })
   }, [state.values])
@@ -439,7 +481,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
 
       if (!state.values) {
         const error = new Error('Nothing to validate, values are empty')
-        dispatch({ type: ACTION_VALIDATE_ERROR, error })
+        dispatch({
+          type: ACTION_VALIDATE_ERROR,
+          error
+        })
         return Promise.reject(error)
       }
       promise = validateRef.current(clone(state.values), { ...state.modifiedFields })
@@ -502,7 +547,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
    * Defines initial values (after loading for example).
    */
   const initValues = useCallback((values: Partial<V>): void => {
-    dispatch({ type: ACTION_INIT_VALUES, data: { values } })
+    dispatch({
+      type: ACTION_INIT_VALUES,
+      data: { values }
+    })
   }, [])
 
   /**
@@ -521,7 +569,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   ): void => {
     const { parser } = opts || {}
     const { currentTarget } = event
-    const { name, type } = currentTarget
+    const {
+      name,
+      type
+    } = currentTarget
     let value
 
     // Parses value using a custom parser or using the native parser (smart typing).

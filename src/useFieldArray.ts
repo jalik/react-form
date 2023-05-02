@@ -18,7 +18,10 @@ export interface ArrayItem<T> {
  * Returns an array item with key and value.
  */
 function createItem<T> (value: T): ArrayItem<T> {
-  return { key: uuid(), value }
+  return {
+    key: uuid(),
+    value
+  }
 }
 
 /**
@@ -50,9 +53,16 @@ export interface UseFieldArrayOptions<T, F extends Values> {
  * Returns utils to manage an array of fields.
  */
 function useFieldArray<T, F extends Values> (options: UseFieldArrayOptions<T, F>) {
-  const { context, defaultValue, name } = options
+  const {
+    context,
+    defaultValue,
+    name
+  } = options
   const form = useFormContext()
-  const { getValue, setValue } = context || form
+  const {
+    getValue,
+    setValue
+  } = context || form
   const fields = useRef<ArrayItem<T>[]>([])
 
   /**

@@ -12,7 +12,11 @@ export interface FieldErrorProps {
 }
 
 function FieldError (props: HTMLAttributes<HTMLElement> & FieldErrorProps): JSX.Element | null {
-  const { component: Component, name, ...others } = props
+  const {
+    component: Component,
+    name,
+    ...others
+  } = props
   const { errors } = useFormContext()
   const error = errors[name]
 

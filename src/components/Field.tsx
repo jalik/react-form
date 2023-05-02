@@ -22,11 +22,11 @@ export interface FieldProps<T = string> {
   component?: any;
   disabled?: boolean;
   emptyOptionLabel?: string;
-  formatter?(value: T | string): string | undefined;
+  formatter? (value: T | string): string | undefined;
   multiple?: boolean;
   name: string;
   options?: string[] | number[] | boolean[] | OptionProps[];
-  parser?(value: string): T;
+  parser? (value: string): T;
   required?: boolean;
   type?: FieldType;
   value?: string | T;
@@ -163,8 +163,15 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
   const finalOptions = useMemo(() => {
     const list = (options ? [...options] : []).map((option, index) => (
       typeof option === 'object' && option != null
-        ? { ...option, key: `${option.label}_${option.value}` }
-        : { key: `${index}_${option}`, label: option, value: option }
+        ? {
+            ...option,
+            key: `${option.label}_${option.value}`
+          }
+        : {
+            key: `${index}_${option}`,
+            label: option,
+            value: option
+          }
     ))
 
     if (list.length > 0) {
@@ -192,7 +199,10 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
       return (
         <Component {...finalProps} type={type}>
           {children}
-          {finalOptions.map(({ key, ...option }) => (
+          {finalOptions.map(({
+            key,
+            ...option
+          }) => (
             <Option key={key} {...option} />
           ))}
         </Component>
@@ -206,7 +216,10 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
     return (
       <select {...finalProps} value={String(finalProps.value)}>
         {children}
-        {finalOptions.map(({ key, ...option }) => (
+        {finalOptions.map(({
+          key,
+          ...option
+        }) => (
           <Option key={key} {...option} />
         ))}
       </select>

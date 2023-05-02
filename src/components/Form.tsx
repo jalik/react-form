@@ -21,7 +21,10 @@ function Form<V extends Values, R> (
     ...others
   } = props
 
-  const { handleReset, handleSubmit } = context
+  const {
+    handleReset,
+    handleSubmit
+  } = context
 
   return (
     <FormContext.Provider value={context}>
