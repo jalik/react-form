@@ -33,7 +33,7 @@ export function build<T> (
     if (path.indexOf('[]') !== -1) {
       throw new SyntaxError(`missing array index or object attribute in "${path}"`)
     }
-    // Check for missing object attribute.
+    // Check for missing object attribute (ex: "attr.").
     if (dotIndex + 1 === path.length) {
       throw new SyntaxError(`missing object attribute in "${path}"`)
     }
@@ -41,11 +41,11 @@ export function build<T> (
     const closingBrackets = path.split(']').length
     const openingBrackets = path.split('[').length
 
-    // Check for missing opening bracket.
+    // Check for missing opening bracket (ex: "users0]").
     if (openingBrackets < closingBrackets) {
       throw new SyntaxError(`missing opening bracket "[" in "${path}"`)
     }
-    // Check for missing closing bracket.
+    // Check for missing closing bracket (ex: "users[0").
     if (closingBrackets < openingBrackets) {
       throw new SyntaxError(`missing closing bracket "]" in "${path}"`)
     }
@@ -73,7 +73,7 @@ export function build<T> (
     }
     ctx[field] = build(path.substring(dotIndex + 1), value, ctx[field])
   } else if (bracketIndex !== -1 && (dotIndex === -1 || bracketIndex < dotIndex)) {
-    // Resolve brackets "[..]" path.
+    // Resolve brackets "[?]" path.
     // ex: "[0].field" => field: "[0]", subPath: "field"
     // ex: "[a].field" => field: "[a]", subPath: "field"
     if (bracketIndex === 0) {
@@ -85,10 +85,10 @@ export function build<T> (
         key = parseInt(key, 10)
 
         // Create array if it does not exist.
-        if (typeof ctx === 'undefined' || ctx === null) {
+        if (ctx == null) {
           ctx = []
         }
-      } else if (typeof ctx === 'undefined' || ctx === null) {
+      } else if (ctx == null) {
         ctx = {}
       }
       // Resolve "field" instead of ".field" if array is followed by a dot.
@@ -98,7 +98,7 @@ export function build<T> (
         subPath = path.substring(bracketEnd + 2)
 
         // Create object if it does not exist.
-        if (typeof ctx[key] === 'undefined') {
+        if (ctx[key] == null) {
           ctx[key] = {}
         }
       } else {
@@ -110,6 +110,9 @@ export function build<T> (
       const field = path.substring(0, bracketIndex)
       ctx[field] = build(path.substring(bracketIndex), value, ctx[field])
     }
+  } else if (typeof value === 'undefined') {
+    // Remove attribute, instead of using undefined.
+    delete ctx[path]
   } else {
     // Set root attribute.
     // ex: "field"
@@ -206,17 +209,21 @@ export function isMultipleFieldElement (element: RadioNodeList | Element): boole
   let count = 0
   const inputTypes = ['checkbox', 'file']
 
-  if (element instanceof HTMLInputElement ||
-    element instanceof HTMLSelectElement ||
-    element instanceof HTMLTextAreaElement) {
+  if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) {
     if (element.form && element.name != null) {
       for (let i = 0; i < element.form.elements.length; i += 1) {
         const elm = element.form.elements[i]
 
-        if (elm instanceof HTMLInputElement &&
+        if (elm instanceof HTMLSelectElement &&
+          elm.name === element.name &&
+          elm.multiple) {
+          return true
+        }
+
+        if ((elm instanceof HTMLInputElement &&
           elm.name === element.name &&
           elm.type === element.type &&
-          inputTypes.includes(elm.type)) {
+          inputTypes.includes(elm.type))) {
           count += 1
 
           if (count > 1) {
@@ -230,8 +237,7 @@ export function isMultipleFieldElement (element: RadioNodeList | Element): boole
     for (let i = 0; i < element.length; i += 1) {
       const elm = element[i]
 
-      if (elm instanceof HTMLInputElement &&
-        inputTypes.includes(elm.type)) {
+      if (elm instanceof HTMLInputElement && inputTypes.includes(elm.type)) {
         if (!name) {
           name = elm.name
         }
@@ -276,6 +282,19 @@ export function passArgs<T> (func: (event: T, ...args: unknown[]) => void, ...ar
   return (event: T): void => {
     func(event, ...args)
   }
+}
+
+/**
+ * Generates a random key.
+ */
+export function randomKey (length = 16): string {
+  const dict = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let out = ''
+  for (let i = 0; i < length; i += 1) {
+    const index = Math.random() * (dict.length - 1)
+    out += dict.substring(index, index + 1)
+  }
+  return out
 }
 
 /**
@@ -330,12 +349,11 @@ export function resolve<T> (
 
   // Resolve dot "." path.
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
-    // ex: "object.field" => field: "object", path: "field"
-    const field = path.substring(0, dotIndex)
-
     if (typeof context !== 'object' || (context instanceof Array)) {
       throw new Error(`path ${path} is not valid for the given context`)
     }
+    // ex: "object.field" => field: "object", path: "field"
+    const field = path.substring(0, dotIndex)
     return resolve(path.substring(dotIndex + 1), context[field], true)
   }
 
@@ -364,31 +382,4 @@ export function resolve<T> (
   // Return root attribute.
   // ex: "field"
   return context[path]
-}
-
-/**
- * Generates a GUID.
- * @see https://stackoverflow.com/a/8809472/2881350
- */
-export function uuid (): string {
-  let d: number = new Date().getTime()
-  // Time in microseconds since page-load or 0 if unsupported
-  let d2: number = (typeof performance !== 'undefined' && typeof performance.now === 'function' && (performance.now() * 1000)) || 0
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: string) => {
-    // random number between 0 and 16
-    let r: number = Math.random() * 16
-    if (d > 0) {
-      // Use timestamp until depleted
-      // eslint-disable-next-line no-bitwise
-      r = (d + r) % 16 | 0
-      d = Math.floor(d / 16)
-    } else {
-      // Use microseconds since page-load if supported
-      // eslint-disable-next-line no-bitwise
-      r = (d2 + r) % 16 | 0
-      d2 = Math.floor(d2 / 16)
-    }
-    // eslint-disable-next-line no-mixed-operators,no-bitwise
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
-  })
 }

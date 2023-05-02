@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, useRef } from 'react'
 import { UseFormHook } from './useForm'
 import useFormContext from './useFormContext'
 import { Values } from './useFormReducer'
-import { uuid } from './utils'
+import { randomKey } from './utils'
 
 export interface ArrayItem<T> {
   key: string | number;
@@ -19,7 +19,7 @@ export interface ArrayItem<T> {
  */
 function createItem<T> (value: T): ArrayItem<T> {
   return {
-    key: uuid(),
+    key: randomKey(),
     value
   }
 }

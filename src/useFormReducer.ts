@@ -60,7 +60,7 @@ export interface FormState<V extends Values, R> {
   values: Partial<V>;
 }
 
-export const initialState: FormState<Values, any> = {
+export const initialState = {
   disabled: false,
   errors: {},
   hasError: false,
@@ -82,10 +82,6 @@ export const initialState: FormState<Values, any> = {
   validateError: undefined,
   validated: false,
   validating: false,
-  validateOnChange: false,
-  validateOnInit: false,
-  validateOnSubmit: true,
-  validateOnTouch: false,
   values: {}
 }
 
@@ -123,13 +119,8 @@ function useFormReducer<V extends Values, R> (
   switch (action.type) {
     case ACTION_CLEAR:
       nextState = {
-        ...initialState,
-        initialValues: {},
-        validateOnChange: state.validateOnChange,
-        validateOnInit: state.validateOnInit,
-        validateOnSubmit: state.validateOnSubmit,
-        validateOnTouch: state.validateOnTouch,
-        values: {}
+        ...state,
+        ...initialState
       }
       break
 
@@ -158,16 +149,12 @@ function useFormReducer<V extends Values, R> (
     case ACTION_INIT_VALUES: {
       const { data } = action
       nextState = {
+        ...state,
         ...initialState,
-        disabled: false,
         initialized: true,
         initialValues: clone(data.values),
         // Trigger validation if needed
         needValidation: state.validateOnInit,
-        validateOnChange: state.validateOnChange,
-        validateOnInit: state.validateOnInit,
-        validateOnSubmit: state.validateOnSubmit,
-        validateOnTouch: state.validateOnTouch,
         values: data.values
       }
       break
@@ -196,17 +183,13 @@ function useFormReducer<V extends Values, R> (
     case ACTION_LOAD_SUCCESS: {
       const { data } = action
       nextState = {
+        ...state,
         ...initialState,
-        disabled: false,
         initialized: true,
         initialValues: clone(data.values),
         loadError: undefined,
         loaded: true,
         loading: false,
-        validateOnChange: state.validateOnChange,
-        validateOnInit: state.validateOnInit,
-        validateOnSubmit: state.validateOnSubmit,
-        validateOnTouch: state.validateOnTouch,
         values: data.values
       }
       break
@@ -222,27 +205,22 @@ function useFormReducer<V extends Values, R> (
       let values = clone(state.values)
 
       data.fields.forEach((name) => {
-        if (typeof errors[name] !== 'undefined') {
-          delete errors[name]
-        }
-        if (typeof modifiedFields[name] !== 'undefined') {
-          delete modifiedFields[name]
-        }
-        if (typeof touchedFields[name] !== 'undefined') {
-          delete touchedFields[name]
-        }
+        delete errors[name]
+        delete modifiedFields[name]
+        delete touchedFields[name]
+
         if (typeof resolve(name, values) !== 'undefined') {
           values = build(name, undefined, values)
         }
       })
       nextState = {
         ...state,
+        errors,
+        hasError: hasDefinedValues(errors),
         modified: hasDefinedValues(modifiedFields),
         modifiedFields,
         touched: hasDefinedValues(touchedFields),
         touchedFields,
-        errors,
-        hasError: hasDefinedValues(errors),
         values
       }
       break
@@ -255,12 +233,9 @@ function useFormReducer<V extends Values, R> (
         return state
       }
       nextState = {
+        ...state,
         ...initialState,
         initialValues: state.initialValues,
-        validateOnChange: state.validateOnChange,
-        validateOnInit: state.validateOnInit,
-        validateOnSubmit: state.validateOnSubmit,
-        validateOnTouch: state.validateOnTouch,
         values: clone(state.initialValues)
       }
       break
@@ -279,31 +254,24 @@ function useFormReducer<V extends Values, R> (
 
       const { data } = action
       data.fields.forEach((name: string) => {
-        const initialValue = resolve(name, initialValues)
-        values = build(name, initialValue, values)
         delete errors[name]
         delete modifiedFields[name]
         delete touchedFields[name]
+        const initialValue = resolve(name, initialValues)
+        values = build(name, initialValue, values)
       })
 
       nextState = {
         ...state,
-        values,
         errors,
         hasError: hasDefinedValues(errors),
         modified: hasDefinedValues(modifiedFields),
         modifiedFields,
         touched: hasDefinedValues(touchedFields),
         touchedFields,
-        // Reset form state.
-        submitCount: 0,
-        submitError: undefined,
-        submitResult: undefined,
-        submitted: false,
-        submitting: false,
+        values,
         validateError: undefined,
-        validated: false,
-        validating: false
+        validated: false
       }
       break
     }
@@ -312,13 +280,12 @@ function useFormReducer<V extends Values, R> (
       const { data } = action
       const errors: Errors = {}
 
-      Object.keys(data.errors)
-        .forEach((name) => {
-          // Ignore undefined/null errors
-          if (data.errors[name]) {
-            errors[name] = data.errors[name]
-          }
-        })
+      Object.keys(data.errors).forEach((name) => {
+        // Ignore undefined/null errors
+        if (data.errors[name]) {
+          errors[name] = data.errors[name]
+        }
+      })
 
       nextState = {
         ...state,
@@ -334,34 +301,28 @@ function useFormReducer<V extends Values, R> (
       const errors = clone(state.errors)
       let values = clone(state.values)
 
-      Object.entries(data.values)
-        .forEach(([name, value]) => {
-          values = build(name, value, values)
-          modifiedFields[name] = value !== resolve(name, state.initialValues)
+      Object.entries(data.values).forEach(([name, value]) => {
+        values = build(name, value, values)
+        modifiedFields[name] = value !== resolve(name, state.initialValues)
 
-          // Do not clear errors when validation is triggered
-          // to avoid errors to disappear/appear quickly during typing.
-          if (!data.validate) {
-            delete errors[name]
-          }
-        })
+        // Do not clear errors when validation is triggered
+        // to avoid errors to disappear/appear quickly during typing.
+        if (!data.validate) {
+          delete errors[name]
+        }
+      })
 
       nextState = {
         ...state,
-        values,
-        needValidation: data.validate === true ? Object.keys(data.values) : state.needValidation,
-        modified: true,
-        submitted: false,
-        // Invalidate form.
-        validated: false,
-        // Reset submit count.
-        submitCount: 0,
-        submitError: undefined,
-        // Add fields to changes.
-        modifiedFields,
-        // Clear fields error.
         errors,
-        hasError: hasDefinedValues(errors)
+        hasError: hasDefinedValues(errors),
+        modified: true,
+        modifiedFields,
+        needValidation: data.validate === true
+          ? Object.keys(data.values)
+          : state.needValidation,
+        validated: false,
+        values
       }
       break
     }
@@ -369,6 +330,7 @@ function useFormReducer<V extends Values, R> (
     case ACTION_SUBMIT:
       nextState = {
         ...state,
+        disabled: true,
         submitting: true,
         submitCount: state.submitCount + 1,
         submitError: undefined,
@@ -380,7 +342,6 @@ function useFormReducer<V extends Values, R> (
       nextState = {
         ...state,
         disabled: false,
-        submitCount: state.submitCount + 1,
         submitError: action.error,
         submitting: false
       }
@@ -389,36 +350,25 @@ function useFormReducer<V extends Values, R> (
     case ACTION_SUBMIT_SUCCESS:
       nextState = {
         ...state,
+        ...initialState,
         submitResult: action.data.result,
-        submitted: true,
-        submitCount: 0,
-        submitError: undefined,
-        // Re-enable form after submitting.
-        disabled: false,
-        // Reset form state.
-        modified: false,
-        modifiedFields: {},
-        touched: false,
-        touchedFields: {},
-        submitting: false
+        submitted: true
       }
       break
 
     case ACTION_TOUCH: {
       const { data } = action
       const touchedFields: TouchedFields = { ...state.touchedFields }
-      let { touched } = state
 
       data.fields.forEach((name) => {
         touchedFields[name] = true
-        touched = true
       })
 
       nextState = {
         ...state,
         // Trigger validation if needed
         needValidation: state.validateOnTouch ? [...data.fields] : state.needValidation,
-        touched,
+        touched: true,
         touchedFields
       }
       break
@@ -428,9 +378,9 @@ function useFormReducer<V extends Values, R> (
       const { data } = action
       nextState = {
         ...state,
-        needValidation: false,
         // todo keep track of validating fields
         disabled: data?.fields ? state.disabled : true,
+        needValidation: false,
         validated: data?.fields ? state.validated : false,
         validating: data?.fields ? state.validating : true
       }
@@ -440,9 +390,9 @@ function useFormReducer<V extends Values, R> (
     case ACTION_VALIDATE_ERROR:
       nextState = {
         ...state,
+        disabled: false,
         validating: false,
-        validateError: action.error,
-        disabled: false
+        validateError: action.error
       }
       break
 
@@ -450,13 +400,12 @@ function useFormReducer<V extends Values, R> (
       const errors: Errors = {}
       const { data } = action
 
-      Object.keys(data.errors)
-        .forEach((name) => {
-          // Ignore undefined/null errors
-          if (data.errors[name]) {
-            errors[name] = data.errors[name]
-          }
-        })
+      Object.keys(data.errors).forEach((name) => {
+        // Ignore undefined/null errors
+        if (data.errors[name]) {
+          errors[name] = data.errors[name]
+        }
+      })
       nextState = {
         ...state,
         disabled: false,
@@ -470,18 +419,18 @@ function useFormReducer<V extends Values, R> (
     case ACTION_VALIDATE_SUCCESS:
       nextState = {
         ...state,
+        // Let form disabled if submission planned after validation
+        disabled: action.data.beforeSubmit === true,
         errors: {},
         hasError: false,
         validated: true,
         validating: false,
-        validateError: undefined,
-        // Let form disabled if submission planned after validation
-        disabled: action.data.beforeSubmit === true
+        validateError: undefined
       }
       break
 
     default:
-      nextState = { ...state }
+      throw new Error('Invalid action type passed to useFormReducer()')
   }
   return nextState
 }
