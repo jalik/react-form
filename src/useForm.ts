@@ -70,7 +70,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   invalidClass?: string;
   load (): void;
   modifiedClass?: string;
-  remove (name: string): void;
+  remove (fields: string[]): void;
   reset (): void;
   submit (): Promise<void | R>;
   setError (name: string, error?: Error): void;
@@ -251,15 +251,15 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   }, [loadFunc])
 
   /**
-   * Removes a field.
+   * Removes one or more fields definitely.
    */
-  const remove = useCallback((name: string): void => {
+  const remove = useCallback((fields: string[]): void => {
     // Ignore action if form disabled
     if (disabled) return
 
     dispatch({
       type: ACTION_REMOVE,
-      data: { name }
+      data: { fields }
     })
   }, [disabled])
 

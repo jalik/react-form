@@ -97,7 +97,7 @@ export type FormAction<V, R> =
   | { type: 'LOAD' }
   | { type: 'LOAD_ERROR', error: Error }
   | { type: 'LOAD_SUCCESS', data: { values: Partial<V> } }
-  | { type: 'REMOVE', data: { name: string } }
+  | { type: 'REMOVE', data: { fields: string[] } }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors } }
@@ -132,6 +132,7 @@ function useFormReducer<V extends Values, R> (
         values: {}
       }
       break
+
     case ACTION_CLEAR_ERRORS:
       nextState = {
         ...state,
@@ -218,20 +219,22 @@ function useFormReducer<V extends Values, R> (
       const errors = { ...state.errors }
       const modifiedFields = { ...state.modifiedFields }
       const touchedFields = { ...state.touchedFields }
-      const values = clone(state.values)
+      let values = clone(state.values)
 
-      if (typeof errors[data.name] !== 'undefined') {
-        delete errors[data.name]
-      }
-      if (typeof modifiedFields[data.name] !== 'undefined') {
-        delete modifiedFields[data.name]
-      }
-      if (typeof touchedFields[data.name] !== 'undefined') {
-        delete touchedFields[data.name]
-      }
-      if (typeof resolve(data.name, state.values) !== 'undefined') {
-        build(data.name, undefined, state.values)
-      }
+      data.fields.forEach((name) => {
+        if (typeof errors[name] !== 'undefined') {
+          delete errors[name]
+        }
+        if (typeof modifiedFields[name] !== 'undefined') {
+          delete modifiedFields[name]
+        }
+        if (typeof touchedFields[name] !== 'undefined') {
+          delete touchedFields[name]
+        }
+        if (typeof resolve(name, values) !== 'undefined') {
+          values = build(name, undefined, values)
+        }
+      })
       nextState = {
         ...state,
         modified: hasDefinedValues(modifiedFields),
