@@ -97,7 +97,6 @@ describe('inputValue(value)', () => {
 
 describe('isMultipleFieldElement(element)', () => {
   describe('with element in a form', () => {
-
     describe('with a single checkbox input', () => {
       const form = document.createElement('form')
       const element = document.createElement('input')

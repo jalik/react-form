@@ -26,14 +26,14 @@ function useDebouncePromise<T> (func: DebouncedFunction<T>, delay = 50): Debounc
     funcRef.current = func
   }, [func])
 
-  useEffect(() =>
-    () => {
+  useEffect(() => {
+    return () => {
       // Clear timeout.
       if (timerRef.current != null) {
         clearTimeout(timerRef.current)
       }
     }
-  , [delay])
+  }, [delay])
 
   return debouncedFunc
 }

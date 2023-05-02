@@ -66,7 +66,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   handleChange (event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
-  initValues (values: Partial<V>): void;
+  initValues (values: Partial<V>): void; // todo rename to setInitialValues()
   invalidClass?: string;
   load (): void;
   modifiedClass?: string;
