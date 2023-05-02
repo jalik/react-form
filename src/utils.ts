@@ -126,6 +126,27 @@ export function clone<T> (object: T): T {
 }
 
 /**
+ * Returns a flat object.
+ * @example { a: { test: 1 }, b: 2 } => { "a.test": 1, b: 2 }
+ * @param object
+ */
+export function flatten (object: object): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+
+  Object.entries(object).forEach(([key, value]) => {
+    if (value != null && typeof value === 'object' && !(value instanceof Array)) {
+      const branches = flatten(value)
+      Object.entries(branches).forEach(([k, v]) => {
+        result[`${key}.${k}`] = v
+      })
+    } else {
+      result[key] = value
+    }
+  })
+  return result
+}
+
+/**
  * Returns the field ID using name and value.
  */
 export function getFieldId (name: string, value: unknown): string {

@@ -35,6 +35,7 @@ import useFormReducer, {
 import {
   build,
   clone,
+  flatten,
   getCheckedValues,
   getSelectedValues,
   hasDefinedValues,
@@ -75,7 +76,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   setError (name: string, error?: Error): void;
   setErrors (errors: Errors): void;
   setValue (name: string, value?: unknown, validate?: boolean): void;
-  setValues (values: Partial<V>, validate?: boolean): void;
+  setValues (values: Values | Partial<V>, validate?: boolean): void;
   touch (fields: string[]): void;
   validate (): Promise<void | Errors | undefined>;
   validateField (name: string): Promise<void | Error | undefined>;
@@ -352,11 +353,14 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   /**
    * Defines several field values (use initValues() to set all form values).
    */
-  const setValues = useCallback((values: Values, validate = undefined): void => {
+  const setValues = useCallback((values: Values | Partial<V>, validate = undefined): void => {
     // Ignore action if form disabled
     if (disabled) return
 
-    let mutation = { ...values }
+    // Flatten values to make sur mutation only contains field names as keys
+    // and field values as values.
+    let mutation = flatten({ ...values })
+
     if (transformRef.current) {
       // Merge changes with current values.
       let nextValues = clone(state.values) || {}
