@@ -55,7 +55,7 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
   const {
     disabled: formDisabled,
     errors,
-    getAttributes,
+    getFieldProps,
     getValue,
     handleBlur,
     handleChange,
@@ -93,10 +93,10 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
     handleChange(event, { parser })
   }, [handleChange, parser])
 
-  // Get field attributes (compute only once).
+  // Get field props.
   const attributes = useMemo(() => (
-    getAttributes(name)
-  ), [getAttributes, name])
+    getFieldProps(name)
+  ), [getFieldProps, name])
 
   // Prepare field classes.
   const classNames = useMemo(() => {

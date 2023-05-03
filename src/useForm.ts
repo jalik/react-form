@@ -59,7 +59,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear (fields?: string[]): void;
   clearErrors (fields?: string[]): void;
   clearTouchedFields (fields?: string[]): void;
-  getAttributes (name: string): FieldAttributes | undefined;
+  getFieldProps (name: string): FieldAttributes | undefined;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
   handleBlur (event: React.FocusEvent<FieldElement>): void;
@@ -100,7 +100,7 @@ export interface UseFormOptions<V extends Values, R> {
   invalidClass?: string;
   modifiedClass?: string;
   nullify?: boolean;
-  initializeField? (name: string): FieldAttributes | undefined;
+  initializeField?<P extends Record<string, unknown>> (name: string, formState: FormState<V, R>): P | undefined;
   load? (): Promise<void | V>;
   onSubmit (values: Partial<V>): Promise<void | R>;
   submitDelay?: number;
@@ -215,16 +215,17 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
   }, [])
 
   /**
-   * Returns attributes of a field.
+   * Returns props of a field.
    */
-  const getAttributes = useCallback((
-    name: string,
-    defaultAttributes?: FieldAttributes
-  ): FieldAttributes | undefined => (
-    typeof initializeFieldRef.current === 'function'
-      ? initializeFieldRef.current(name)
-      : defaultAttributes
-  ), [])
+  const getFieldProps = useCallback((name: string): FieldAttributes | undefined => {
+    let props: FieldAttributes | undefined = {}
+
+    if (typeof initializeFieldRef.current === 'function') {
+      // Allow user to set custom props based on form state
+      props = { ...props, ...initializeFieldRef.current(name, state) }
+    }
+    return props
+  }, [state])
 
   /**
    * Returns the initial value of a field.
@@ -729,7 +730,7 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     clear,
     clearErrors,
     clearTouchedFields,
-    getAttributes,
+    getFieldProps,
     getInitialValue,
     getValue,
     handleBlur,
@@ -750,9 +751,9 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     validateField,
     validateFields
   }), [state, invalidClass, modifiedClass, validClass, clear, clearErrors, clearTouchedFields,
-    getAttributes, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
-    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
-    setTouchedFields, validate, validateField, validateFields])
+    getFieldProps, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
+    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues,
+    debouncedSubmit, setTouchedFields, validate, validateField, validateFields])
 }
 
 export default useForm
