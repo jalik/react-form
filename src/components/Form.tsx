@@ -3,7 +3,6 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React from 'react'
 import { UseFormHook } from '../useForm'
 import { FormContext } from '../useFormContext'
 import { Values } from '../useFormReducer'

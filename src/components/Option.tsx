@@ -3,7 +3,6 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React from 'react'
 import { inputValue } from '../utils'
 
 export interface OptionProps {

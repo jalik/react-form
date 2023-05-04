@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import useFormContext from '../useFormContext'
 
 export interface ButtonsProps extends React.Component {

@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React, { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
+import { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
 import { FieldAttributes, FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
 import { getFieldId, inputValue } from '../utils'
@@ -160,8 +160,8 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
   }, [attributes, classNames, contextValue, disabled, formDisabled, formatValue, handleFieldBlur,
     handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, type, value])
 
-  const finalOptions = useMemo(() => {
-    const list = (options ? [...options] : []).map((option, index) => {
+  const finalOptions: OptionProps[] = useMemo(() => {
+    const list: OptionProps[] = (options ? [...options] : []).map((option, index) => {
       if (typeof option === 'object' && option != null) {
         return {
           ...option,
@@ -170,8 +170,8 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
       }
       return {
         key: `${index}_${option}`,
-        label: option,
-        value: option
+        label: String(option),
+        value: String(option)
       }
     })
 
