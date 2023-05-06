@@ -37,6 +37,7 @@ import {
   clone,
   flatten,
   getCheckedValues,
+  getFieldId,
   getSelectedValues,
   hasDefinedValues,
   isMultipleFieldElement,
@@ -59,16 +60,14 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear (fields?: string[]): void;
   clearErrors (fields?: string[]): void;
   clearTouchedFields (fields?: string[]): void;
-  getFieldProps (name: string): FieldAttributes | undefined;
+  getFieldProps (name: string): FieldAttributes;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
   handleBlur (event: React.FocusEvent<FieldElement>): void;
   handleChange (event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
-  invalidClass?: string;
   load (): void;
-  modifiedClass?: string;
   removeFields (fields: string[]): void;
   reset (fields?: string[]): void;
   submit (): Promise<void | R>;
@@ -91,16 +90,13 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   validate (): Promise<void | Errors | undefined>;
   validateField (name: string): Promise<void | Error | undefined>;
   validateFields (fields?: string[]): Promise<void | Errors | undefined>;
-  validClass?: string;
 }
 
 export interface UseFormOptions<V extends Values, R> {
   disabled?: boolean;
   initialValues?: Partial<V>;
-  invalidClass?: string;
-  modifiedClass?: string;
   nullify?: boolean;
-  initializeField?<P extends Record<string, unknown>> (name: string, formState: FormState<V, R>): P | undefined;
+  initializeField? (name: string, formState: FormState<V, R>): Record<string, unknown> | undefined;
   load? (): Promise<void | V>;
   onSubmit (values: Partial<V>): Promise<void | R>;
   submitDelay?: number;
@@ -114,7 +110,6 @@ export interface UseFormOptions<V extends Values, R> {
     value: unknown,
     values: Partial<V>
   ): Promise<void | Error | undefined>;
-  validClass?: string;
   validateDelay?: number;
   validateOnChange?: boolean;
   validateOnInit?: boolean;
@@ -125,21 +120,18 @@ export interface UseFormOptions<V extends Values, R> {
 /**
  * Manage form state and actions.
  */
-function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHook<V, R> {
+function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): UseFormHook<V, R> {
   const {
     disabled = false,
     initialValues,
-    invalidClass = 'field-invalid',
     initializeField: initializeFieldFunc,
     load: loadFunc,
-    modifiedClass = 'field-modified',
     nullify = false,
     onSubmit,
     submitDelay = 100,
     transform: transformFunc,
     validate: validateFunc,
     validateField: validateFieldFunc,
-    validClass = 'field-valid',
     validateDelay = 200,
     validateOnChange = false,
     validateOnInit = false,
@@ -213,19 +205,6 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
       data: { fields }
     })
   }, [])
-
-  /**
-   * Returns props of a field.
-   */
-  const getFieldProps = useCallback((name: string): FieldAttributes | undefined => {
-    let props: FieldAttributes | undefined = {}
-
-    if (typeof initializeFieldRef.current === 'function') {
-      // Allow user to set custom props based on form state
-      props = { ...props, ...initializeFieldRef.current(name, state) }
-    }
-    return props
-  }, [state])
 
   /**
    * Returns the initial value of a field.
@@ -671,6 +650,34 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     validateAndSubmit()
   }, [validateAndSubmit])
 
+  /**
+   * Returns props of a field.
+   */
+  const getFieldProps = useCallback((name: string): FieldAttributes => {
+    const value: any = getValue(name)
+
+    // Prepare default props
+    let props: FieldAttributes = {
+      disabled,
+      id: getFieldId(name, value),
+      name,
+      onBlur: handleBlur,
+      onChange: handleChange,
+      value
+    }
+
+    if (typeof initializeFieldRef.current === 'function') {
+      // Prepare custom props based on form state
+      const customProps = initializeFieldRef.current(name, state)
+      props = {
+        ...props,
+        ...customProps,
+        disabled: props.disabled || customProps?.disabled === true
+      }
+    }
+    return props
+  }, [disabled, getValue, handleBlur, handleChange, state])
+
   // Keep track of mount state.
   useEffect(() => {
     mountedRef.current = true
@@ -722,11 +729,6 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
 
   return useMemo(() => ({
     ...state,
-    // Options
-    invalidClass,
-    modifiedClass,
-    validClass,
-    // Methods
     clear,
     clearErrors,
     clearTouchedFields,
@@ -750,10 +752,10 @@ function useForm<V extends Values, R> (options: UseFormOptions<V, R>): UseFormHo
     validate,
     validateField,
     validateFields
-  }), [state, invalidClass, modifiedClass, validClass, clear, clearErrors, clearTouchedFields,
-    getFieldProps, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSubmit,
-    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues,
-    debouncedSubmit, setTouchedFields, validate, validateField, validateFields])
+  }), [state, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue,
+    getValue, handleBlur, handleChange, handleReset, handleSubmit, setInitialValues, load,
+    removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
+    setTouchedFields, validate, validateField, validateFields])
 }
 
 export default useForm

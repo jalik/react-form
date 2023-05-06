@@ -6,7 +6,7 @@
 import { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
 import { FieldAttributes, FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
-import { getFieldId, inputValue } from '../utils'
+import { inputValue } from '../utils'
 import Option, { OptionProps } from './Option'
 
 type FieldType = HTMLInputTypeAttribute | 'select' | 'textarea';
@@ -47,23 +47,18 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
     onChange,
     options,
     parser,
+    required,
     type,
     value,
     ...others
   } = props
 
   const {
-    disabled: formDisabled,
-    errors,
     getFieldProps,
     getValue,
     handleBlur,
     handleChange,
-    invalidClass,
-    modifiedClass,
-    modifiedFields,
-    removeFields,
-    validClass
+    removeFields
   } = useFormContext()
 
   // Check incompatible attributes
@@ -93,25 +88,6 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
     handleChange(event, { parser })
   }, [handleChange, parser])
 
-  // Get field props.
-  const attributes = useMemo(() => (
-    getFieldProps(name)
-  ), [getFieldProps, name])
-
-  // Prepare field classes.
-  const classNames = useMemo(() => {
-    const classes = [className]
-
-    // Adds CSS classes corresponding to field state.
-    if (modifiedFields[name]) {
-      classes.push(modifiedClass)
-      classes.push(errors[name] ? invalidClass : validClass)
-    } else if (typeof errors[name] !== 'undefined') {
-      classes.push(invalidClass)
-    }
-    return classes
-  }, [className, errors, invalidClass, modifiedClass, modifiedFields, name, validClass])
-
   // Get parsed value if parser is passed,
   // so we can compare parsed value to field value (if checked).
   const parsedValue = useMemo(() => (
@@ -119,23 +95,25 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
   ), [parser, value])
 
   const finalProps = useMemo(() => {
-    const p: { [key: string]: any } = {
+    const attributes = getFieldProps(name)
+    const p: Record<string, any> = {
       ...attributes,
       ...others,
-      className: classNames.join(' '),
-      disabled: disabled || formDisabled,
-      id: id || getFieldId(name, value),
+      className: [className, attributes.className]
+        .filter((v) => v != null)
+        .join(' '),
+      disabled: disabled || attributes.disabled,
+      id: id || attributes.id,
       multiple,
-      name,
-      required: others.required || attributes?.required,
+      required: required || attributes.required,
       onBlur: onBlur || handleFieldBlur,
-      onChange: onChange || handleFieldChange,
-      value: contextValue
+      onChange: onChange || handleFieldChange
     }
 
+    // Empty value on radio.
     if (value === null || value === '') {
       if (type === 'radio') {
-        // Convert null value for radio only
+        // Convert null value for radio only.
         p.value = ''
       }
     }
@@ -157,8 +135,9 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
       }
     }
     return p
-  }, [attributes, classNames, contextValue, disabled, formDisabled, formatValue, handleFieldBlur,
-    handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, type, value])
+  }, [className, contextValue, disabled, formatValue, getFieldProps, handleFieldBlur,
+    handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, required, type,
+    value])
 
   const finalOptions: OptionProps[] = useMemo(() => {
     const list: OptionProps[] = (options ? [...options] : []).map((option, index) => {
@@ -191,7 +170,7 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
 
   // Removes the field when unmounted, to clean errors and stuffs like that.
   useEffect(() => () => {
-    removeFields([name])
+    removeFields([name]) // todo do not remove field automatically
   }, [name, removeFields])
 
   // Renders a custom component.
