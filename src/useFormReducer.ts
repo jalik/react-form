@@ -364,7 +364,10 @@ function useFormReducer<V extends Values, R> (
         values = build(name, value, values)
 
         // Compare initial value to detect change.
-        modifiedFields[name] = value !== resolve(name, state.initialValues)
+        const initialValue = resolve(name, state.initialValues)
+        modifiedFields[name] = value !== initialValue &&
+          // ignore if comparing null and undefined
+          (initialValue != null || value != null)
 
         // Do not clear errors when validation is triggered
         // to avoid errors to disappear/appear quickly during typing.
