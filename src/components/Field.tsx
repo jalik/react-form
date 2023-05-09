@@ -3,13 +3,11 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
-import { FieldAttributes, FieldElement } from '../useForm'
+import { ElementType, HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
+import { FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
 import { inputValue } from '../utils'
 import Option, { OptionProps } from './Option'
-
-type FieldType = HTMLInputTypeAttribute | 'select' | 'textarea';
 
 /**
  * Returns true if the type is checkable.
@@ -18,8 +16,8 @@ function isCheckable (type: HTMLInputTypeAttribute): boolean {
   return type === 'checkbox' || type === 'radio'
 }
 
-export interface FieldProps<T = string> {
-  component?: any;
+export type FieldProps<T = string, C extends ElementType = any> = {
+  component?: C;
   disabled?: boolean;
   emptyOptionLabel?: string;
   formatter? (value: T | string): string | undefined;
@@ -28,11 +26,11 @@ export interface FieldProps<T = string> {
   options?: string[] | number[] | boolean[] | OptionProps[];
   parser? (value: string): T;
   required?: boolean;
-  type?: FieldType;
+  type?: HTMLInputTypeAttribute | 'select' | 'textarea';
   value?: string | T;
-}
+} & React.ComponentPropsWithoutRef<C>
 
-function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
+function Field<T> (props: FieldProps<T>): JSX.Element {
   const {
     children,
     className,

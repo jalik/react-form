@@ -3,17 +3,17 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { HTMLAttributes } from 'react'
+import { ElementType } from 'react'
 import useFormContext from '../useFormContext'
 
-export interface FieldErrorProps {
-  component?: any,
+export type FieldErrorProps<C extends ElementType> = {
+  component?: C,
   name: string;
-}
+} & React.ComponentPropsWithoutRef<C>
 
-function FieldError (props: HTMLAttributes<HTMLElement> & FieldErrorProps): JSX.Element | null {
+function FieldError<C extends ElementType> (props: FieldErrorProps<C>): JSX.Element | null {
   const {
-    component: Component,
+    component: Component = 'span',
     name,
     ...others
   } = props
@@ -32,7 +32,7 @@ function FieldError (props: HTMLAttributes<HTMLElement> & FieldErrorProps): JSX.
 }
 
 FieldError.defaultProps = {
-  component: 'span'
+  component: undefined
 }
 
 export default FieldError

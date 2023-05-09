@@ -3,18 +3,18 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { useCallback, useMemo } from 'react'
+import { ElementType, useCallback, useMemo } from 'react'
 import useFormContext from '../useFormContext'
 
-export interface ButtonsProps extends React.Component {
-  component?: any,
+export type ButtonsProps<C extends ElementType> = {
+  component?: C,
   type?: 'button' | 'reset' | 'submit',
-}
+} & React.ComponentPropsWithoutRef<C>
 
-function Button (props: ButtonsProps & React.ButtonHTMLAttributes<HTMLButtonElement>): JSX.Element {
+function Button<C extends ElementType> (props: ButtonsProps<C>): JSX.Element {
   const {
     children,
-    component: Component,
+    component: Component = 'button',
     disabled,
     onClick,
     type,
