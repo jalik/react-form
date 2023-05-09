@@ -72,10 +72,11 @@ function Field<T> (props: FieldAttributes & FieldProps<T>): JSX.Element {
       if (formatter) {
         return formatter(val)
       }
-      return String(val)
+      // Do not stringify value for custom component
+      return Component ? val : String(val)
     }
     return ''
-  }, [formatter])
+  }, [Component, formatter])
 
   // Get context value from field name
   const contextValue = useMemo(() => getValue<T>(name), [getValue, name])
