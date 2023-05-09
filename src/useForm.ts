@@ -66,6 +66,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   handleBlur (event: React.FocusEvent<FieldElement>): void;
   handleChange (event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
+  handleSetValue (name: string): (value: unknown | undefined) => void;
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
   load (): void;
   removeFields (fields: string[]): void;
@@ -641,6 +642,12 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
     reset()
   }, [reset])
 
+  const handleSetValue = useCallback((name: string) => {
+    return (value: unknown | undefined): void => {
+      setValue(name, value)
+    }
+  }, [setValue])
+
   /**
    * Handles form submit.
    */
@@ -738,6 +745,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
     handleBlur,
     handleChange,
     handleReset,
+    handleSetValue,
     handleSubmit,
     setInitialValues,
     load,
