@@ -100,6 +100,7 @@ export interface UseFormOptions<V extends Values, R> {
   initializeField? (name: string, formState: FormState<V, R>): Record<string, unknown> | undefined;
   load? (): Promise<void | V>;
   onSubmit (values: Partial<V>): Promise<void | R>;
+  onSubmitted? (result: R): void;
   submitDelay?: number;
   transform? (mutation: Values, values: Partial<V>): Partial<V>;
   validate? (
@@ -129,6 +130,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
     load: loadFunc,
     nullify = false,
     onSubmit,
+    onSubmitted,
     submitDelay = 100,
     transform: transformFunc,
     validate: validateFunc,
@@ -143,6 +145,9 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   // Checks options.
   if (typeof onSubmit !== 'function') {
     throw new Error('onSubmit must be a function')
+  }
+  if (onSubmitted && typeof onSubmitted !== 'function') {
+    throw new Error('onSubmitted must be a function')
   }
   if (transformFunc && typeof transformFunc !== 'function') {
     throw new Error('transform must be a function')
@@ -477,6 +482,9 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
             type: ACTION_SUBMIT_SUCCESS,
             data: { result }
           })
+          if (onSubmitted) {
+            onSubmitted(result)
+          }
         }
         return result
       })
@@ -487,7 +495,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
         })
         throw error
       })
-  }, [state.values])
+  }, [onSubmitted, state.values])
 
   /**
    * Validates form values.
