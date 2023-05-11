@@ -247,7 +247,6 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
             type: ACTION_LOAD_ERROR,
             error
           })
-          throw error
         })
     }
   }, [loadFunc])
@@ -337,7 +336,6 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
           type: ACTION_VALIDATE_ERROR,
           error
         })
-        throw error
       })
   }, [getValue, state.errors, state.values])
 
@@ -493,7 +491,6 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
           type: ACTION_SUBMIT_ERROR,
           error
         })
-        throw error
       })
   }, [onSubmitted, state.values])
 
@@ -552,7 +549,6 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
           type: ACTION_VALIDATE_ERROR,
           error
         })
-        throw error
       })
   }, [state.modifiedFields, state.touchedFields, state.values, validateFields])
 
