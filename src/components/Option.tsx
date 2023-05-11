@@ -4,17 +4,10 @@
  */
 
 import { inputValue } from '../utils'
+import React from 'react'
 
-export interface OptionProps {
-  disabled?: boolean;
-  key?: React.Key;
-  label?: string | number | boolean;
-  value: string | number | boolean;
-}
-
-function Option (props: OptionProps): JSX.Element {
+function Option (props: React.OptionHTMLAttributes<HTMLOptionElement>): JSX.Element {
   const {
-    disabled,
     label,
     value,
     ...others
@@ -23,18 +16,11 @@ function Option (props: OptionProps): JSX.Element {
   return (
     <option
       {...others}
-      disabled={disabled}
-      value={String(inputValue(value))}
+      value={inputValue(value)}
     >
       {label || value}
     </option>
   )
-}
-
-Option.defaultProps = {
-  disabled: false,
-  key: undefined,
-  label: undefined
 }
 
 export default Option

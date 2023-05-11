@@ -3,11 +3,18 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { ElementType, HTMLInputTypeAttribute, useCallback, useEffect, useMemo } from 'react'
+import React, {
+  ElementType,
+  HTMLInputTypeAttribute,
+  OptionHTMLAttributes,
+  useCallback,
+  useEffect,
+  useMemo
+} from 'react'
 import { FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
 import { inputValue } from '../utils'
-import Option, { OptionProps } from './Option'
+import Option from './Option'
 
 /**
  * Returns true if the type is checkable.
@@ -23,7 +30,7 @@ export type FieldProps<T = string, C extends ElementType = any> = {
   formatter? (value: T | string): string | undefined;
   multiple?: boolean;
   name: string;
-  options?: string[] | number[] | boolean[] | OptionProps[];
+  options?: OptionHTMLAttributes<HTMLOptionElement>[];
   parser? (value: string): T;
   required?: boolean;
   type?: HTMLInputTypeAttribute | 'select' | 'textarea';
@@ -138,27 +145,14 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
     handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, required, type,
     value])
 
-  const finalOptions: OptionProps[] = useMemo(() => {
-    const list: OptionProps[] = (options ? [...options] : []).map((option, index) => {
-      if (typeof option === 'object' && option != null) {
-        return {
-          ...option,
-          key: `${option.label}_${option.value}`
-        }
-      }
-      return {
-        key: `${index}_${option}`,
-        label: String(option),
-        value: String(option)
-      }
-    })
+  const finalOptions: OptionHTMLAttributes<HTMLOptionElement>[] = useMemo(() => {
+    const list: OptionHTMLAttributes<HTMLOptionElement>[] = options ? [...options] : []
 
     if (list.length > 0) {
       // Adds an empty value to avoid selection of the first value by default.
       if (!multiple && !children) {
         list.unshift({
           disabled: false,
-          key: 'empty',
           label: emptyOptionLabel,
           value: ''
         })
@@ -178,11 +172,8 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
       return (
         <Component {...finalProps} type={type}>
           {children}
-          {finalOptions.map(({
-            key,
-            ...option
-          }) => (
-            <Option key={key} {...option} />
+          {finalOptions.map((option) => (
+            <Option key={`${option.label}_${option.value}`} {...option} />
           ))}
         </Component>
       )
@@ -193,13 +184,13 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
   // Renders a select field.
   if (type === 'select') {
     return (
-      <select {...finalProps} value={String(finalProps.value)}>
+      <select
+        {...finalProps}
+        value={String(finalProps.value)}
+      >
         {children}
-        {finalOptions.map(({
-          key,
-          ...option
-        }) => (
-          <Option key={key} {...option} />
+        {finalOptions.map((option) => (
+          <Option key={`${option.label}_${option.value}`} {...option} />
         ))}
       </select>
     )
@@ -208,7 +199,10 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
   // Renders a textarea field.
   if (type === 'textarea') {
     return (
-      <textarea {...finalProps} value={String(finalProps.value)} />
+      <textarea
+        {...finalProps}
+        value={String(finalProps.value)}
+      />
     )
   }
 
