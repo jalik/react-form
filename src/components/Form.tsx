@@ -6,6 +6,7 @@
 import { UseFormHook } from '../useForm'
 import { FormContext } from '../useFormContext'
 import { Values } from '../useFormReducer'
+import React from 'react'
 
 export interface FormProps<V extends Values, R> {
   context: UseFormHook<V, R>;

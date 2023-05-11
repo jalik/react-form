@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { ElementType, useCallback, useMemo } from 'react'
+import React, { ElementType, useCallback, useMemo } from 'react'
 import useFormContext from '../useFormContext'
 
 export type ButtonsProps<C extends ElementType> = {
@@ -66,8 +66,8 @@ function Button<C extends ElementType = 'button'> (props: ButtonsProps<C>): JSX.
 }
 
 Button.defaultProps = {
-  children: null,
-  component: null,
+  children: undefined,
+  component: undefined,
   type: 'button'
 }
 

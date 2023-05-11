@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { ElementType } from 'react'
+import React, { ElementType } from 'react'
 import useFormContext from '../useFormContext'
 
 export type FieldErrorProps<C extends ElementType = 'span'> = {
