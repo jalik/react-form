@@ -6,7 +6,7 @@
 import { ElementType } from 'react'
 import useFormContext from '../useFormContext'
 
-export type FieldErrorProps<C extends ElementType> = {
+export type FieldErrorProps<C extends ElementType = 'span'> = {
   component?: C,
   name: string;
 } & React.ComponentPropsWithoutRef<C>

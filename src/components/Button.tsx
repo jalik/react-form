@@ -11,7 +11,7 @@ export type ButtonsProps<C extends ElementType> = {
   type?: 'button' | 'reset' | 'submit',
 } & React.ComponentPropsWithoutRef<C>
 
-function Button<C extends ElementType> (props: ButtonsProps<C>): JSX.Element {
+function Button<C extends ElementType = 'button'> (props: ButtonsProps<C>): JSX.Element {
   const {
     children,
     component: Component = 'button',
