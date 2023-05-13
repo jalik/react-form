@@ -216,24 +216,25 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
    * Loads and set initial values.
    */
   const load = useCallback((): void => {
-    if (loadFunc) {
-      dispatch({ type: ACTION_LOAD })
-      loadFunc()
-        .then((result) => {
-          if (mountedRef && result) {
-            dispatch({
-              type: ACTION_LOAD_SUCCESS,
-              data: { values: result }
-            })
-          }
-        })
-        .catch((error) => {
-          dispatch({
-            type: ACTION_LOAD_ERROR,
-            error
-          })
-        })
+    if (!loadFunc) {
+      return
     }
+    dispatch({ type: ACTION_LOAD })
+    Promise.resolve(loadFunc())
+      .then((result) => {
+        if (mountedRef && result) {
+          dispatch({
+            type: ACTION_LOAD_SUCCESS,
+            data: { values: result }
+          })
+        }
+      })
+      .catch((error) => {
+        dispatch({
+          type: ACTION_LOAD_ERROR,
+          error
+        })
+      })
   }, [loadFunc])
 
   /**
@@ -279,14 +280,10 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
     })
 
     const validate = validateFieldRef.current
-    const promises = validate
+    const promises: Promise<[string, void | Error | undefined]>[] = validate
       ? fields.map((name: string) => {
-        const result = validate(name, getValue(name), state.values)
-
-        if (!result) {
-          throw new Error('validateField() must return a Promise')
-        }
-        return result.then((error): [string, void | Error | undefined] => [name, error])
+        return Promise.resolve(validate(name, getValue(name), state.values))
+          .then((error) => [name, error])
       })
       : []
 
@@ -469,12 +466,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
       return Promise.reject(error)
     }
     dispatch({ type: ACTION_SUBMIT })
-    const promise = onSubmitRef.current(clone(state.values))
-
-    if (!(promise instanceof Promise)) {
-      throw new Error('onSubmit must return a Promise')
-    }
-    return promise
+    return Promise.resolve(onSubmitRef.current(clone(state.values)))
       .then((result) => {
         if (result) {
           dispatch({
@@ -501,26 +493,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   const validate = useCallback((opts?: {
     beforeSubmit?: boolean
   }): Promise<void | Errors | undefined> => {
-    const { beforeSubmit = false } = opts || {}
-    let promise
-
-    if (typeof validateRef.current === 'function') {
-      dispatch({ type: ACTION_VALIDATE })
-
-      if (!state.values) {
-        const error = new Error('Nothing to validate, values are empty')
-        dispatch({
-          type: ACTION_VALIDATE_ERROR,
-          error
-        })
-        return Promise.reject(error)
-      }
-      promise = validateRef.current(clone(state.values), { ...state.modifiedFields })
-
-      if (!(promise instanceof Promise)) {
-        throw new Error('validate() must return a Promise')
-      }
-    } else {
+    if (typeof validateRef.current !== 'function') {
       // Validate touched and modified fields only,
       // since we don't have a global validation function.
       // todo validate registered fields
@@ -530,7 +503,9 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
       }))
     }
 
-    return promise
+    dispatch({ type: ACTION_VALIDATE })
+
+    return Promise.resolve(validateRef.current(clone(state.values), { ...state.modifiedFields }))
       .then((errors) => {
         if (errors && hasDefinedValues(errors)) {
           dispatch({
@@ -538,6 +513,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
             data: { errors }
           })
         } else {
+          const { beforeSubmit = false } = opts || {}
           dispatch({
             type: ACTION_VALIDATE_SUCCESS,
             data: { beforeSubmit }
