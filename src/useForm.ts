@@ -45,16 +45,15 @@ import {
   resolve
 } from './utils'
 
-export type FieldChangeOptions = {
-  parser? (value: unknown, target: HTMLElement): any
-};
-
 export type FieldAttributes =
   React.InputHTMLAttributes<HTMLInputElement>
   | React.SelectHTMLAttributes<HTMLSelectElement>
-  | React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+  | React.TextareaHTMLAttributes<HTMLTextAreaElement>
 
-export type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+export type FieldElement =
+  HTMLInputElement
+  | HTMLSelectElement
+  | HTMLTextAreaElement
 
 export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear (fields?: string[]): void;
@@ -64,7 +63,9 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
   handleBlur (event: React.FocusEvent<FieldElement>): void;
-  handleChange (event: React.ChangeEvent<FieldElement>, options?: FieldChangeOptions): void;
+  handleChange (event: React.ChangeEvent<FieldElement>, options?: {
+    parser? (value: unknown, target: HTMLElement): any
+  }): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
   handleSetValue (name: string): (value: unknown | undefined) => void;
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
@@ -103,6 +104,7 @@ export interface UseFormOptions<V extends Values, R> {
   onSubmitted? (result: R): void;
   submitDelay?: number;
   transform? (mutation: Values, values: Partial<V>): Partial<V>;
+  trim?: boolean;
   validate? (
     values: Partial<V>,
     modifiedFields: ModifiedFields
@@ -133,6 +135,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
     onSubmitted,
     submitDelay = 100,
     transform: transformFunc,
+    trim,
     validate: validateFunc,
     validateField: validateFieldFunc,
     validateDelay = 200,
@@ -145,24 +148,6 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   // Checks options.
   if (typeof onSubmit !== 'function') {
     throw new Error('onSubmit must be a function')
-  }
-  if (onSubmitted && typeof onSubmitted !== 'function') {
-    throw new Error('onSubmitted must be a function')
-  }
-  if (transformFunc && typeof transformFunc !== 'function') {
-    throw new Error('transform must be a function')
-  }
-  if (initializeFieldFunc && typeof initializeFieldFunc !== 'function') {
-    throw new Error('initializeField must be a function')
-  }
-  if (loadFunc && typeof loadFunc !== 'function') {
-    throw new Error('load must be a function')
-  }
-  if (validateFunc && typeof validateFunc !== 'function') {
-    throw new Error('validate must be a function')
-  }
-  if (validateFieldFunc && typeof validateFieldFunc !== 'function') {
-    throw new Error('validateField function')
   }
 
   // Defines function references.
@@ -374,8 +359,24 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
         .forEach(([name, value]) => {
           nextValues = build(name, value, nextValues)
         })
-      // Allow changing values on the fly
+      // Apply transformation to changed values.
       mutation = transformRef.current(mutation, nextValues)
+    } else if (nullify || trim) {
+      Object.entries(mutation).forEach(([name, value]) => {
+        if (typeof value === 'string') {
+          let nextValue: string | null = value
+
+          if (trim) {
+            // Remove extra spaces.
+            nextValue = nextValue.trim()
+          }
+          if (nextValue === '' && nullify) {
+            // Replace empty string with null.
+            nextValue = null
+          }
+          mutation[name] = nextValue
+        }
+      })
     }
 
     dispatch({
@@ -386,7 +387,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
         values: mutation
       }
     })
-  }, [disabled, state.values, validateOnChange])
+  }, [disabled, nullify, state.values, trim, validateOnChange])
 
   /**
    * Defines the value of a field.
@@ -591,7 +592,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
    */
   const handleChange = useCallback((
     event: React.ChangeEvent<FieldElement>,
-    opts?: FieldChangeOptions
+    opts?: { parser? (value: unknown, target: HTMLElement): any }
   ): void => {
     const { parser } = opts || {}
     const { currentTarget } = event
@@ -629,13 +630,8 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
       value = parsedValue
     }
 
-    // Replaces empty string with null.
-    if (value === '' && nullify) {
-      value = null
-    }
-
     setValue(name, value)
-  }, [nullify, setValue])
+  }, [setValue])
 
   /**
    * Handles form reset.
