@@ -457,14 +457,6 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
    * Submits form.
    */
   const submit = useCallback((): Promise<void | R> => {
-    if (!state.values) {
-      const error = new Error('Nothing to submit, values are empty')
-      dispatch({
-        type: ACTION_SUBMIT_ERROR,
-        error
-      })
-      return Promise.reject(error)
-    }
     dispatch({ type: ACTION_SUBMIT })
     return Promise.resolve(onSubmitRef.current(clone(state.values)))
       .then((result) => {
