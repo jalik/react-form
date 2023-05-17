@@ -66,8 +66,8 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   getFieldProps (name: string): any;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
-  handleBlur (event: React.FocusEvent<FieldElement>): void;
-  handleChange (event: React.ChangeEvent<FieldElement>, options?: {
+  handleBlur (event: React.FocusEvent): void;
+  handleChange (event: React.ChangeEvent, options?: {
     parser? (value: unknown, target: HTMLElement): any
   }): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
