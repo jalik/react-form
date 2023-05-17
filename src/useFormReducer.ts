@@ -396,9 +396,7 @@ function useFormReducer<V extends Values, R> (
         ...state,
         disabled: true,
         submitting: true,
-        submitCount: state.submitCount + 1,
-        submitError: undefined,
-        submitResult: undefined
+        submitCount: state.submitCount + 1
       }
       break
 
