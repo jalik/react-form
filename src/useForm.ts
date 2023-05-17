@@ -522,23 +522,26 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
           type: ACTION_VALIDATE_ERROR,
           error
         })
+        return error
       })
   }, [state.modifiedFields, state.touchedFields, state.values, validateFields])
 
   /**
    * Validates if necessary and submits form.
    */
-  const validateAndSubmit = useCallback((): Promise<void | R> => (
-    !state.validated && validateOnSubmit
-      ? validate({ beforeSubmit: true })
-        .then((errors) => {
-          if (!errors || !hasDefinedValues(errors)) {
-            return submit()
-          }
-          return undefined
-        })
-      : submit()
-  ), [validateOnSubmit, state.validated, validate, submit])
+  const validateAndSubmit = useCallback(async (): Promise<void | R> => {
+    if (!validateOnSubmit) {
+      return submit()
+    }
+    if (state.validated) {
+      return submit()
+    }
+    const errors = await validate({ beforeSubmit: true })
+
+    if (!errors || !hasDefinedValues(errors)) {
+      return submit()
+    }
+  }, [validateOnSubmit, state.validated, validate, submit])
 
   const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay)
 
