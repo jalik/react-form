@@ -733,9 +733,9 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
     validateField,
     validateFields
   }), [state, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue,
-    getValue, handleBlur, handleChange, handleReset, handleSubmit, setInitialValues, load,
-    removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit,
-    setTouchedFields, validate, validateField, validateFields])
+    getValue, handleBlur, handleChange, handleReset, handleSetValue, handleSubmit,
+    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues,
+    debouncedSubmit, setTouchedFields, validate, validateField, validateFields])
 }
 
 export default useForm
