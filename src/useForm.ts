@@ -45,10 +45,14 @@ import {
   resolve
 } from './utils'
 
-export type FieldAttributes =
-  React.InputHTMLAttributes<HTMLInputElement>
-  | React.SelectHTMLAttributes<HTMLSelectElement>
-  | React.TextareaHTMLAttributes<HTMLTextAreaElement>
+export type FieldAttributes<T> = {
+  disabled: boolean
+  id: string
+  name: string
+  onBlur (event: React.FocusEvent<any>): void
+  onChange (event: React.ChangeEvent<any>): void
+  value: T
+}
 
 export type FieldElement =
   HTMLInputElement
@@ -59,7 +63,7 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   clear (fields?: string[]): void;
   clearErrors (fields?: string[]): void;
   clearTouchedFields (fields?: string[]): void;
-  getFieldProps (name: string): FieldAttributes;
+  getFieldProps (name: string): any;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
   handleBlur (event: React.FocusEvent<FieldElement>): void;
@@ -628,12 +632,12 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   /**
    * Returns props of a field.
    */
-  const getFieldProps = useCallback((name: string): FieldAttributes => {
+  const getFieldProps = useCallback(<T> (name: string): FieldAttributes<T> => {
     const value: any = getValue(name)
 
     // Prepare default props
-    let props: FieldAttributes = {
-      disabled,
+    let props: FieldAttributes<T> = {
+      disabled: disabled || state.submitting || state.loading,
       id: getFieldId(name, value),
       name,
       onBlur: handleBlur,
