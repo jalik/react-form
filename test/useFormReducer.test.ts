@@ -769,8 +769,17 @@ describe('useFormReducer(state, action)', () => {
 
     describe('with validateOnTouch = true', () => {
       it('should set touched fields and add them to validation', () => {
-        const state = stateWithInitialValues
-        const newState = useFormReducer(state, action)
+        const state = {
+          ...stateWithInitialValues,
+          validateOnTouch: true
+        }
+        const newState = useFormReducer(state, {
+          ...action,
+          data: {
+            ...action.data,
+            validate: state.validateOnTouch
+          }
+        })
         const touchedFields: TouchedFields = action.data.partial
           ? { ...state.touchedFields, ...action.data.touchedFields }
           : { ...action.data.touchedFields }
