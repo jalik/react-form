@@ -105,7 +105,7 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors<E> } }
-  | { type: 'VALIDATE_SUCCESS', data: { beforeSubmit?: boolean } };
+  | { type: 'VALIDATE_SUCCESS', data: { submitAfter: boolean } };
 
 /**
  * Form reducers.
@@ -484,7 +484,7 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         // Let form disabled if submission planned after validation
-        disabled: action.data.beforeSubmit === true,
+        disabled: action.data.submitAfter,
         errors: {},
         hasError: false,
         validated: true,

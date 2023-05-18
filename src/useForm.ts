@@ -93,7 +93,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
     values: Values | Partial<V>,
     options?: { partial?: boolean, validate?: boolean }
   ): void;
-  validate (): Promise<void | Errors<E> | undefined>;
+  validate (opts?: { submitAfter: boolean }): Promise<void | Errors<E> | undefined>;
   validateField (name: string): Promise<void | E | undefined>;
   validateFields (fields?: string[]): Promise<void | Errors<E> | undefined>;
 }
@@ -487,7 +487,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Validates form values.
    */
   const validate = useCallback((opts?: {
-    beforeSubmit?: boolean
+    submitAfter?: boolean
   }): Promise<void | Errors<E> | undefined> => {
     if (typeof validateRef.current !== 'function') {
       // Validate touched and modified fields only,
@@ -509,10 +509,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
             data: { errors }
           })
         } else {
-          const { beforeSubmit = false } = opts || {}
+          const { submitAfter = false } = opts || {}
           dispatch({
             type: ACTION_VALIDATE_SUCCESS,
-            data: { beforeSubmit }
+            data: { submitAfter }
           })
         }
         return errors
@@ -536,7 +536,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     if (state.validated) {
       return submit()
     }
-    const errors = await validate({ beforeSubmit: true })
+    const errors = await validate({ submitAfter: true })
 
     if (!errors || !hasDefinedValues(errors)) {
       return submit()

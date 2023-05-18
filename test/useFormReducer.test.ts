@@ -860,7 +860,7 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_VALIDATE_SUCCESS}"`, () => {
     const action: FormAction = {
       type: ACTION_VALIDATE_SUCCESS,
-      data: { beforeSubmit: false }
+      data: { submitAfter: false }
     }
 
     it('should set validate success', () => {
@@ -870,7 +870,7 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: action.data.beforeSubmit === true,
+        disabled: action.data.submitAfter === true,
         errors: {},
         hasError: false,
         validated: true,
