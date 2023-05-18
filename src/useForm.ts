@@ -113,7 +113,7 @@ export interface UseFormOptions<V extends Values, E, R> {
   onSubmitted? (result: R): void;
   submitDelay?: number;
   transform? (mutation: Values, values: Partial<V>): Partial<V>;
-  trim?: boolean;
+  trimOnBlur?: boolean;
   validate? (
     values: Partial<V>,
     modifiedFields: ModifiedFields
@@ -144,7 +144,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     onSubmitted,
     submitDelay = 100,
     transform: transformFunc,
-    trim,
+    trimOnBlur,
     validate: validateFunc,
     validateField: validateFieldFunc,
     validateDelay = 200,
@@ -367,15 +367,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         })
       // Apply transformation to changed values.
       mutation = transformRef.current(mutation, nextValues)
-    } else if (nullify || trim) {
+    } else if (nullify) {
       Object.entries(mutation).forEach(([name, value]) => {
         if (typeof value === 'string') {
           let nextValue: string | null = value
 
-          if (trim) {
-            // Remove extra spaces.
-            nextValue = nextValue.trim()
-          }
           if (nextValue === '' && nullify) {
             // Replace empty string with null.
             nextValue = null
@@ -393,7 +389,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         values: mutation
       }
     })
-  }, [disabled, nullify, state.values, trim, validateOnChange])
+  }, [disabled, nullify, state.values, validateOnChange])
 
   /**
    * Defines the value of a field.
@@ -576,8 +572,25 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
-    setTouchedFields({ [event.currentTarget.name]: true })
-  }, [setTouchedFields])
+    const { name } = event.currentTarget
+    let touch = true
+
+    if (trimOnBlur) {
+      let value = getValue(name)
+
+      if (typeof value === 'string') {
+        // Remove extra spaces.
+        value = value.trim()
+        setValue(name, value)
+        // Avoid unnecessary render because setValue already touch the field.
+        touch = false
+      }
+    }
+
+    if (touch) {
+      setTouchedField(name, true)
+    }
+  }, [getValue, setTouchedField, setValue, trimOnBlur])
 
   /**
    * Handles change of field value.
