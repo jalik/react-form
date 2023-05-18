@@ -27,8 +27,7 @@ import useFormReducer, {
   ACTION_VALIDATE_SUCCESS,
   Errors,
   FormAction,
-  initialState,
-  Values
+  initialState
 } from '../src/useFormReducer'
 import { build, clone, hasDefinedValues, resolve } from '../src/utils'
 
@@ -97,7 +96,7 @@ const stateValidatedWithSubmitError = {
 describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_CLEAR}"`, () => {
     describe('with data.fields empty or undefined', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_CLEAR
       }
 
@@ -110,7 +109,7 @@ describe('useFormReducer(state, action)', () => {
     })
 
     describe('with data.fields not empty', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_CLEAR,
         data: { fields: ['username'] }
       }
@@ -152,7 +151,7 @@ describe('useFormReducer(state, action)', () => {
 
   describe(`with action "${ACTION_CLEAR_ERRORS}"`, () => {
     describe('with data.fields empty or undefined', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_CLEAR_ERRORS
       }
 
@@ -168,7 +167,7 @@ describe('useFormReducer(state, action)', () => {
     })
 
     describe('with data.fields not empty', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_CLEAR_ERRORS,
         data: { fields: ['username'] }
       }
@@ -191,7 +190,7 @@ describe('useFormReducer(state, action)', () => {
 
   describe(`with action "${ACTION_CLEAR_TOUCHED_FIELDS}"`, () => {
     describe('with data.fields empty or undefined', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_CLEAR_TOUCHED_FIELDS
       }
 
@@ -207,7 +206,7 @@ describe('useFormReducer(state, action)', () => {
     })
 
     describe('with data.fields not empty', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_CLEAR_TOUCHED_FIELDS,
         data: { fields: ['username'] }
       }
@@ -229,7 +228,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_INIT_VALUES}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_INIT_VALUES,
       data: { values: { username: 'jalik' } }
     }
@@ -248,7 +247,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_LOAD}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_LOAD
     }
 
@@ -264,7 +263,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_LOAD_ERROR}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_LOAD_ERROR,
       error: new Error('Network error')
     }
@@ -284,7 +283,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_LOAD_SUCCESS}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_LOAD_SUCCESS,
       data: { values: { username: 'jalik' } }
     }
@@ -307,7 +306,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_REMOVE}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_REMOVE,
       data: { fields: ['username'] }
     }
@@ -358,7 +357,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_RESET}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_RESET
     }
 
@@ -379,7 +378,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_RESET_VALUES}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_RESET_VALUES,
       data: { fields: ['username'] }
     }
@@ -424,7 +423,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SET_ERRORS}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_SET_ERRORS,
       data: {
         errors: {
@@ -452,7 +451,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SET_VALUES}"`, () => {
-    const baseAction: FormAction<Values, unknown> = {
+    const baseAction: FormAction = {
       type: ACTION_SET_VALUES,
       data: { values: { username: 'naruto' } }
     }
@@ -617,7 +616,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SUBMIT}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_SUBMIT
     }
 
@@ -628,15 +627,13 @@ describe('useFormReducer(state, action)', () => {
         ...state,
         disabled: true,
         submitting: true,
-        submitCount: state.submitCount + 1,
-        submitError: undefined,
-        submitResult: undefined
+        submitCount: state.submitCount + 1
       })
     })
   })
 
   describe(`with action "${ACTION_SUBMIT_ERROR}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_SUBMIT_ERROR,
       error: new Error('Server Error')
     }
@@ -656,7 +653,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SUBMIT_SUCCESS}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_SUBMIT_SUCCESS,
       data: { result: { success: true } }
     }
@@ -676,7 +673,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SET_TOUCHED_FIELDS}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_SET_TOUCHED_FIELDS,
       data: { fields: ['username'] }
     }
@@ -742,7 +739,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_VALIDATE}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_VALIDATE
     }
 
@@ -760,7 +757,7 @@ describe('useFormReducer(state, action)', () => {
     })
 
     describe('with { data: fields }', () => {
-      const action: FormAction<Values, unknown> = {
+      const action: FormAction = {
         type: ACTION_VALIDATE,
         data: { fields: ['username'] }
       }
@@ -777,7 +774,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_VALIDATE_ERROR}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_VALIDATE_ERROR,
       error: new Error('Unhandled error')
     }
@@ -797,7 +794,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_VALIDATE_FAIL}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_VALIDATE_FAIL,
       data: {
         errors: {
@@ -830,7 +827,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_VALIDATE_SUCCESS}"`, () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       type: ACTION_VALIDATE_SUCCESS,
       data: { beforeSubmit: false }
     }
@@ -853,7 +850,7 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe('with invalid action', () => {
-    const action: FormAction<Values, unknown> = {
+    const action: FormAction = {
       // @ts-ignore
       type: 'INVALID'
     }

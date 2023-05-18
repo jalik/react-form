@@ -26,14 +26,14 @@ export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR'
 export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL'
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS'
 
-export type Errors = Record<string, void | Error | undefined>;
+export type Errors<E = Error> = Record<string, void | E | undefined>;
 export type ModifiedFields = Record<string, boolean>;
 export type TouchedFields = Record<string, boolean>;
 export type Values = Record<string, unknown>;
 
-export interface FormState<V extends Values, R> {
+export interface FormState<V extends Values = Values, E = Error, R = any> {
   disabled: boolean;
-  errors: Errors;
+  errors: Errors<E>;
   hasError: boolean;
   initialized: boolean;
   initialValues: Partial<V>;
@@ -85,7 +85,7 @@ export const initialState = {
   values: {}
 }
 
-export type FormAction<V, R> =
+export type FormAction<V = Values, E = Error, R = any> =
   { type: 'CLEAR', data?: { fields?: string[] } }
   | { type: 'CLEAR_ERRORS', data?: { fields?: string[] } }
   | { type: 'CLEAR_TOUCHED_FIELDS', data?: { fields?: string[] } }
@@ -96,7 +96,7 @@ export type FormAction<V, R> =
   | { type: 'REMOVE', data: { fields: string[] } }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
-  | { type: 'SET_ERRORS', data: { errors: Errors } }
+  | { type: 'SET_ERRORS', data: { errors: Errors<E> } }
   | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate?: boolean } }
   | { type: 'SET_VALUES', data: { partial?: boolean, validate?: boolean, values: Values } }
   | { type: 'SUBMIT' }
@@ -104,17 +104,17 @@ export type FormAction<V, R> =
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
   | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
-  | { type: 'VALIDATE_FAIL', data: { errors: Errors } }
+  | { type: 'VALIDATE_FAIL', data: { errors: Errors<E> } }
   | { type: 'VALIDATE_SUCCESS', data: { beforeSubmit?: boolean } };
 
 /**
  * Form reducers.
  */
-function useFormReducer<V extends Values, R> (
-  state: FormState<V, R>,
-  action: FormAction<V, R>
-): FormState<V, R> {
-  let nextState: FormState<V, R>
+function useFormReducer<V extends Values, E, R> (
+  state: FormState<V, E, R>,
+  action: FormAction<V, E, R>
+): FormState<V, E, R> {
+  let nextState: FormState<V, E, R>
 
   switch (action.type) {
     case ACTION_CLEAR: {
@@ -337,7 +337,7 @@ function useFormReducer<V extends Values, R> (
 
     case ACTION_SET_ERRORS: {
       const { data } = action
-      const errors: Errors = {}
+      const errors: Errors<E> = {}
 
       Object.keys(data.errors).forEach((name) => {
         // Ignore undefined/null errors
@@ -461,7 +461,7 @@ function useFormReducer<V extends Values, R> (
       break
 
     case ACTION_VALIDATE_FAIL: {
-      const errors: Errors = {}
+      const errors: Errors<E> = {}
       const { data } = action
 
       Object.keys(data.errors).forEach((name) => {

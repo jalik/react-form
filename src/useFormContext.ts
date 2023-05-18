@@ -15,8 +15,8 @@ export const FormContext = createContext<any>(undefined)
 /**
  * Returns the form context.
  */
-function useFormContext<V extends Values, R> (): UseFormHook<V, R> {
-  return useContext<UseFormHook<V, R>>(FormContext)
+function useFormContext<V extends Values = Values, E = Error, R = any> (): UseFormHook<V, E, R> {
+  return useContext<UseFormHook<V, E, R>>(FormContext)
 }
 
 export default useFormContext

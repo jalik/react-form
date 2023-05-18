@@ -59,7 +59,7 @@ export type FieldElement =
   | HTMLSelectElement
   | HTMLTextAreaElement
 
-export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
+export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> {
   clear (fields?: string[]): void;
   clearErrors (fields?: string[]): void;
   clearTouchedFields (fields?: string[]): void;
@@ -77,8 +77,8 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
   removeFields (fields: string[]): void;
   reset (fields?: string[]): void;
   submit (): Promise<void | R>;
-  setError (name: string, error?: Error): void;
-  setErrors (errors: Errors): void;
+  setError (name: string, error?: E): void;
+  setErrors (errors: Errors<E>): void;
   setInitialValues (values: Partial<V>): void;
   setTouchedFields (
     fields: string[],
@@ -93,16 +93,16 @@ export interface UseFormHook<V extends Values, R> extends FormState<V, R> {
     values: Values | Partial<V>,
     options?: { partial?: boolean, validate?: boolean }
   ): void;
-  validate (): Promise<void | Errors | undefined>;
-  validateField (name: string): Promise<void | Error | undefined>;
-  validateFields (fields?: string[]): Promise<void | Errors | undefined>;
+  validate (): Promise<void | Errors<E> | undefined>;
+  validateField (name: string): Promise<void | E | undefined>;
+  validateFields (fields?: string[]): Promise<void | Errors<E> | undefined>;
 }
 
-export interface UseFormOptions<V extends Values, R> {
+export interface UseFormOptions<V extends Values, E, R> {
   disabled?: boolean;
   initialValues?: Partial<V>;
   nullify?: boolean;
-  initializeField? (name: string, formState: FormState<V, R>): Record<string, unknown> | undefined;
+  initializeField? (name: string, formState: FormState<V, E, R>): Record<string, unknown> | undefined;
   load? (): Promise<void | V>;
   onSubmit (values: Partial<V>): Promise<void | R>;
   onSubmitted? (result: R): void;
@@ -112,12 +112,12 @@ export interface UseFormOptions<V extends Values, R> {
   validate? (
     values: Partial<V>,
     modifiedFields: ModifiedFields
-  ): Promise<void | Errors | undefined>;
+  ): Promise<void | Errors<E> | undefined>;
   validateField? (
     name: string,
     value: unknown,
     values: Partial<V>
-  ): Promise<void | Error | undefined>;
+  ): Promise<void | E | undefined>;
   validateDelay?: number;
   validateOnChange?: boolean;
   validateOnInit?: boolean;
@@ -128,7 +128,7 @@ export interface UseFormOptions<V extends Values, R> {
 /**
  * Manage form state and actions.
  */
-function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): UseFormHook<V, R> {
+function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<V, E, R>): UseFormHook<V, E, R> {
   const {
     disabled = false,
     initialValues,
@@ -164,7 +164,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
 
   // Defines the form state.
   const [state, dispatch] = useReducer(
-    useFormReducer<V, R>,
+    useFormReducer<V, E, R>,
     {
       ...initialState,
       // Disables fields if default values are undefined.
@@ -257,7 +257,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   /**
    * Defines the field error.
    */
-  const setError = useCallback((name: string, error: Error): void => {
+  const setError = useCallback((name: string, error: E): void => {
     dispatch({
       type: ACTION_SET_ERRORS,
       data: { errors: { [name]: error } }
@@ -267,7 +267,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   /**
    * Defines form field errors.
    */
-  const setErrors = useCallback((errors: Errors): void => {
+  const setErrors = useCallback((errors: Errors<E>): void => {
     dispatch({
       type: ACTION_SET_ERRORS,
       data: { errors }
@@ -277,21 +277,21 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   /**
    * Validates one or more fields by passing field names.
    */
-  const validateFields = useCallback((fields: string[]): Promise<void | Errors | undefined> => {
+  const validateFields = useCallback((fields: string[]): Promise<void | Errors<E> | undefined> => {
     dispatch({
       type: ACTION_VALIDATE,
       data: { fields }
     })
 
     const validate = validateFieldRef.current
-    const promises: Promise<[string, void | Error | undefined]>[] = validate
+    const promises: Promise<[string, void | E | undefined]>[] = validate
       ? fields.map((name: string) => {
         return Promise.resolve(validate(name, getValue(name), state.values))
           .then((error) => [name, error])
       })
       : []
 
-    let errors: Errors = {}
+    let errors: Errors<E> = {}
 
     return Promise
       .all(promises)
@@ -328,10 +328,10 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
   /**
    * Validates a field value.
    */
-  const validateField = useCallback((name: string): Promise<void | Error | undefined> => (
+  const validateField = useCallback((name: string): Promise<void | E | undefined> => (
     validateFields([name])
-      .then((errors: void | Errors | undefined) => {
-        const err: Record<string, void | Error | undefined> = { ...errors }
+      .then((errors: void | Errors<E> | undefined) => {
+        const err: Record<string, void | E | undefined> = { ...errors }
         return err[name]
       })
   ), [validateFields])
@@ -475,7 +475,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
         }
         return result
       })
-      .catch((error: Error) => {
+      .catch((error) => {
         dispatch({
           type: ACTION_SUBMIT_ERROR,
           error
@@ -488,7 +488,7 @@ function useForm<V extends Values, R = any> (options: UseFormOptions<V, R>): Use
    */
   const validate = useCallback((opts?: {
     beforeSubmit?: boolean
-  }): Promise<void | Errors | undefined> => {
+  }): Promise<void | Errors<E> | undefined> => {
     if (typeof validateRef.current !== 'function') {
       // Validate touched and modified fields only,
       // since we don't have a global validation function.

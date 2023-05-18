@@ -43,8 +43,8 @@ function synchronizeItems<T> (array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[
   return newArray
 }
 
-export interface UseFieldArrayOptions<T, F extends Values> {
-  context: UseFormHook<F, unknown>,
+export interface UseFieldArrayOptions<T, V extends Values> {
+  context: UseFormHook<V, Error, any>,
   defaultValue: T,
   name: string
 }
@@ -52,7 +52,7 @@ export interface UseFieldArrayOptions<T, F extends Values> {
 /**
  * Returns utils to manage an array of fields.
  */
-function useFieldArray<T, F extends Values> (options: UseFieldArrayOptions<T, F>) {
+function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>) {
   const {
     context,
     defaultValue,
