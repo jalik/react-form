@@ -184,6 +184,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     undefined
   )
 
+  const formDisabled = useMemo(() => (
+    disabled || state.disabled || state.loading || state.validating || state.submitting
+  ), [disabled, state.disabled, state.loading, state.submitting, state.validating])
+
   /**
    * Clears all values or selected fields only.
    */
@@ -249,13 +253,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const removeFields = useCallback((fields: string[]): void => {
     // Ignore action if form disabled
-    if (disabled) return
+    if (formDisabled) return
 
     dispatch({
       type: ACTION_REMOVE,
       data: { fields }
     })
-  }, [disabled])
+  }, [formDisabled])
 
   /**
    * Defines form field errors.
@@ -350,7 +354,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   ): void => {
     // Ignore action if form disabled
-    if (disabled) return
+    if (formDisabled) return
 
     // Flatten values to make sur mutation only contains field names as keys
     // and field values as values.
@@ -387,7 +391,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         values: mutation
       }
     })
-  }, [disabled, nullify, state.values, validateOnChange])
+  }, [formDisabled, nullify, state.values, validateOnChange])
 
   /**
    * Defines the value of a field.
@@ -738,14 +742,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     // Set disabled depending on form state or field state.
-    finalProps.disabled = disabled ||
-      state.loading ||
-      state.validating ||
-      state.submitting ||
-      props?.disabled
+    finalProps.disabled = formDisabled || props?.disabled
 
     return finalProps
-  }, [disabled, getValue, handleBlur, handleChange, state])
+  }, [formDisabled, getValue, handleBlur, handleChange, state])
 
   // Keep track of mount state.
   useEffect(() => {
@@ -798,6 +798,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   return useMemo(() => ({
     ...state,
+    disabled: formDisabled,
     clear,
     clearErrors,
     clearTouchedFields,
@@ -823,10 +824,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validate,
     validateField,
     validateFields
-  }), [state, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue, getValue,
-    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, setInitialValues, load,
-    removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit, setTouchedField,
-    setTouchedFields, validate, validateField, validateFields])
+  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getFieldProps,
+    getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSetValue, handleSubmit,
+    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues,
+    debouncedSubmit, setTouchedField, setTouchedFields, validate, validateField, validateFields])
 }
 
 export default useForm
