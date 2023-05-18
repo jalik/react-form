@@ -255,24 +255,24 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [disabled])
 
   /**
-   * Defines the field error.
+   * Defines form field errors.
    */
-  const setError = useCallback((name: string, error: E): void => {
+  const setErrors = useCallback((errors: Errors<E>, opts?: { partial?: boolean }): void => {
     dispatch({
       type: ACTION_SET_ERRORS,
-      data: { errors: { [name]: error } }
+      data: {
+        errors,
+        partial: opts?.partial === true
+      }
     })
   }, [])
 
   /**
-   * Defines form field errors.
+   * Defines the field error.
    */
-  const setErrors = useCallback((errors: Errors<E>): void => {
-    dispatch({
-      type: ACTION_SET_ERRORS,
-      data: { errors }
-    })
-  }, [])
+  const setError = useCallback((name: string, error: E): void => {
+    setErrors({ [name]: error }, { partial: true })
+  }, [setErrors])
 
   /**
    * Validates one or more fields by passing field names.
@@ -383,7 +383,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     dispatch({
       type: ACTION_SET_VALUES,
       data: {
-        partial: opts?.partial,
+        partial: opts?.partial === true,
         validate: opts?.validate || (opts?.validate !== false && validateOnChange),
         values: mutation
       }

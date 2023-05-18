@@ -423,29 +423,53 @@ describe('useFormReducer(state, action)', () => {
   })
 
   describe(`with action "${ACTION_SET_ERRORS}"`, () => {
-    const action: FormAction = {
-      type: ACTION_SET_ERRORS,
-      data: {
-        errors: {
-          username: new Error('Random error'),
-          password: undefined
+    describe('with data.partial = false', () => {
+      it('should replace all errors', () => {
+        const state = stateWithInitialValuesAndErrors
+        const action: FormAction = {
+          type: ACTION_SET_ERRORS,
+          data: {
+            partial: false,
+            errors: { username: new Error('Random error') }
+          }
         }
-      }
-    }
-
-    it('should set errors', () => {
-      const state = stateWithInitialValuesAndModifiedFields
-      const newState = useFormReducer(state, action)
-      const errors = { ...state.errors }
-      Object.entries(action.data.errors).forEach(([field, error]) => {
-        if (error) {
-          errors[field] = error
-        }
+        const newState = useFormReducer(state, action)
+        const errors = {}
+        Object.entries(action.data.errors).forEach(([field, error]) => {
+          if (error) {
+            errors[field] = error
+          }
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors)
+        })
       })
-      expect(newState).toStrictEqual({
-        ...state,
-        errors,
-        hasError: hasDefinedValues(errors)
+    })
+
+    describe('with data.partial = true', () => {
+      it('should set errors partially', () => {
+        const state = stateWithInitialValuesAndErrors
+        const action: FormAction = {
+          type: ACTION_SET_ERRORS,
+          data: {
+            partial: true,
+            errors: { username: new Error('Random error') }
+          }
+        }
+        const newState = useFormReducer(state, action)
+        const errors = { ...state.errors }
+        Object.entries(action.data.errors).forEach(([field, error]) => {
+          if (error) {
+            errors[field] = error
+          }
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          errors,
+          hasError: hasDefinedValues(errors)
+        })
       })
     })
   })

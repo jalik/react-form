@@ -96,7 +96,7 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'REMOVE', data: { fields: string[] } }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
-  | { type: 'SET_ERRORS', data: { errors: Errors<E> } }
+  | { type: 'SET_ERRORS', data: { errors: Errors<E>, partial: boolean } }
   | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate?: boolean } }
   | { type: 'SET_VALUES', data: { partial?: boolean, validate?: boolean, values: Values } }
   | { type: 'SUBMIT' }
@@ -337,7 +337,7 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_SET_ERRORS: {
       const { data } = action
-      const errors: Errors<E> = {}
+      const errors: Errors<E> = data.partial ? { ...state.errors } : {}
 
       Object.keys(data.errors).forEach((name) => {
         // Ignore undefined/null errors
