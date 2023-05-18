@@ -62,8 +62,7 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
     getFieldProps,
     getValue,
     handleBlur,
-    handleChange,
-    removeFields
+    handleChange
   } = useFormContext()
 
   // Check incompatible attributes
@@ -160,11 +159,6 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
     }
     return list
   }, [children, emptyOptionLabel, multiple, options])
-
-  // Removes the field when unmounted, to clean errors and stuffs like that.
-  useEffect(() => () => {
-    removeFields([name]) // todo do not remove field automatically
-  }, [name, removeFields])
 
   // Renders a custom component.
   if (Component != null) {
