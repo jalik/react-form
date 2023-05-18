@@ -422,35 +422,20 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     touchedFields: TouchedFields,
     opts?: { partial?: boolean, validate?: boolean }
   ): void => {
-    let canDispatch = false
+    const {
+      partial = false,
+      validate
+    } = { ...opts }
 
-    // Check if we really need to dispatch the event
-    const fields = Object.keys(touchedFields)
-    for (let i = 0; i < fields.length; i += 1) {
-      const name = fields[i]
-
-      if (state.touchedFields[name] !== touchedFields[name]) {
-        canDispatch = true
-        break
+    dispatch({
+      type: ACTION_SET_TOUCHED_FIELDS,
+      data: {
+        touchedFields,
+        partial,
+        validate: validate != null ? validate : validateOnTouch
       }
-    }
-
-    if (canDispatch) {
-      const {
-        partial = false,
-        validate = false
-      } = { ...opts }
-
-      dispatch({
-        type: ACTION_SET_TOUCHED_FIELDS,
-        data: {
-          touchedFields,
-          partial,
-          validate
-        }
-      })
-    }
-  }, [state.touchedFields])
+    })
+  }, [validateOnTouch])
 
   const setTouchedField = useCallback((name: string, touched: boolean): void => {
     setTouchedFields({ [name]: touched }, { partial: true })
@@ -581,7 +566,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       if (typeof value === 'string') {
         // Remove extra spaces.
         value = value.trim()
-        setValue(name, value)
+        setValue(name, value, { validate: state.validateOnTouch })
         // Avoid unnecessary render because setValue already touch the field.
         touch = false
       }
@@ -590,7 +575,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     if (touch) {
       setTouchedField(name, true)
     }
-  }, [getValue, setTouchedField, setValue, trimOnBlur])
+  }, [getValue, setTouchedField, setValue, state.validateOnTouch, trimOnBlur])
 
   /**
    * Handles change of field value.

@@ -435,12 +435,16 @@ function useFormReducer<V extends Values, E, R> (
         ? { ...state.touchedFields, ...data.touchedFields }
         : { ...data.touchedFields }
 
+      // Trigger validation if needed
+      const needValidation = data.validate
+        ? Object.entries(data.touchedFields).filter(([, v]) => v).map(([k]) => k)
+        : state.needValidation
+
+      console.log('TOUCH', touchedFields, needValidation)
+
       nextState = {
         ...state,
-        // Trigger validation if needed
-        needValidation: state.validateOnTouch || data.validate
-          ? Object.entries(data.touchedFields).filter(([, v]) => v).map(([k]) => k)
-          : state.needValidation,
+        needValidation,
         touched: true,
         touchedFields
       }
