@@ -257,20 +257,24 @@ export function isMultipleFieldElement (element: RadioNodeList | Element): boole
 /**
  * Returns the parsed value of a field based on its type.
  */
-export function parseInputValue (
-  input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-): string | number | readonly string[] | undefined {
-  const {
-    type,
-    value
-  } = input
+export function parseInputValue (input: HTMLElement): string | number | undefined {
+  if (input instanceof HTMLInputElement) {
+    const {
+      type,
+      value
+    } = input
 
-  if (value.length > 0) {
-    if (type === 'number' || type === 'range') {
-      return parseFloat(value)
+    if (value != null && value.length > 0) {
+      if (type === 'number' || type === 'range') {
+        const num = parseFloat(value)
+
+        if (!Number.isNaN(num)) {
+          return num
+        }
+      }
     }
+    return value
   }
-  return value
 }
 
 /**

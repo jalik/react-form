@@ -8,7 +8,6 @@ import React, {
   HTMLInputTypeAttribute,
   OptionHTMLAttributes,
   useCallback,
-  useEffect,
   useMemo
 } from 'react'
 import { FieldElement } from '../useForm'
@@ -16,32 +15,25 @@ import useFormContext from '../useFormContext'
 import { inputValue } from '../utils'
 import Option from './Option'
 
-/**
- * Returns true if the type is checkable.
- */
-function isCheckable (type: HTMLInputTypeAttribute): boolean {
-  return type === 'checkbox' || type === 'radio'
-}
-
-export type FieldProps<T = string, C extends ElementType = any> = {
+export type FieldProps<T = string, C extends ElementType = any> =
+  React.ComponentPropsWithoutRef<C>
+  & {
   component?: C;
   disabled?: boolean;
   emptyOptionLabel?: string;
   formatter? (value: T | string): string | undefined;
-  multiple?: boolean;
   name: string;
   options?: OptionHTMLAttributes<HTMLOptionElement>[];
-  parser? (value: string): T;
+  parser? (value: string, target?: HTMLElement): T;
   required?: boolean;
   type?: HTMLInputTypeAttribute | 'select' | 'textarea';
   value?: string | T;
-} & React.ComponentPropsWithoutRef<C>
+}
 
-function Field<T> (props: FieldProps<T>): JSX.Element {
+function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): JSX.Element {
   const {
     children,
-    className,
-    component: Component,
+    component: Component = 'input',
     disabled,
     emptyOptionLabel,
     formatter,
@@ -60,8 +52,6 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
 
   const {
     getFieldProps,
-    getValue,
-    handleBlur,
     handleChange
   } = useFormContext()
 
@@ -82,67 +72,38 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
     return ''
   }, [Component, formatter])
 
-  // Get context value from field name
-  const contextValue = useMemo(() => getValue<T>(name), [getValue, name])
-
-  const handleFieldBlur = useCallback((event: React.FocusEvent<FieldElement>) => {
-    handleBlur(event)
-  }, [handleBlur])
-
   const handleFieldChange = useCallback((event: React.ChangeEvent<FieldElement>) => {
     handleChange(event, { parser })
   }, [handleChange, parser])
 
-  // Get parsed value if parser is passed,
-  // so we can compare parsed value to field value (if checked).
-  const parsedValue = useMemo(() => (
-    parser && typeof value === 'string' ? parser(value) : value
-  ), [parser, value])
-
   const finalProps = useMemo(() => {
-    const attributes = getFieldProps(name)
-    const p: Record<string, any> = {
-      ...attributes,
+    const fieldProps = getFieldProps(name, {
       ...others,
-      className: [className, attributes.className]
-        .filter((v) => v != null)
-        .join(' '),
-      disabled: disabled || attributes.disabled,
-      id: id || attributes.id,
+      disabled,
+      id,
       multiple,
-      required: required || attributes.required,
-      onBlur: onBlur || handleFieldBlur,
-      onChange: onChange || handleFieldChange
-    }
+      onBlur,
+      onChange: onChange || handleFieldChange,
+      required,
+      type,
+      value,
+      // Get parsed value if parser is passed,
+      // so we can compare parsed value to field value (if checked).
+      parsedValue: parser && typeof value === 'string' ? parser(value) : value
+    })
 
-    // Empty value on radio.
-    if (value === null || value === '') {
-      if (type === 'radio') {
-        // Convert null value for radio only.
-        p.value = ''
-      }
+    // Do not pass type to custom component to avoid bugs.
+    // Example: passing type "password" to Mantine PasswordInput breaks the "show password" toggle.
+    if (Component != null) {
+      delete fieldProps.type
     }
 
     // Allow formatting value.
-    p.value = inputValue(formatValue(p.value))
+    fieldProps.value = inputValue(formatValue(fieldProps.value))
 
-    if (type && isCheckable(type)) {
-      if (contextValue instanceof Array) {
-        p.checked = contextValue.indexOf(parsedValue) !== -1
-        // Remove required attribute on multiple fields.
-        p.required = false
-      } else {
-        // Get checked state from checkbox without value
-        // or by comparing checkbox value and context value.
-        p.checked = (value == null || value === '') && typeof contextValue === 'boolean' && type === 'checkbox'
-          ? contextValue
-          : contextValue === parsedValue
-      }
-    }
-    return p
-  }, [className, contextValue, disabled, formatValue, getFieldProps, handleFieldBlur,
-    handleFieldChange, id, multiple, name, onBlur, onChange, others, parsedValue, required, type,
-    value])
+    return fieldProps
+  }, [Component, disabled, formatValue, getFieldProps, handleFieldChange, id, multiple, name,
+    onBlur, onChange, others, parser, required, type, value])
 
   const finalOptions: OptionHTMLAttributes<HTMLOptionElement>[] = useMemo(() => {
     const list: OptionHTMLAttributes<HTMLOptionElement>[] = options ? [...options] : []
@@ -164,7 +125,7 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
   if (Component != null) {
     if (children || finalOptions.length > 0) {
       return (
-        <Component {...finalProps} type={type}>
+        <Component {...finalProps}>
           {children}
           {finalOptions.map((option) => (
             <Option key={`${option.label}_${option.value}`} {...option} />
@@ -172,7 +133,7 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
         </Component>
       )
     }
-    return <Component {...finalProps} type={type} />
+    return <Component {...finalProps} />
   }
 
   // Renders a select field.
@@ -212,14 +173,14 @@ function Field<T> (props: FieldProps<T>): JSX.Element {
 
 Field.defaultProps = {
   component: undefined,
-  disabled: false,
+  disabled: undefined,
   emptyOptionLabel: '...',
   formatter: undefined,
   multiple: false,
   options: undefined,
   parser: undefined,
   required: false,
-  type: undefined,
+  type: 'text',
   value: undefined
 }
 

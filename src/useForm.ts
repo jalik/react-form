@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import React, { ElementType, useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import useDebouncePromise from './useDebouncePromise'
 import useFormReducer, {
   ACTION_CLEAR,
@@ -46,15 +46,6 @@ import {
   resolve
 } from './utils'
 
-export type FieldAttributes<T> = {
-  disabled: boolean
-  id: string
-  name: string
-  onBlur (event: React.FocusEvent<any>): void
-  onChange (event: React.ChangeEvent<any>): void
-  value: T
-}
-
 export type FieldElement =
   HTMLInputElement
   | HTMLSelectElement
@@ -64,12 +55,15 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   clear (fields?: string[]): void;
   clearErrors (fields?: string[]): void;
   clearTouchedFields (fields?: string[]): void;
-  getFieldProps (name: string): any;
+  getFieldProps<Component extends ElementType = any> (
+    name: string,
+    props?: React.ComponentProps<Component>
+  ): React.ComponentProps<Component>;
   getInitialValue<T> (name: string): T | undefined;
   getValue<T> (name: string, defaultValue?: T): T | undefined;
   handleBlur (event: React.FocusEvent): void;
   handleChange (event: React.ChangeEvent, options?: {
-    parser? (value: unknown, target: HTMLElement): any
+    parser? (value: unknown, target?: HTMLElement): any
   }): void;
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
   handleSetValue (name: string): (value: unknown | undefined) => void;
@@ -107,7 +101,7 @@ export interface UseFormOptions<V extends Values, E, R> {
   disabled?: boolean;
   initialValues?: Partial<V>;
   nullify?: boolean;
-  initializeField? (name: string, formState: FormState<V, E, R>): Record<string, unknown> | undefined;
+  initializeField?<C extends ElementType> (name: string, formState: FormState<V, E, R>): React.ComponentProps<C> | undefined;
   load? (): Promise<void | V>;
   onSubmit (values: Partial<V>): Promise<void | R>;
   onSubmitted? (result: R): void;
@@ -598,7 +592,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const handleChange = useCallback((
     event: React.ChangeEvent<FieldElement>,
-    opts?: { parser? (value: unknown, target: HTMLElement): any }
+    opts?: { parser? (value: unknown, target?: HTMLElement): any }
   ): void => {
     const { parser } = opts || {}
     const { currentTarget } = event
@@ -613,15 +607,21 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       ? parser(currentTarget.value, currentTarget)
       : parseInputValue(currentTarget)
 
-    // Handles array value (checkboxes, select-multiple).
     const el = currentTarget.form?.elements.namedItem(name)
+
+    // Handles array value (checkboxes, select-multiple).
     if (el && isMultipleFieldElement(el)) {
       if (currentTarget instanceof HTMLInputElement) {
         value = getCheckedValues(currentTarget)
       } else if (currentTarget instanceof HTMLSelectElement) {
         value = getSelectedValues(currentTarget)
       }
-    } else if (type === 'checkbox' && currentTarget instanceof HTMLInputElement) {
+
+      if (value) {
+        // Parse all checked/selected values.
+        value = value.map((v) => typeof parser === 'function' ? parser(v) : v)
+      }
+    } else if (currentTarget instanceof HTMLInputElement && type === 'checkbox') {
       if (currentTarget.value === '') {
         // Checkbox has no value defined, so we use the checked state instead.
         value = currentTarget.checked
@@ -665,30 +665,86 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   /**
    * Returns props of a field.
+   * Merging is done in the following order:
+   * - Generated props
+   * - Initialized props
+   * - Passed props
    */
-  const getFieldProps = useCallback(<T> (name: string): FieldAttributes<T> => {
-    const value: any = getValue(name)
+  const getFieldProps = useCallback(<Component extends ElementType> (
+    name: string,
+    props?: React.ComponentProps<Component>
+  ): React.ComponentProps<Component> => {
+    const contextValue = getValue<any>(name)
+    const inputValue = props?.value
 
-    // Prepare default props
-    let props: FieldAttributes<T> = {
-      disabled: disabled || state.submitting || state.loading,
-      id: getFieldId(name, value),
+    // Set default props.
+    const finalProps: any = {
+      id: getFieldId(name, typeof inputValue !== 'undefined' ? inputValue : contextValue),
       name,
       onBlur: handleBlur,
       onChange: handleChange,
-      value
+      value: contextValue
     }
 
+    // Merge custom props from initializeField() function.
     if (typeof initializeFieldRef.current === 'function') {
-      // Prepare custom props based on form state
       const customProps = initializeFieldRef.current(name, state)
-      props = {
-        ...props,
-        ...customProps,
-        disabled: props.disabled || customProps?.disabled === true
+      Object.entries(customProps).forEach(([k, v]) => {
+        if (typeof v !== 'undefined') {
+          finalProps[k] = v
+        }
+      })
+    }
+
+    // Merge passed props
+    if (props) {
+      Object.entries(props).forEach(([k, v]) => {
+        if (typeof v !== 'undefined' && k !== 'parsedValue') {
+          finalProps[k] = v
+        }
+      })
+    }
+
+    // Empty value on radio.
+    const { type } = finalProps
+
+    if (type) {
+      if (inputValue === null || inputValue === '') {
+        if (type === 'radio') {
+          // Convert null value for radio only.
+          finalProps.value = ''
+        }
+      }
+
+      if (type === 'checkbox' || type === 'radio') {
+        const parsedValue = typeof props?.parsedValue !== 'undefined'
+          ? props?.parsedValue
+          : inputValue
+
+        if (contextValue instanceof Array) {
+          finalProps.checked = contextValue.indexOf(parsedValue) !== -1
+          // Remove required attribute on multiple fields.
+          finalProps.required = false
+        } else {
+          // Get checked state from checkbox without value
+          // or by comparing checkbox value and context value.
+          finalProps.checked = type === 'checkbox' &&
+          (inputValue == null || inputValue === '') &&
+          typeof contextValue === 'boolean'
+            ? contextValue
+            : contextValue === parsedValue
+        }
       }
     }
-    return props
+
+    // Set disabled depending on form state or field state.
+    finalProps.disabled = disabled ||
+      state.loading ||
+      state.validating ||
+      state.submitting ||
+      props?.disabled
+
+    return finalProps
   }, [disabled, getValue, handleBlur, handleChange, state])
 
   // Keep track of mount state.
