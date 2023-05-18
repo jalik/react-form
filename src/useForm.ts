@@ -114,6 +114,7 @@ export interface UseFormOptions<V extends Values, E, R> {
   submitDelay?: number;
   transform? (mutation: Values, values: Partial<V>): Partial<V>;
   trimOnBlur?: boolean;
+  trimOnSubmit?: boolean;
   validate? (
     values: Partial<V>,
     modifiedFields: ModifiedFields
@@ -144,7 +145,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     onSubmitted,
     submitDelay = 100,
     transform: transformFunc,
-    trimOnBlur,
+    trimOnBlur = false,
+    trimOnSubmit = false,
     validate: validateFunc,
     validateField: validateFieldFunc,
     validateDelay = 200,
@@ -459,8 +461,20 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Submits form.
    */
   const submit = useCallback((): Promise<void | R> => {
+    let values = clone(state.values)
+
+    // Remove extra spaces.
+    if (trimOnSubmit) {
+      const mutation = flatten(values)
+      Object.entries(mutation).forEach(([name, value]) => {
+        if (typeof value === 'string') {
+          values = build(name, value.trim(), values)
+        }
+      })
+    }
+
     dispatch({ type: ACTION_SUBMIT })
-    return Promise.resolve(onSubmitRef.current(clone(state.values)))
+    return Promise.resolve(onSubmitRef.current(values))
       .then((result) => {
         if (result) {
           dispatch({
@@ -479,7 +493,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [onSubmitted, state.values])
+  }, [onSubmitted, state.values, trimOnSubmit])
 
   /**
    * Validates form values.
