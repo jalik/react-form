@@ -111,6 +111,7 @@ export interface UseFormOptions<V extends Values, E, R> {
   load? (): Promise<void | V>;
   onSubmit (values: Partial<V>): Promise<void | R>;
   onSubmitted? (result: R): void;
+  reinitialize?: boolean;
   submitDelay?: number;
   transform? (mutation: Values, values: Partial<V>): Partial<V>;
   trimOnBlur?: boolean;
@@ -143,6 +144,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     nullify = false,
     onSubmit,
     onSubmitted,
+    reinitialize = false,
     submitDelay = 100,
     transform: transformFunc,
     trimOnBlur = false,
@@ -718,10 +720,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [validateFunc])
 
   useEffect(() => {
-    if (initialValues && !state.initialized) {
+    if (initialValues && (!state.initialized || reinitialize)) {
       setInitialValues(initialValues)
     }
-  }, [setInitialValues, initialValues, state.initialized])
+  }, [setInitialValues, initialValues, state.initialized, reinitialize])
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
 
