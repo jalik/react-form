@@ -477,7 +477,11 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_SET_VALUES}"`, () => {
     const baseAction: FormAction = {
       type: ACTION_SET_VALUES,
-      data: { values: { username: 'naruto' } }
+      data: {
+        partial: false,
+        validate: false,
+        values: { username: 'naruto' }
+      }
     }
 
     describe('with data.partial = false', () => {
@@ -489,7 +493,7 @@ describe('useFormReducer(state, action)', () => {
         }
       }
 
-      it('should set all values', () => {
+      it('should replace all values', () => {
         const state = stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
         const errors = clone(state.errors)
@@ -533,7 +537,7 @@ describe('useFormReducer(state, action)', () => {
         }
       }
 
-      it('should set selected fields values', () => {
+      it('should set values partially', () => {
         const state = stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
         const errors = clone(state.errors)
@@ -699,7 +703,10 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_SET_TOUCHED_FIELDS}"`, () => {
     const action: FormAction = {
       type: ACTION_SET_TOUCHED_FIELDS,
-      data: { fields: ['username'] }
+      data: {
+        fields: ['username'],
+        validate: false
+      }
     }
 
     describe('with validateOnTouch = false', () => {

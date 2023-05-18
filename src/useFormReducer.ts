@@ -97,8 +97,8 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors<E>, partial: boolean } }
-  | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate?: boolean } }
-  | { type: 'SET_VALUES', data: { partial?: boolean, validate?: boolean, values: Values } }
+  | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate: boolean } }
+  | { type: 'SET_VALUES', data: { partial: boolean, validate: boolean, values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
   | { type: 'SUBMIT_SUCCESS', data: { result: R } }
@@ -358,7 +358,7 @@ function useFormReducer<V extends Values, E, R> (
       const { data } = action
       const errors = clone(state.errors)
       const modifiedFields = clone(state.modifiedFields)
-      let values = data.partial ? clone(state.values) : {}
+      let values: Partial<V> = data.partial ? clone(state.values) : {}
 
       Object.entries(data.values).forEach(([name, value]) => {
         values = build(name, value, values)
@@ -382,7 +382,7 @@ function useFormReducer<V extends Values, E, R> (
         hasError: hasDefinedValues(errors),
         modified: true,
         modifiedFields,
-        needValidation: data.validate === true
+        needValidation: data.validate
           ? Object.keys(data.values)
           : state.needValidation,
         validated: false,

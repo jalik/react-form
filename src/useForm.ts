@@ -384,7 +384,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       type: ACTION_SET_VALUES,
       data: {
         partial: opts?.partial === true,
-        validate: opts?.validate || (opts?.validate !== false && validateOnChange),
+        validate: opts?.validate != null ? opts.validate : validateOnChange,
         values: mutation
       }
     })
