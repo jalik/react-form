@@ -27,7 +27,8 @@ import useFormReducer, {
   ACTION_VALIDATE_SUCCESS,
   Errors,
   FormAction,
-  initialState
+  initialState,
+  TouchedFields
 } from '../src/useFormReducer'
 import { build, clone, hasDefinedValues, resolve } from '../src/utils'
 
@@ -741,7 +742,8 @@ describe('useFormReducer(state, action)', () => {
     const action: FormAction = {
       type: ACTION_SET_TOUCHED_FIELDS,
       data: {
-        fields: ['username'],
+        touchedFields: { username: true },
+        partial: false,
         validate: false
       }
     }
@@ -753,10 +755,10 @@ describe('useFormReducer(state, action)', () => {
           validateOnTouch: false
         }
         const newState = useFormReducer(state, action)
-        const touchedFields = { ...state.touchedFields }
-        action.data.fields.forEach((name) => {
-          touchedFields[name] = true
-        })
+        const touchedFields: TouchedFields = action.data.partial
+          ? { ...state.touchedFields, ...action.data.touchedFields }
+          : { ...action.data.touchedFields }
+
         expect(newState).toStrictEqual({
           ...state,
           touched: true,
@@ -769,13 +771,15 @@ describe('useFormReducer(state, action)', () => {
       it('should set touched fields and add them to validation', () => {
         const state = stateWithInitialValues
         const newState = useFormReducer(state, action)
-        const touchedFields = { ...state.touchedFields }
-        action.data.fields.forEach((name) => {
-          touchedFields[name] = true
-        })
+        const touchedFields: TouchedFields = action.data.partial
+          ? { ...state.touchedFields, ...action.data.touchedFields }
+          : { ...action.data.touchedFields }
+
         expect(newState).toStrictEqual({
           ...state,
-          needValidation: [...action.data.fields],
+          needValidation: state.validateOnTouch || action.data.validate
+            ? Object.entries(action.data.touchedFields).filter(([, v]) => v).map(([k]) => k)
+            : state.needValidation,
           touched: true,
           touchedFields
         })
@@ -789,16 +793,19 @@ describe('useFormReducer(state, action)', () => {
           ...action,
           data: {
             ...action.data,
+            partial: false,
             validate: true
           }
         })
-        const touchedFields = { ...state.touchedFields }
-        action.data.fields.forEach((name) => {
-          touchedFields[name] = true
-        })
+        const touchedFields: TouchedFields = action.data.partial
+          ? { ...state.touchedFields, ...action.data.touchedFields }
+          : { ...action.data.touchedFields }
+
         expect(newState).toStrictEqual({
           ...state,
-          needValidation: [...action.data.fields],
+          needValidation: state.validateOnTouch || action.data.validate
+            ? Object.entries(action.data.touchedFields).filter(([, v]) => v).map(([k]) => k)
+            : state.needValidation,
           touched: true,
           touchedFields
         })

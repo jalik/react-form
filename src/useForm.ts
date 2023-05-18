@@ -30,6 +30,7 @@ import useFormReducer, {
   FormState,
   initialState,
   ModifiedFields,
+  TouchedFields,
   Values
 } from './useFormReducer'
 import {
@@ -81,8 +82,8 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   setErrors (errors: Errors<E>): void;
   setInitialValues (values: Partial<V>): void;
   setTouchedFields (
-    fields: string[],
-    options?: { validate?: boolean }
+    fields: TouchedFields,
+    options?: { partial?: boolean, validate?: boolean }
   ): void;
   setValue (
     name: string,
@@ -418,25 +419,33 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Sets touched fields.
    */
   const setTouchedFields = useCallback((
-    fields: string[],
-    opts?: { validate?: boolean }
+    touchedFields: TouchedFields,
+    opts?: { partial?: boolean, validate?: boolean }
   ): void => {
     let canDispatch = false
 
     // Check if we really need to dispatch the event
+    const fields = Object.keys(touchedFields)
     for (let i = 0; i < fields.length; i += 1) {
-      if (!state.touchedFields[fields[i]]) {
+      const name = fields[i]
+
+      if (state.touchedFields[name] !== touchedFields[name]) {
         canDispatch = true
         break
       }
     }
 
     if (canDispatch) {
-      const { validate = false } = { ...opts }
+      const {
+        partial = false,
+        validate = false
+      } = { ...opts }
+
       dispatch({
         type: ACTION_SET_TOUCHED_FIELDS,
         data: {
-          fields,
+          touchedFields,
+          partial,
           validate
         }
       })
@@ -559,7 +568,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
-    setTouchedFields([event.currentTarget.name])
+    setTouchedFields({ [event.currentTarget.name]: true })
   }, [setTouchedFields])
 
   /**

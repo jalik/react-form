@@ -97,7 +97,14 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors<E>, partial: boolean } }
-  | { type: 'SET_TOUCHED_FIELDS', data: { fields: string[], validate: boolean } }
+  | {
+  type: 'SET_TOUCHED_FIELDS',
+  data: {
+    partial: boolean,
+    touchedFields: TouchedFields,
+    validate: boolean
+  }
+}
   | { type: 'SET_VALUES', data: { partial: boolean, validate: boolean, values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
@@ -424,17 +431,15 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_SET_TOUCHED_FIELDS: {
       const { data } = action
-      const touchedFields: TouchedFields = { ...state.touchedFields }
-
-      data.fields.forEach((name) => {
-        touchedFields[name] = true
-      })
+      const touchedFields: TouchedFields = data.partial
+        ? { ...state.touchedFields, ...data.touchedFields }
+        : { ...data.touchedFields }
 
       nextState = {
         ...state,
         // Trigger validation if needed
         needValidation: state.validateOnTouch || data.validate
-          ? [...data.fields]
+          ? Object.entries(data.touchedFields).filter(([, v]) => v).map(([k]) => k)
           : state.needValidation,
         touched: true,
         touchedFields
