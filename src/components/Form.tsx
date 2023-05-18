@@ -8,13 +8,11 @@ import { FormContext } from '../useFormContext'
 import { Values } from '../useFormReducer'
 import React from 'react'
 
-export interface FormProps<V extends Values, E, R> {
+export type FormProps<V extends Values, E, R> = React.ComponentProps<'form'> & {
   context: UseFormHook<V, E, R>;
 }
 
-function Form<V extends Values = Values, E = Error, R = any> (
-  props: FormProps<V, E, R> & React.FormHTMLAttributes<HTMLFormElement>
-): JSX.Element {
+function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V, E, R>): JSX.Element {
   const {
     children,
     context,

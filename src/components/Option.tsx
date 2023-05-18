@@ -6,7 +6,9 @@
 import { inputValue } from '../utils'
 import React from 'react'
 
-function Option (props: React.OptionHTMLAttributes<HTMLOptionElement>): JSX.Element {
+export type OptionProps = React.ComponentProps<'option'>
+
+function Option (props: OptionProps): JSX.Element {
   const {
     label,
     value,

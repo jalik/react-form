@@ -6,12 +6,12 @@
 import React, { ElementType, useCallback, useMemo } from 'react'
 import useFormContext from '../useFormContext'
 
-export type ButtonsProps<C extends ElementType> = {
+export type ButtonProps<C extends ElementType> = React.ComponentProps<C> & {
   component?: C,
   type?: 'button' | 'reset' | 'submit',
-} & React.ComponentPropsWithoutRef<C>
+}
 
-function Button<C extends ElementType = 'button'> (props: ButtonsProps<C>): JSX.Element {
+function Button<C extends ElementType = 'button'> (props: ButtonProps<C>): JSX.Element {
   const {
     children,
     component: Component = 'button',
@@ -38,7 +38,7 @@ function Button<C extends ElementType = 'button'> (props: ButtonsProps<C>): JSX.
     (type === 'submit' && !modified)
   ), [disabled, formDisabled, modified, submitting, type])
 
-  const handleClick = useCallback((ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleClick = useCallback((ev: React.MouseEvent) => {
     // Prevent submission.
     ev.preventDefault()
     // Prevent parent form submission.
