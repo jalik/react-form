@@ -105,7 +105,11 @@ describe('useFormReducer(state, action)', () => {
         const state =
           stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
-        expect(newState).toStrictEqual({ ...state, ...initialState })
+        expect(newState).toStrictEqual({
+          ...state,
+          ...initialState,
+          initialized: true
+        })
       })
     })
 
@@ -391,6 +395,7 @@ describe('useFormReducer(state, action)', () => {
         })
         const newState = useFormReducer(state, action)
         expect(newState).toStrictEqual(state)
+        expect(newState.validating).toBe(true)
       })
     })
 

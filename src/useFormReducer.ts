@@ -158,7 +158,8 @@ function useFormReducer<V extends Values, E, R> (
       } else {
         nextState = {
           ...state,
-          ...initialState
+          ...initialState,
+          initialized: true
         }
       }
       break
