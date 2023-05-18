@@ -79,7 +79,10 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   reset (fields?: string[]): void;
   submit (): Promise<void | R>;
   setError (name: string, error?: E): void;
-  setErrors (errors: Errors<E>): void;
+  setErrors (
+    errors: Errors<E>,
+    opts?: { partial?: boolean }
+  ): void;
   setInitialValues (values: Partial<V>): void;
   setTouchedField (name: string, touched: boolean | undefined): void;
   setTouchedFields (
