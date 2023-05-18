@@ -29,7 +29,7 @@ export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS'
 export type Errors<E = Error> = Record<string, void | E | undefined>;
 export type ModifiedFields = Record<string, boolean>;
 export type TouchedFields = Record<string, boolean>;
-export type Values = Record<string, unknown>;
+export type Values = Record<string, any>;
 
 export interface FormState<V extends Values = Values, E = Error, R = any> {
   disabled: boolean;
