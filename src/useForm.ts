@@ -81,6 +81,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   setError (name: string, error?: E): void;
   setErrors (errors: Errors<E>): void;
   setInitialValues (values: Partial<V>): void;
+  setTouchedField (name: string, touched: boolean | undefined): void;
   setTouchedFields (
     fields: TouchedFields,
     options?: { partial?: boolean, validate?: boolean }
@@ -452,6 +453,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [state.touchedFields])
 
+  const setTouchedField = useCallback((name: string, touched: boolean): void => {
+    setTouchedFields({ [name]: touched }, { partial: true })
+  }, [setTouchedFields])
+
   /**
    * Resets form values.
    */
@@ -740,14 +745,15 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setValue,
     setValues,
     submit: debouncedSubmit,
+    setTouchedField,
     setTouchedFields,
     validate,
     validateField,
     validateFields
-  }), [state, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue,
-    getValue, handleBlur, handleChange, handleReset, handleSetValue, handleSubmit,
-    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues,
-    debouncedSubmit, setTouchedFields, validate, validateField, validateFields])
+  }), [state, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue, getValue,
+    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, setInitialValues, load,
+    removeFields, reset, setError, setErrors, setValue, setValues, debouncedSubmit, setTouchedField,
+    setTouchedFields, validate, validateField, validateFields])
 }
 
 export default useForm
