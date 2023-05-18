@@ -357,17 +357,20 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_SET_VALUES: {
       const { data } = action
       const errors = clone(state.errors)
+      const touchedFields = clone(state.touchedFields)
       const modifiedFields = clone(state.modifiedFields)
       let values: Partial<V> = data.partial ? clone(state.values) : {}
 
       Object.entries(data.values).forEach(([name, value]) => {
         values = build(name, value, values)
 
-        // Compare initial value to detect change.
+        // Compare initial value to detect change,
+        // ignore when comparing null and undefined together.
         const initialValue = resolve(name, state.initialValues)
-        modifiedFields[name] = value !== initialValue &&
-          // ignore if comparing null and undefined
-          (initialValue != null || value != null)
+        const modified = value !== initialValue && (initialValue != null || value != null)
+
+        modifiedFields[name] = modified
+        touchedFields[name] = modified
 
         // Do not clear errors when validation is triggered
         // to avoid errors to disappear/appear quickly during typing.
@@ -382,6 +385,7 @@ function useFormReducer<V extends Values, E, R> (
         hasError: hasDefinedValues(errors),
         modified: true,
         modifiedFields,
+        touchedFields,
         needValidation: data.validate
           ? Object.keys(data.values)
           : state.needValidation,

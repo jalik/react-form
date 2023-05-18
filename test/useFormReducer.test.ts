@@ -484,6 +484,42 @@ describe('useFormReducer(state, action)', () => {
       }
     }
 
+    it('should touch modified fields', () => {
+      const state = stateWithInitialValues
+      const newState = useFormReducer(state, baseAction)
+      const errors = { ...state.errors }
+      const modifiedFields = clone(state.modifiedFields)
+      const { data } = baseAction
+      let values = {}
+
+      Object.entries(data.values).forEach(([name, value]) => {
+        values = build(name, value, values)
+
+        // Compare initial value to detect change.
+        modifiedFields[name] = value !== resolve(name, state.initialValues)
+
+        // Do not clear errors when validation is triggered
+        // to avoid errors to disappear/appear quickly during typing.
+        if (!data.validate) {
+          delete errors[name]
+        }
+      })
+
+      expect(newState).toStrictEqual({
+        ...state,
+        errors,
+        hasError: hasDefinedValues(errors),
+        modified: true,
+        modifiedFields,
+        touchedFields: { ...state.touchedFields, ...modifiedFields },
+        needValidation: data.validate === true
+          ? Object.keys(data.values)
+          : state.needValidation,
+        validated: false,
+        values
+      })
+    })
+
     describe('with data.partial = false', () => {
       const action = {
         ...baseAction,
@@ -492,27 +528,27 @@ describe('useFormReducer(state, action)', () => {
           partial: false
         }
       }
+      const state = stateWithInitialValuesAndErrors
+      const newState = useFormReducer(state, action)
+      const errors = clone(state.errors)
+      const modifiedFields = clone(state.modifiedFields)
+      const { data } = action
+      let values = {}
+
+      Object.entries(data.values).forEach(([name, value]) => {
+        values = build(name, value, values)
+
+        // Compare initial value to detect change.
+        modifiedFields[name] = value !== resolve(name, state.initialValues)
+
+        // Do not clear errors when validation is triggered
+        // to avoid errors to disappear/appear quickly during typing.
+        if (!data.validate) {
+          delete errors[name]
+        }
+      })
 
       it('should replace all values', () => {
-        const state = stateWithInitialValuesAndErrors
-        const newState = useFormReducer(state, action)
-        const errors = clone(state.errors)
-        const modifiedFields = clone(state.modifiedFields)
-        const { data } = action
-        let values = {}
-
-        Object.entries(data.values).forEach(([name, value]) => {
-          values = build(name, value, values)
-
-          // Compare initial value to detect change.
-          modifiedFields[name] = value !== resolve(name, state.initialValues)
-
-          // Do not clear errors when validation is triggered
-          // to avoid errors to disappear/appear quickly during typing.
-          if (!data.validate) {
-            delete errors[name]
-          }
-        })
         expect(newState).toStrictEqual({
           ...state,
           errors,
@@ -537,26 +573,27 @@ describe('useFormReducer(state, action)', () => {
         }
       }
 
+      const state = stateWithInitialValuesAndErrors
+      const newState = useFormReducer(state, action)
+      const errors = clone(state.errors)
+      const modifiedFields = clone(state.modifiedFields)
+      const { data } = action
+      let values = clone(state.values)
+
+      Object.entries(data.values).forEach(([name, value]) => {
+        values = build(name, value, values)
+
+        // Compare initial value to detect change.
+        modifiedFields[name] = value !== resolve(name, state.initialValues)
+
+        // Do not clear errors when validation is triggered
+        // to avoid errors to disappear/appear quickly during typing.
+        if (!data.validate) {
+          delete errors[name]
+        }
+      })
+
       it('should set values partially', () => {
-        const state = stateWithInitialValuesAndErrors
-        const newState = useFormReducer(state, action)
-        const errors = clone(state.errors)
-        const modifiedFields = clone(state.modifiedFields)
-        const { data } = action
-        let values = clone(state.values)
-
-        Object.entries(data.values).forEach(([name, value]) => {
-          values = build(name, value, values)
-
-          // Compare initial value to detect change.
-          modifiedFields[name] = value !== resolve(name, state.initialValues)
-
-          // Do not clear errors when validation is triggered
-          // to avoid errors to disappear/appear quickly during typing.
-          if (!data.validate) {
-            delete errors[name]
-          }
-        })
         expect(newState).toStrictEqual({
           ...state,
           errors,
