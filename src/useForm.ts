@@ -465,12 +465,18 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const submit = useCallback((): Promise<void | R> => {
     let values = clone(state.values)
 
-    // Remove extra spaces.
-    if (trimOnSubmit) {
+    if (trimOnSubmit || nullify) {
       const mutation = flatten(values)
       Object.entries(mutation).forEach(([name, value]) => {
         if (typeof value === 'string') {
-          values = build(name, value.trim(), values)
+          // Remove extra spaces.
+          let val: string | null = trimOnSubmit ? value.trim() : value
+
+          // Remplace empty string by null.
+          if (val === '') {
+            val = null
+          }
+          values = build(name, val, values)
         }
       })
     }
