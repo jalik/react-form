@@ -161,10 +161,13 @@ function useFormReducer<V extends Values, E, R> (
         }
       } else {
         nextState = {
-          ...state,
           ...initialState,
           debug: state.debug,
-          initialized: true
+          initialized: true,
+          validateOnChange: state.validateOnChange,
+          validateOnInit: state.validateOnInit,
+          validateOnSubmit: state.validateOnSubmit,
+          validateOnTouch: state.validateOnTouch
         }
       }
       break
@@ -221,13 +224,16 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_INIT_VALUES: {
       const { data } = action
       nextState = {
-        ...state,
         ...initialState,
         debug: state.debug,
         initialized: true,
         initialValues: clone(data.values),
         // Trigger validation if needed
         needValidation: state.validateOnInit,
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch,
         values: data.values
       }
       break
@@ -254,14 +260,17 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_LOAD_SUCCESS: {
       const { data } = action
       nextState = {
-        ...state,
         ...initialState,
         debug: state.debug,
         initialized: true,
         initialValues: clone(data.values),
         loadError: undefined,
         loading: false,
-        values: data.values
+        values: data.values,
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch
       }
       break
     }
@@ -304,12 +313,15 @@ function useFormReducer<V extends Values, E, R> (
         return state
       }
       nextState = {
-        ...state,
         ...initialState,
         debug: state.debug,
         initialized: state.initialized,
         initialValues: state.initialValues,
-        values: clone(state.initialValues)
+        values: clone(state.initialValues),
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch
       }
       break
 
