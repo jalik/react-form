@@ -46,6 +46,7 @@ const stateWithoutInitialValues = {
 
 const stateWithInitialValues = {
   ...stateWithoutInitialValues,
+  initialized: true,
   initialValues: {
     username: 'jalik',
     gender: 'male'
@@ -376,7 +377,7 @@ describe('useFormReducer(state, action)', () => {
       })
     })
 
-    it('should reset values', () => {
+    it('should reset form', () => {
       const newState = useFormReducer(stateWithInitialValuesAndErrors, action)
       expect(newState).toStrictEqual(stateWithInitialValues)
     })
@@ -737,6 +738,7 @@ describe('useFormReducer(state, action)', () => {
       expect(newState).toStrictEqual({
         ...state,
         disabled: false,
+        initialized: true,
         modified: false,
         modifiedFields: {},
         touched: false,
@@ -745,7 +747,7 @@ describe('useFormReducer(state, action)', () => {
         submitting: false,
         submitCount: 0,
         submitError: undefined,
-        submitResult: action.data.result,
+        submitResult: action.data.result
       })
     })
   })

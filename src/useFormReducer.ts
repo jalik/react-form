@@ -302,6 +302,7 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         ...initialState,
+        initialized: state.initialized,
         initialValues: state.initialValues,
         values: clone(state.initialValues)
       }
@@ -423,8 +424,9 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_SUBMIT_SUCCESS:
       nextState = {
-        ...state,
+        ...(action.data.clear ? initialState : state),
         disabled: false,
+        initialized: true,
         modified: false,
         modifiedFields: {},
         submitCount: 0,
@@ -433,7 +435,11 @@ function useFormReducer<V extends Values, E, R> (
         submitResult: action.data.result,
         submitted: true,
         touched: false,
-        touchedFields: {}
+        touchedFields: {},
+        validateOnChange: state.validateOnChange,
+        validateOnInit: state.validateOnInit,
+        validateOnSubmit: state.validateOnSubmit,
+        validateOnTouch: state.validateOnTouch
       }
       break
 
