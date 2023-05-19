@@ -518,6 +518,7 @@ describe('useFormReducer(state, action)', () => {
         hasError: hasDefinedValues(errors),
         modified: true,
         modifiedFields,
+        touched: true,
         touchedFields: { ...state.touchedFields, ...modifiedFields },
         needValidation: data.validate === true
           ? Object.keys(data.values)
@@ -685,6 +686,32 @@ describe('useFormReducer(state, action)', () => {
         })
       })
     })
+
+    describe('with initial values', () => {
+      it('should restore initial state', () => {
+        const state = stateWithInitialValues
+        let newState = useFormReducer(state, {
+          ...baseAction,
+          data: {
+            ...baseAction.data,
+            values: { username: '' },
+            partial: true
+          }
+        })
+        newState = useFormReducer(newState, {
+          ...baseAction,
+          data: {
+            ...baseAction.data,
+            values: { username: state.values.username },
+            partial: true
+          }
+        })
+        expect(newState).toStrictEqual({
+          ...state,
+          touched: true
+        })
+      })
+    })
   })
 
   describe(`with action "${ACTION_SUBMIT}"`, () => {
@@ -727,7 +754,10 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_SUBMIT_SUCCESS}"`, () => {
     const action: FormAction = {
       type: ACTION_SUBMIT_SUCCESS,
-      data: { result: { success: true }, clear: false }
+      data: {
+        result: { success: true },
+        clear: false
+      }
     }
 
     it('should set submit result', () => {

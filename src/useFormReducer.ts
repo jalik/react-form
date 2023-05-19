@@ -395,8 +395,13 @@ function useFormReducer<V extends Values, E, R> (
         const initialValue = resolve(name, state.initialValues)
         const modified = value !== initialValue && (initialValue != null || value != null)
 
-        modifiedFields[name] = modified
-        touchedFields[name] = modified
+        if (modified) {
+          modifiedFields[name] = modified
+          touchedFields[name] = modified
+        } else {
+          delete modifiedFields[name]
+          delete touchedFields[name]
+        }
 
         // Do not clear errors when validation is triggered
         // to avoid errors to disappear/appear quickly during typing.
@@ -409,8 +414,9 @@ function useFormReducer<V extends Values, E, R> (
         ...state,
         errors,
         hasError: hasDefinedValues(errors),
-        modified: true,
+        modified: hasDefinedValues(modifiedFields),
         modifiedFields,
+        touched: true,
         touchedFields,
         needValidation: data.validate
           ? Object.keys(data.values)
