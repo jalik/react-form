@@ -736,9 +736,16 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        ...stateWithoutInitialValues,
+        disabled: false,
+        modified: false,
+        modifiedFields: {},
+        touched: false,
+        touchedFields: {},
+        submitted: true,
+        submitting: false,
+        submitCount: 0,
+        submitError: undefined,
         submitResult: action.data.result,
-        submitted: true
       })
     })
   })

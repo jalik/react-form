@@ -425,11 +425,15 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         disabled: false,
+        modified: false,
+        modifiedFields: {},
         submitCount: 0,
         submitError: undefined,
         submitting: false,
         submitResult: action.data.result,
-        submitted: true
+        submitted: true,
+        touched: false,
+        touchedFields: {}
       }
       break
 
