@@ -71,7 +71,6 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   load (): void;
   removeFields (fields: string[]): void;
   reset (fields?: string[]): void;
-  submit (): Promise<void | R>;
   setError (name: string, error?: E): void;
   setErrors (
     errors: Errors<E>,
@@ -92,6 +91,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
     values: Values | Partial<V>,
     options?: { partial?: boolean, validate?: boolean }
   ): void;
+  submit (): Promise<void | R>;
   validate (opts?: { submitAfter: boolean }): Promise<void | Errors<E> | undefined>;
   validateField (name: string): Promise<void | E | undefined>;
   validateFields (fields?: string[]): Promise<void | Errors<E> | undefined>;
@@ -115,12 +115,12 @@ export interface UseFormOptions<V extends Values, E, R> {
     values: Partial<V>,
     modifiedFields: ModifiedFields
   ): Promise<void | Errors<E> | undefined>;
+  validateDelay?: number;
   validateField? (
     name: string,
     value: unknown,
     values: Partial<V>
   ): Promise<void | E | undefined>;
-  validateDelay?: number;
   validateOnChange?: boolean;
   validateOnInit?: boolean;
   validateOnSubmit?: boolean;
