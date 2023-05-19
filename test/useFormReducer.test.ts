@@ -304,7 +304,6 @@ describe('useFormReducer(state, action)', () => {
         disabled: false,
         initialValues: action.data.values,
         initialized: true,
-        loaded: true,
         loading: false,
         values: action.data.values
       })

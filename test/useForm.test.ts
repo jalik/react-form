@@ -355,9 +355,9 @@ describe('useForm()', () => {
       await act(async () => {
         await result.current.load()
 
+        expect(result.current.initialized).toBe(true)
         expect(result.current.initialValues.username).toBe(initialValues.username)
         expect(result.current.loading).toBe(false)
-        expect(result.current.loaded).toBe(true)
         expect(result.current.loadError).toBeUndefined()
       })
     })
@@ -380,9 +380,9 @@ describe('useForm()', () => {
 
         await waitForNextUpdate()
 
+        expect(result.current.initialized).toBe(false)
         expect(result.current.initialValues).not.toStrictEqual(initialValues)
         expect(result.current.loading).toBe(false)
-        expect(result.current.loaded).toBe(false)
         expect(result.current.loadError).toBeDefined()
       })
     })

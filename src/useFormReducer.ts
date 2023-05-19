@@ -38,7 +38,6 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
   initialized: boolean;
   initialValues: Partial<V>;
   loadError?: Error;
-  loaded: boolean;
   loading: boolean;
   modified: boolean;
   modifiedFields: ModifiedFields;
@@ -67,7 +66,6 @@ export const initialState = {
   initialized: false,
   initialValues: {},
   loadError: undefined,
-  loaded: false,
   loading: false,
   modified: false,
   modifiedFields: {},
@@ -232,7 +230,6 @@ function useFormReducer<V extends Values, E, R> (
         ...state,
         disabled: true,
         loadError: undefined,
-        loaded: false,
         loading: true
       }
       break
@@ -242,7 +239,6 @@ function useFormReducer<V extends Values, E, R> (
         ...state,
         disabled: false,
         loadError: action.error,
-        loaded: false,
         loading: false
       }
       break
@@ -255,7 +251,6 @@ function useFormReducer<V extends Values, E, R> (
         initialized: true,
         initialValues: clone(data.values),
         loadError: undefined,
-        loaded: true,
         loading: false,
         values: data.values
       }
