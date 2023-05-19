@@ -7,7 +7,13 @@ import React, { ElementType } from 'react'
 import useFormContext from '../useFormContext'
 
 export type FieldErrorProps<C extends ElementType> = React.ComponentProps<C> & {
+  /**
+   * The custom component to render.
+   */
   component?: C,
+  /**
+   * The error's field name.
+   */
   name: string;
 }
 

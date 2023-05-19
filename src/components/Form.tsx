@@ -9,6 +9,9 @@ import { Values } from '../useFormReducer'
 import React from 'react'
 
 export type FormProps<V extends Values, E, R> = React.ComponentProps<'form'> & {
+  /**
+   * The form context returned by useForm().
+   */
   context: UseFormHook<V, E, R>;
 }
 

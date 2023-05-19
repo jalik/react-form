@@ -32,31 +32,109 @@ export type TouchedFields = Record<string, boolean>;
 export type Values = Record<string, any>;
 
 export interface FormState<V extends Values = Values, E = Error, R = any> {
+  /**
+   * Enables debugging.
+   */
   debug: boolean;
+  /**
+   * Disables all fields and buttons.
+   */
   disabled: boolean;
+  /**
+   * Contains fields errors.
+   */
   errors: Errors<E>;
+  /**
+   * Tells if the form has any error.
+   */
   hasError: boolean;
+  /**
+   * Tells if the form was initialized.
+   */
   initialized: boolean;
+  /**
+   * Contains initial form values.
+   */
   initialValues: Partial<V>;
+  /**
+   * The loading error.
+   */
   loadError?: Error;
+  /**
+   * Tells if the form is loading.
+   */
   loading: boolean;
+  /**
+   * Tells if the form was modified.
+   */
   modified: boolean;
+  /**
+   * The fields that were modified.
+   */
   modifiedFields: ModifiedFields;
+  /**
+   * Tells if the form will trigger a validation or if it will validate some fields.
+   */
   needValidation: boolean | string[];
+  /**
+   * The number of times the form was submitted (count is reset on success).
+   */
   submitCount: number;
+  /**
+   * The submit error.
+   */
   submitError?: Error;
+  /**
+   * The submit result returned by onSubmit promise.
+   */
   submitResult?: R;
+  /**
+   * Tells if the form was submitted successfully.
+   */
   submitted: boolean;
+  /**
+   * Tells if the form is submitting.
+   */
   submitting: boolean;
+  /**
+   * Tells if the form was touched.
+   */
   touched: boolean;
+  /**
+   * The fields that were touched.
+   */
   touchedFields: TouchedFields;
+  /**
+   * The validation error.
+   */
   validateError?: Error;
+  /**
+   * Tells if the form was validated.
+   */
   validated: boolean;
+  /**
+   * Tells if validation is done when a field is modified.
+   */
   validateOnChange: boolean;
+  /**
+   * Tells if validation is done when form is initialized.
+   */
   validateOnInit: boolean;
+  /**
+   * Tells if validation is done when form is submitted.
+   */
   validateOnSubmit: boolean;
+  /**
+   * Tells if validation is done when a field is touched.
+   */
   validateOnTouch: boolean;
+  /**
+   * Tells if the form is validating.
+   */
   validating: boolean;
+  /**
+   * The current form values.
+   */
   values: Partial<V>;
 }
 

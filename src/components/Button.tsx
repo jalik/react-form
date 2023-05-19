@@ -7,7 +7,13 @@ import React, { ElementType, useCallback, useMemo } from 'react'
 import useFormContext from '../useFormContext'
 
 export type ButtonProps<C extends ElementType> = React.ComponentProps<C> & {
+  /**
+   * The custom component to render.
+   */
   component?: C,
+  /**
+   * The type of button.
+   */
   type?: 'button' | 'reset' | 'submit',
 }
 

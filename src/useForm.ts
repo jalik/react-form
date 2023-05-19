@@ -52,79 +52,261 @@ export type FieldElement =
   | HTMLTextAreaElement
 
 export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> {
+  /**
+   * Clears the form (values, errors...).
+   * @param fields
+   */
   clear (fields?: string[]): void;
+  /**
+   * Clears all or given errors.
+   * @param fields
+   */
   clearErrors (fields?: string[]): void;
+  /**
+   * Clears all or given touched fields.
+   * @param fields
+   */
   clearTouchedFields (fields?: string[]): void;
+  /**
+   * Returns field props by name.
+   * @param name
+   * @param props
+   */
   getFieldProps<Component extends ElementType = any> (
     name: string,
     props?: React.ComponentProps<Component>
   ): React.ComponentProps<Component>;
+  /**
+   * Returns field's initial value.
+   * @param name
+   */
   getInitialValue<T> (name: string): T | undefined;
+  /**
+   * Returns current field value.
+   * @param name
+   * @param defaultValue
+   */
   getValue<T> (name: string, defaultValue?: T): T | undefined;
+  /**
+   * Handles field blur event.
+   * @param event
+   */
   handleBlur (event: React.FocusEvent): void;
+  /**
+   * Handles field change event.
+   * @param event
+   * @param options
+   */
   handleChange (event: React.ChangeEvent, options?: {
     parser? (value: unknown, target?: HTMLElement): any
   }): void;
+  /**
+   * Handles form reset event.
+   * @param event
+   */
   handleReset (event: React.FormEvent<HTMLFormElement>): void;
+  /**
+   * Handles field change event (value based like useState()).
+   * @param name
+   */
   handleSetValue (name: string): (value: unknown | undefined) => void;
+  /**
+   * Handles form submit event.
+   * @param event
+   */
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
+  /**
+   * Loads the form initial values.
+   */
   load (): void;
+  /**
+   * Removes given fields.
+   * @param fields
+   */
   removeFields (fields: string[]): void;
+  /**
+   * Resets all or given fields.
+   * @param fields
+   */
   reset (fields?: string[]): void;
+  /**
+   * Sets a single field error.
+   * @param name
+   * @param error
+   */
   setError (name: string, error?: E): void;
+  /**
+   * Sets all or partial errors.
+   * @param errors
+   * @param opts
+   */
   setErrors (
     errors: Errors<E>,
     opts?: { partial?: boolean }
   ): void;
+  /**
+   * Sets initial values.
+   * @param values
+   */
   setInitialValues (values: Partial<V>): void;
+  /**
+   * Sets a single touched field.
+   * @param name
+   * @param touched
+   */
   setTouchedField (name: string, touched: boolean | undefined): void;
+  /**
+   * Sets all partial or partial touched fields.
+   * @param fields
+   * @param options
+   */
   setTouchedFields (
     fields: TouchedFields,
     options?: { partial?: boolean, validate?: boolean }
   ): void;
+  /**
+   * Sets a single field value.
+   * @param name
+   * @param value
+   * @param options
+   */
   setValue (
     name: string,
     value?: unknown,
     options?: { validate?: boolean }
   ): void;
+  /**
+   * Sets all or partial fields values.
+   * @param values
+   * @param options
+   */
   setValues (
     values: Values | Partial<V>,
     options?: { partial?: boolean, validate?: boolean }
   ): void;
+  /**
+   * Calls the onSubmit function with form values.
+   */
   submit (): Promise<void | R>;
+  /**
+   * Calls the validate function with form values.
+   * @param opts
+   */
   validate (opts?: { submitAfter: boolean }): Promise<void | Errors<E> | undefined>;
+  /**
+   * Calls the validateField function for a single field value.
+   * @param name
+   */
   validateField (name: string): Promise<void | E | undefined>;
+  /**
+   * Calls the validate or validateField function for all or given fields.
+   * @param fields
+   */
   validateFields (fields?: string[]): Promise<void | Errors<E> | undefined>;
 }
 
 export interface UseFormOptions<V extends Values, E, R> {
+  /**
+   * Tells if form values should be cleared after submit.
+   */
   clearAfterSubmit?: boolean;
+  /**
+   * Enables debugging.
+   */
   debug?: boolean;
+  /**
+   * Disables the form (fields and buttons).
+   */
   disabled?: boolean;
+  /**
+   * Sets the initial values.
+   */
   initialValues?: Partial<V>;
+  /**
+   * Replaces empty string by null on change and on submit.
+   */
   nullify?: boolean;
+  /**
+   * Sets field props dynamically.
+   * @param name
+   * @param formState
+   */
   initializeField?<C extends ElementType> (name: string, formState: FormState<V, E, R>): React.ComponentProps<C> | undefined;
+  /**
+   * The loading function.
+   */
   load? (): Promise<void | V>;
+  /**
+   * Called when form is submitted.
+   * @param values
+   */
   onSubmit (values: Partial<V>): Promise<void | R>;
+  /**
+   * Called when form has been successfully submitted.
+   * @param result
+   */
   onSubmitted? (result: R): void;
+  /**
+   * Resets form with initial values whenever they change.
+   */
   reinitialize?: boolean;
+  /**
+   * The delay before submitting the form.
+   */
   submitDelay?: number;
+  /**
+   * Allows transforming values when form is modified.
+   * @param mutation
+   * @param values
+   */
   transform? (mutation: Values, values: Partial<V>): Partial<V>;
+  /**
+   * Enables trimming on blur.
+   */
   trimOnBlur?: boolean;
+  /**
+   * Enables trimming on submit.
+   */
   trimOnSubmit?: boolean;
+  /**
+   * Called for form validation.
+   * @param values
+   * @param modifiedFields
+   */
   validate? (
     values: Partial<V>,
     modifiedFields: ModifiedFields
   ): Promise<void | Errors<E> | undefined>;
+  /**
+   * The delay before starting validation.
+   */
   validateDelay?: number;
+  /**
+   * Called for single field validation.
+   * @param name
+   * @param value
+   * @param values
+   */
   validateField? (
     name: string,
     value: unknown,
     values: Partial<V>
   ): Promise<void | E | undefined>;
+  /**
+   * Enables validation on field change.
+   */
   validateOnChange?: boolean;
+  /**
+   * Enables validation on form initialization.
+   */
   validateOnInit?: boolean;
+  /**
+   * Enables validation on form submit.
+   */
   validateOnSubmit?: boolean;
+  /**
+   * Enables validation on field touch.
+   */
   validateOnTouch?: boolean;
 }
 

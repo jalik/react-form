@@ -18,15 +18,48 @@ import Option from './Option'
 export type FieldProps<T = string, C extends ElementType = any> =
   React.ComponentPropsWithoutRef<C>
   & {
+  /**
+   * The custom component to render.
+   */
   component?: C;
+  /**
+   * Disables the field.
+   */
   disabled?: boolean;
+  /**
+   * Sets the label of the empty option (select only).
+   */
   emptyOptionLabel?: string;
+  /**
+   * The format function to call before displaying the value.
+   * @param value
+   */
   formatter? (value: T | string): string | undefined;
+  /**
+   * The name of the field.
+   */
   name: string;
+  /**
+   * The field options (select only).
+   */
   options?: OptionHTMLAttributes<HTMLOptionElement>[];
+  /**
+   * The parse function to call when the value is modified.
+   * @param value
+   * @param target
+   */
   parser? (value: string, target?: HTMLElement): T;
+  /**
+   * Makes the field mandatory.
+   */
   required?: boolean;
+  /**
+   * The field's type.
+   */
   type?: HTMLInputTypeAttribute | 'select' | 'textarea';
+  /**
+   * The field's value.
+   */
   value?: string | T;
 }
 
