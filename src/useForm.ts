@@ -487,13 +487,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         if (result) {
           dispatch({
             type: ACTION_SUBMIT_SUCCESS,
-            data: { result }
+            data: {
+              result,
+              clear: clearAfterSubmit
+            }
           })
           if (onSubmitted) {
             onSubmitted(result)
-          }
-          if (clearAfterSubmit) {
-            dispatch({ type: ACTION_CLEAR })
           }
         }
         return result
@@ -504,7 +504,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [clearAfterSubmit, onSubmitted, state.values, trimOnSubmit])
+  }, [clearAfterSubmit, nullify, onSubmitted, state.values, trimOnSubmit])
 
   /**
    * Validates form values.

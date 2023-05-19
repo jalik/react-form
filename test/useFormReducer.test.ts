@@ -727,7 +727,7 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_SUBMIT_SUCCESS}"`, () => {
     const action: FormAction = {
       type: ACTION_SUBMIT_SUCCESS,
-      data: { result: { success: true } }
+      data: { result: { success: true }, clear: false }
     }
 
     it('should set submit result', () => {
