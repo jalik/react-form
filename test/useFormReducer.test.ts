@@ -32,7 +32,8 @@ import useFormReducer, {
 } from '../src/useFormReducer'
 import { build, clone, hasDefinedValues, resolve } from '../src/utils'
 
-const validationOptions = {
+const hookOptions = {
+  debug: false,
   validateOnChange: true,
   validateOnInit: true,
   validateOnSubmit: true,
@@ -41,7 +42,7 @@ const validationOptions = {
 
 const stateWithoutInitialValues = {
   ...initialState,
-  ...validationOptions
+  ...hookOptions
 }
 
 const stateWithInitialValues = {

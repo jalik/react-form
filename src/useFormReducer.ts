@@ -32,6 +32,7 @@ export type TouchedFields = Record<string, boolean>;
 export type Values = Record<string, any>;
 
 export interface FormState<V extends Values = Values, E = Error, R = any> {
+  debug: boolean;
   disabled: boolean;
   errors: Errors<E>;
   hasError: boolean;
@@ -121,6 +122,11 @@ function useFormReducer<V extends Values, E, R> (
 ): FormState<V, E, R> {
   let nextState: FormState<V, E, R>
 
+  if (state.debug) {
+    // eslint-disable-next-line no-console
+    console.log(action)
+  }
+
   switch (action.type) {
     case ACTION_CLEAR: {
       const { data } = action
@@ -157,6 +163,7 @@ function useFormReducer<V extends Values, E, R> (
         nextState = {
           ...state,
           ...initialState,
+          debug: state.debug,
           initialized: true
         }
       }
@@ -216,6 +223,7 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         ...initialState,
+        debug: state.debug,
         initialized: true,
         initialValues: clone(data.values),
         // Trigger validation if needed
@@ -248,6 +256,7 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         ...initialState,
+        debug: state.debug,
         initialized: true,
         initialValues: clone(data.values),
         loadError: undefined,
@@ -297,6 +306,7 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         ...initialState,
+        debug: state.debug,
         initialized: state.initialized,
         initialValues: state.initialValues,
         values: clone(state.initialValues)
@@ -420,6 +430,7 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_SUBMIT_SUCCESS:
       nextState = {
         ...(action.data.clear ? initialState : state),
+        debug: state.debug,
         disabled: false,
         initialized: true,
         modified: false,

@@ -99,6 +99,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
 
 export interface UseFormOptions<V extends Values, E, R> {
   clearAfterSubmit?: boolean;
+  debug?: boolean;
   disabled?: boolean;
   initialValues?: Partial<V>;
   nullify?: boolean;
@@ -133,6 +134,7 @@ export interface UseFormOptions<V extends Values, E, R> {
 function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<V, E, R>): UseFormHook<V, E, R> {
   const {
     clearAfterSubmit = false,
+    debug = false,
     disabled = false,
     initialValues,
     initializeField: initializeFieldFunc,
@@ -172,6 +174,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     useFormReducer<V, E, R>,
     {
       ...initialState,
+      debug,
       // Disables fields if default values are undefined.
       disabled: disabled || !initialValues,
       initialized: initialValues != null,
