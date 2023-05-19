@@ -424,7 +424,10 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_SUBMIT_SUCCESS:
       nextState = {
         ...state,
-        ...initialState,
+        disabled: false,
+        submitCount: 0,
+        submitError: undefined,
+        submitting: false,
         submitResult: action.data.result,
         submitted: true
       }

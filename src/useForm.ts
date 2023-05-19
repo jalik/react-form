@@ -98,6 +98,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
 }
 
 export interface UseFormOptions<V extends Values, E, R> {
+  clearAfterSubmit?: boolean;
   disabled?: boolean;
   initialValues?: Partial<V>;
   nullify?: boolean;
@@ -131,6 +132,7 @@ export interface UseFormOptions<V extends Values, E, R> {
  */
 function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<V, E, R>): UseFormHook<V, E, R> {
   const {
+    clearAfterSubmit = false,
     disabled = false,
     initialValues,
     initializeField: initializeFieldFunc,
@@ -484,6 +486,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           if (onSubmitted) {
             onSubmitted(result)
           }
+          if (clearAfterSubmit) {
+            dispatch({ type: ACTION_CLEAR })
+          }
         }
         return result
       })
@@ -493,7 +498,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [onSubmitted, state.values, trimOnSubmit])
+  }, [clearAfterSubmit, onSubmitted, state.values, trimOnSubmit])
 
   /**
    * Validates form values.
