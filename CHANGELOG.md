@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.1 (2023-05-23)
+
+- Fixed select and textarea fields not updating on change
+- Fixed validation not being debounced when modifying a field
+- Fixed on debouncing `validate()`, `validateField()` and `validateFields()`
+
 ## 5.0.0 (2023-05-18)
 
 - **[BREAKING]** Renamed component `<SelectOption />` to `<Option />`
