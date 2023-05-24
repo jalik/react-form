@@ -556,7 +556,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         })
       // Apply transformation to changed values.
       mutation = transformRef.current(mutation, nextValues)
-    } else if (nullify) {
+    }
+
+    if (nullify) {
       Object.entries(mutation).forEach(([name, value]) => {
         if (typeof value === 'string') {
           let nextValue: string | null = value
