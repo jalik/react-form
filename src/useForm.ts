@@ -331,7 +331,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     trimOnSubmit = false,
     validate: validateFunc,
     validateField: validateFieldFunc,
-    validateDelay = 200,
+    validateDelay = 400,
     validateOnChange = false,
     validateOnInit = false,
     validateOnSubmit = true,
@@ -519,6 +519,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       })
   }, [getValue, state.errors, state.values])
 
+  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
+
   /**
    * Validates a field value.
    */
@@ -529,6 +531,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         return err[name]
       })
   ), [validateFields])
+
+  const debouncedValidateField = useDebouncePromise(validateField, validateDelay)
 
   /**
    * Defines several field values (use setInitialValues() to set all form values).
@@ -736,6 +740,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       })
   }, [state.modifiedFields, state.touchedFields, state.values, validateFields])
 
+  const debouncedValidate = useDebouncePromise(validate, validateDelay)
+
   /**
    * Validates if necessary and submits form.
    */
@@ -751,9 +757,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     if (!errors || !hasDefinedValues(errors)) {
       return submit()
     }
-  }, [validateOnSubmit, state.validated, validate, submit])
+  }, [state.validated, submit, validate, validateOnSubmit])
 
-  const debouncedSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay)
+  const debouncedValidateAndSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay)
 
   /**
    * Defines initial values (after loading for example).
@@ -979,8 +985,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [setInitialValues, initialValues, state.initialized, reinitialize])
 
-  const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
-
   useEffect(() => {
     if (state.needValidation === true) {
       validate()
@@ -1016,16 +1020,17 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setErrors,
     setValue,
     setValues,
-    submit: debouncedSubmit,
+    submit: debouncedValidateAndSubmit,
     setTouchedField,
     setTouchedFields,
-    validate,
-    validateField,
-    validateFields
-  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getFieldProps,
-    getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSetValue, handleSubmit,
-    setInitialValues, load, removeFields, reset, setError, setErrors, setValue, setValues,
-    debouncedSubmit, setTouchedField, setTouchedFields, validate, validateField, validateFields])
+    validate: debouncedValidate,
+    validateField: debouncedValidateField,
+    validateFields: debouncedValidateFields
+  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue,
+    getValue, handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, setInitialValues,
+    load, removeFields, reset, setError, setErrors, setValue, setValues, debouncedValidateAndSubmit,
+    setTouchedField, setTouchedFields, debouncedValidate, debouncedValidateField,
+    debouncedValidateFields])
 }
 
 export default useForm
