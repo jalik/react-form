@@ -266,15 +266,15 @@ describe('useForm()', () => {
   })
 
   describe('getFieldProps(name)', () => {
-    it('should return field props', () => {
-      const initialValues = { username: 'jalik' }
-      const { result } = renderHook(() => {
-        return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
-        })
+    const initialValues = { username: 'jalik' }
+    const { result } = renderHook(() => {
+      return useForm({
+        initialValues,
+        onSubmit: () => Promise.resolve(true)
       })
+    })
 
+    it('should return field props', () => {
       const props = result.current.getFieldProps('username')
       expect(props).toBeDefined()
       expect(props.id).toBeDefined()
@@ -282,6 +282,23 @@ describe('useForm()', () => {
       expect(props.onBlur).toBeDefined()
       expect(props.onChange).toBeDefined()
       expect(props.value).toBe(initialValues.username)
+    })
+
+    describe('with passed props', () => {
+      it('should return field props with passed props', () => {
+        const passedProps = { required: true, id: 'randomId' }
+        const props = result.current.getFieldProps('username', passedProps)
+        expect(props).toBeDefined()
+        expect(props.id).toBeDefined()
+        expect(props.name).toBeDefined()
+        expect(props.onBlur).toBeDefined()
+        expect(props.onChange).toBeDefined()
+        expect(props.value).toBe(initialValues.username)
+
+        Object.entries(passedProps).forEach(([name, value]) => {
+          expect(props[name]).toBe(value)
+        })
+      })
     })
   })
 

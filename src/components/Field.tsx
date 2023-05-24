@@ -209,10 +209,10 @@ Field.defaultProps = {
   disabled: undefined,
   emptyOptionLabel: '...',
   formatter: undefined,
-  multiple: false,
+  multiple: undefined,
   options: undefined,
   parser: undefined,
-  required: false,
+  required: undefined,
   type: 'text',
   value: undefined
 }
