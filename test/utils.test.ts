@@ -199,29 +199,35 @@ describe('isMultipleFieldElement(element)', () => {
 
 describe('parseInputValue(input)', () => {
   describe('with number input', () => {
-    it('should return a float value', () => {
+    it('should return a number', () => {
       const input = document.createElement('input')
       input.type = 'number'
       input.value = '100'
-      expect(parseInputValue(input)).toBe(100)
+      expect(parseInputValue(input)).toBe(Number(input.value))
+      input.value = '100.10'
+      expect(parseInputValue(input)).toBe(Number(input.value))
     })
   })
 
   describe('with range input', () => {
-    it('should return a float value', () => {
+    it('should return a number', () => {
       const input = document.createElement('input')
       input.type = 'range'
       input.value = '100'
-      expect(parseInputValue(input)).toBe(100)
+      expect(parseInputValue(input)).toBe(Number(input.value))
+      input.value = '100.10'
+      expect(parseInputValue(input)).toBe(Number(input.value))
     })
   })
 
   describe('with text input', () => {
-    it('should return a float value', () => {
+    it('should return a string', () => {
       const input = document.createElement('input')
       input.type = 'text'
       input.value = '100'
-      expect(parseInputValue(input)).toBe('100')
+      const result = parseInputValue(input)
+      expect(result).toBe(input.value)
+      expect(typeof result).toBe('string')
     })
   })
 
@@ -231,6 +237,26 @@ describe('parseInputValue(input)', () => {
       input.type = 'number'
       input.value = ''
       expect(parseInputValue(input)).toBe('')
+    })
+  })
+
+  describe('with select', () => {
+    it('should return a string', () => {
+      const select = document.createElement('select')
+      select.value = '100'
+      const result = parseInputValue(select)
+      expect(result).toBe(select.value)
+      expect(typeof result).toBe('string')
+    })
+  })
+
+  describe('with textarea', () => {
+    it('should return a string', () => {
+      const textarea = document.createElement('textarea')
+      textarea.value = '100'
+      const result = parseInputValue(textarea)
+      expect(result).toBe(textarea.value)
+      expect(typeof result).toBe('string')
     })
   })
 })

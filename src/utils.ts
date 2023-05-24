@@ -274,6 +274,12 @@ export function parseInputValue (input: HTMLElement): string | number | undefine
       }
     }
     return value
+  } else if (input instanceof HTMLSelectElement) {
+    const { value } = input
+    return value
+  } else if (input instanceof HTMLTextAreaElement) {
+    const { value } = input
+    return value
   }
 }
 
