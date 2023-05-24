@@ -16,6 +16,11 @@ function useDebouncePromise<T> (func: DebouncedFunction<T>, delay = 50): Debounc
 
   const debouncedFunc = useCallback((...args: unknown[]) => (
     new Promise<void | T>((resolve) => {
+      // Clear current timeout.
+      if (timerRef.current != null) {
+        clearTimeout(timerRef.current)
+      }
+      // Start new timeout.
       timerRef.current = setTimeout(() => {
         resolve(funcRef.current(...args))
       }, delay)
