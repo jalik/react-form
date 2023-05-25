@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.0.2 (2023-05-25)
+
+- Fixed some attributes (required, multiple) returned by `initializeField()` not used in `<Field>`
+
 ## 5.0.1 (2023-05-23)
 
 - Fixed select and textarea fields not updating on change
