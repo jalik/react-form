@@ -62,17 +62,22 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     setValue
   } = context || form
 
-  const fields = useRef<ArrayItem<T>[]>([])
+  const fieldsRef = useRef<ArrayItem<T>[]>([])
+
+  const fields = useMemo(() => {
+    const value = getValue<T[]>(name, [])
+    return value ? synchronizeItems(value, fieldsRef.current) : []
+  }, [getValue, name])
 
   const updateValue = useCallback(() => {
-    setValue(name, fields.current.map((el) => el.value))
+    setValue(name, fieldsRef.current.map((el) => el.value))
   }, [name, setValue])
 
   /**
    * Adds values to the end of the array.
    */
   const append = useCallback((...values: T[]): void => {
-    fields.current.push(...values.map(createItem))
+    fieldsRef.current.push(...values.map(createItem))
     updateValue()
   }, [updateValue])
 
@@ -80,7 +85,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    * Inserts values at a given index.
    */
   const insert = useCallback((index: number, ...values: T[]): void => {
-    fields.current.splice(index, 0, ...values.map(createItem))
+    fieldsRef.current.splice(index, 0, ...values.map(createItem))
     updateValue()
   }, [updateValue])
 
@@ -88,9 +93,9 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    * Moves a value from an index to another index.
    */
   const move = useCallback((fromIndex: number, toIndex: number): void => {
-    const index = Math.min(Math.max(toIndex, 0), fields.current.length)
-    const [item] = fields.current.splice(fromIndex, 1)
-    fields.current.splice(index, 0, item)
+    const index = Math.min(Math.max(toIndex, 0), fieldsRef.current.length)
+    const [item] = fieldsRef.current.splice(fromIndex, 1)
+    fieldsRef.current.splice(index, 0, item)
     updateValue()
   }, [updateValue])
 
@@ -98,7 +103,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    * Adds values to the beginning of the array.
    */
   const prepend = useCallback((...values: T[]): void => {
-    fields.current.unshift(...values.map(createItem))
+    fieldsRef.current.unshift(...values.map(createItem))
     updateValue()
   }, [updateValue])
 
@@ -107,7 +112,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    */
   const remove = useCallback((...indexes: number[]): void => {
     [...indexes].reverse().forEach((index) => {
-      fields.current.splice(index, 1)
+      fieldsRef.current.splice(index, 1)
     })
     updateValue()
   }, [updateValue])
@@ -120,14 +125,14 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     let b
 
     if (fromIndex < toIndex) {
-      b = fields.current.splice(toIndex, 1)[0]
-      a = fields.current.splice(fromIndex, 1)[0]
+      b = fieldsRef.current.splice(toIndex, 1)[0]
+      a = fieldsRef.current.splice(fromIndex, 1)[0]
     } else {
-      a = fields.current.splice(fromIndex, 1)[0]
-      b = fields.current.splice(toIndex, 1)[0]
+      a = fieldsRef.current.splice(fromIndex, 1)[0]
+      b = fieldsRef.current.splice(toIndex, 1)[0]
     }
-    fields.current.splice(fromIndex, 0, b)
-    fields.current.splice(toIndex, 0, a)
+    fieldsRef.current.splice(fromIndex, 0, b)
+    fieldsRef.current.splice(toIndex, 0, a)
     updateValue()
   }, [updateValue])
 
@@ -157,12 +162,12 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
 
   useEffect(() => {
     const value = getValue<T[]>(name, [])
-    fields.current = value ? synchronizeItems(value, fields.current) : []
+    fieldsRef.current = value ? synchronizeItems(value, fieldsRef.current) : []
   }, [getValue, name])
 
   return useMemo(() => ({
     append,
-    fields: fields.current,
+    fields,
     handleAppend,
     handlePrepend,
     handleRemove,
@@ -171,7 +176,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     prepend,
     remove,
     swap
-  }), [append, handleAppend, handlePrepend, handleRemove, insert, move, prepend, remove, swap])
+  }), [append, fields, handleAppend, handlePrepend, handleRemove, insert, move, prepend, remove, swap])
 }
 
 export default useFieldArray

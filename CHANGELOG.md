@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.1.1 (2023-06-28)
+
+- Fixed `useFieldArray()` not triggering rendering when array is modified
+
 ## 5.1.0 (2023-06-28)
 
 - Added option `parser(value): any` to `handleSetValue(name, options?)` returned by `useForm()`
