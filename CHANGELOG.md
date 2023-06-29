@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.1.0 (2023-06-28)
+
+- Added option `parser(value): any` to `handleSetValue(name, options?)` returned by `useForm()`
+- Added `swap(from, to)` to `useFieldArray()`
+- Allow passing several indexes to `remove()` in `useFieldArray()`
+- Fixed functions of `useFieldArray()` to queue updates when called during the same render
+- Fixed `submitted` not being set to `false` when form is modified after submit
+- Upgraded dependencies
+
 ## 5.0.2 (2023-05-25)
 
 - Fixed some attributes (required, multiple) returned by `initializeField()` not used in `<Field>`
