@@ -9,6 +9,24 @@ import useForm from '../src/useForm'
 import useFieldArray from '../src/useFieldArray'
 
 describe('useFieldArray()', () => {
+  it('should synchronize fields when value changes', () => {
+    const initialValues = {
+      items: [{ id: 1 }]
+    }
+    const { result: form } = renderHook(() => {
+      return useForm({
+        initialValues,
+        onSubmit: () => Promise.resolve(true)
+      })
+    })
+
+    act(() => {
+      form.current.setValue('items', [{ id: 2 }])
+    })
+
+    expect(form.current.values.items).toStrictEqual([{ id: 2 }])
+  })
+
   describe('append(...values)', () => {
     it('should append defaultValue to array', () => {
       const initialValues = {
@@ -178,6 +196,42 @@ describe('useFieldArray()', () => {
         { id: 3 },
         { id: 4 },
         { id: 2 }
+      ])
+    })
+  })
+
+  describe('move(from, to)', () => {
+    it('should move value from an index to another', () => {
+      const initialValues = {
+        items: [
+          { id: 1 },
+          { id: 2 },
+          { id: 3 }
+        ]
+      }
+      const { result: form } = renderHook(() => {
+        return useForm({
+          initialValues,
+          onSubmit: () => Promise.resolve(true)
+        })
+      })
+      const { result: array } = renderHook(() => {
+        return useFieldArray({
+          name: 'items',
+          context: form.current,
+          defaultValue: { id: null }
+        })
+      })
+
+      act(() => {
+        array.current.move(0, 2)
+        array.current.move(2, 1)
+      })
+
+      expect(form.current.values.items).toStrictEqual([
+        { id: 2 },
+        { id: 1 },
+        { id: 3 }
       ])
     })
   })

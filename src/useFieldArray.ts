@@ -28,19 +28,15 @@ function createItem<T> (value: T): ArrayItem<T> {
  * Returns fields synchronized with original array.
  */
 function synchronizeItems<T> (array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[] {
-  // Removes extra items.
-  const newArray = fields.slice(0, array.length)
-
-  array.forEach((value, index) => {
+  return array.map((value, index) => {
     if (typeof fields[index] === 'undefined') {
-      // Adds missing items.
-      newArray[index] = createItem(value)
-    } else {
-      // Update existing items.
-      newArray[index].value = value
+      return createItem(value)
+    }
+    return {
+      ...fields[index],
+      value
     }
   })
-  return newArray
 }
 
 export interface UseFieldArrayOptions<T, V extends Values> {
