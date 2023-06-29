@@ -108,8 +108,11 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   /**
    * Handles field change event (value based like useState()).
    * @param name
+   * @param options
    */
-  handleSetValue (name: string): (value: unknown | undefined) => void;
+  handleSetValue (name: string, options?: {
+    parser?: (value: unknown) => any
+  }): (value: unknown | undefined) => void;
   /**
    * Handles form submit event.
    * @param event
@@ -856,9 +859,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     reset()
   }, [reset])
 
-  const handleSetValue = useCallback((name: string) => {
+  const handleSetValue = useCallback((
+    name: string,
+    opts?: { parser?: (value: unknown) => any }
+  ) => {
     return (value: unknown | undefined): void => {
-      setValue(name, value)
+      const val = opts?.parser ? opts?.parser(value) : value
+      setValue(name, val)
     }
   }, [setValue])
 

@@ -286,7 +286,10 @@ describe('useForm()', () => {
 
     describe('with passed props', () => {
       it('should return field props with passed props', () => {
-        const passedProps = { required: true, id: 'randomId' }
+        const passedProps = {
+          required: true,
+          id: 'randomId'
+        }
         const props = result.current.getFieldProps('username', passedProps)
         expect(props).toBeDefined()
         expect(props.id).toBeDefined()
@@ -331,6 +334,40 @@ describe('useForm()', () => {
       })
 
       expect(result.current.getValue('username')).toBe('jalik')
+    })
+  })
+
+  describe('handleSetValue(name, options)', () => {
+    describe('without parser option', () => {
+      it('should set field value when called', () => {
+        const initialValues = { username: undefined }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+        act(() => {
+          result.current.handleSetValue('username')('jalik')
+        })
+        expect(result.current.getValue('username')).toBe('jalik')
+      })
+    })
+
+    describe('with parser option', () => {
+      it('should set field value when called', () => {
+        const initialValues = { username: undefined }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+        act(() => {
+          result.current.handleSetValue('username', { parser: (value) => value + '1' })('jalik')
+        })
+        expect(result.current.getValue('username')).toBe('jalik1')
+      })
     })
   })
 
