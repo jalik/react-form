@@ -68,25 +68,25 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
 
   const fields = useRef<ArrayItem<T>[]>([])
 
-  const updateArray = useCallback(() => {
+  const updateValue = useCallback(() => {
     setValue(name, fields.current.map((el) => el.value))
   }, [name, setValue])
 
   /**
    * Adds values to the end of the array.
    */
-  const append = useCallback((...value: T[]): void => {
-    fields.current.push(...value.map(createItem))
-    updateArray()
-  }, [updateArray])
+  const append = useCallback((...values: T[]): void => {
+    fields.current.push(...values.map(createItem))
+    updateValue()
+  }, [updateValue])
 
   /**
    * Inserts values at a given index.
    */
-  const insert = useCallback((index: number, ...value: T[]): void => {
-    fields.current.splice(index, 0, ...value.map(createItem))
-    updateArray()
-  }, [updateArray])
+  const insert = useCallback((index: number, ...values: T[]): void => {
+    fields.current.splice(index, 0, ...values.map(createItem))
+    updateValue()
+  }, [updateValue])
 
   /**
    * Moves a value from an index to another index.
@@ -95,16 +95,16 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     const index = Math.min(Math.max(toIndex, 0), fields.current.length)
     const [item] = fields.current.splice(fromIndex, 1)
     fields.current.splice(index, 0, item)
-    updateArray()
-  }, [updateArray])
+    updateValue()
+  }, [updateValue])
 
   /**
    * Adds values to the beginning of the array.
    */
-  const prepend = useCallback((...value: T[]): void => {
-    fields.current.unshift(...value.map(createItem))
-    updateArray()
-  }, [updateArray])
+  const prepend = useCallback((...values: T[]): void => {
+    fields.current.unshift(...values.map(createItem))
+    updateValue()
+  }, [updateValue])
 
   /**
    * Removes values from the array by index.
@@ -113,8 +113,8 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     [...indexes].reverse().forEach((index) => {
       fields.current.splice(index, 1)
     })
-    updateArray()
-  }, [updateArray])
+    updateValue()
+  }, [updateValue])
 
   /**
    * Swaps values from an index to another index.
@@ -132,8 +132,8 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     }
     fields.current.splice(fromIndex, 0, b)
     fields.current.splice(toIndex, 0, a)
-    updateArray()
-  }, [updateArray])
+    updateValue()
+  }, [updateValue])
 
   /**
    * Handles event that appends a value.
