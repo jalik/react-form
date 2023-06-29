@@ -109,10 +109,12 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   }, [updateArray])
 
   /**
-   * Removes a value from the array by its index.
+   * Removes values from the array by index.
    */
-  const remove = useCallback((index: number): void => {
-    fields.current.splice(index, 1)
+  const remove = useCallback((...indexes: number[]): void => {
+    [...indexes].reverse().forEach((index) => {
+      fields.current.splice(index, 1)
+    })
     updateArray()
   }, [updateArray])
 
