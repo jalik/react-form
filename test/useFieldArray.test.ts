@@ -249,5 +249,39 @@ describe('useFieldArray()', () => {
     })
   })
 
-  // todo swap
+  describe('swap(from, to)', () => {
+    it('should swap values from an index to another', () => {
+      const initialValues = {
+        items: [
+          { id: 1 },
+          { id: 2 },
+          { id: 3 }
+        ]
+      }
+      const { result: form } = renderHook(() => {
+        return useForm({
+          initialValues,
+          onSubmit: () => Promise.resolve(true)
+        })
+      })
+      const { result: array } = renderHook(() => {
+        return useFieldArray({
+          name: 'items',
+          context: form.current,
+          defaultValue: { id: null }
+        })
+      })
+
+      act(() => {
+        array.current.swap(0, 2)
+        array.current.swap(2, 1)
+      })
+
+      expect(form.current.values.items).toStrictEqual([
+        { id: 3 },
+        { id: 1 },
+        { id: 2 }
+      ])
+    })
+  })
 })

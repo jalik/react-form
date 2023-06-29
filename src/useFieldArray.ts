@@ -88,8 +88,6 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     updateArray()
   }, [updateArray])
 
-  // todo add swap(fromIndex, toIndex)
-
   /**
    * Moves a value from an index to another index.
    */
@@ -115,6 +113,25 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     [...indexes].reverse().forEach((index) => {
       fields.current.splice(index, 1)
     })
+    updateArray()
+  }, [updateArray])
+
+  /**
+   * Swaps values from an index to another index.
+   */
+  const swap = useCallback((fromIndex: number, toIndex: number): void => {
+    let a
+    let b
+
+    if (fromIndex < toIndex) {
+      b = fields.current.splice(toIndex, 1)[0]
+      a = fields.current.splice(fromIndex, 1)[0]
+    } else {
+      a = fields.current.splice(fromIndex, 1)[0]
+      b = fields.current.splice(toIndex, 1)[0]
+    }
+    fields.current.splice(fromIndex, 0, b)
+    fields.current.splice(toIndex, 0, a)
     updateArray()
   }, [updateArray])
 
@@ -156,8 +173,9 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     insert,
     move,
     prepend,
-    remove
-  }), [append, handleAppend, handlePrepend, handleRemove, insert, move, prepend, remove])
+    remove,
+    swap
+  }), [append, handleAppend, handlePrepend, handleRemove, insert, move, prepend, remove, swap])
 }
 
 export default useFieldArray
