@@ -231,6 +231,7 @@ function useFormReducer<V extends Values, E, R> (
           initialValues,
           modified: hasDefinedValues(modifiedFields),
           modifiedFields,
+          submitted: false,
           touched: hasDefinedValues(touchedFields),
           touchedFields,
           values,
@@ -377,6 +378,7 @@ function useFormReducer<V extends Values, E, R> (
         hasError: hasDefinedValues(errors),
         modified: hasDefinedValues(modifiedFields),
         modifiedFields,
+        submitted: false,
         touched: hasDefinedValues(touchedFields),
         touchedFields,
         values
@@ -430,6 +432,7 @@ function useFormReducer<V extends Values, E, R> (
         hasError: hasDefinedValues(errors),
         modified: hasDefinedValues(modifiedFields),
         modifiedFields,
+        submitted: false,
         touched: hasDefinedValues(touchedFields),
         touchedFields,
         values,
@@ -494,6 +497,7 @@ function useFormReducer<V extends Values, E, R> (
         hasError: hasDefinedValues(errors),
         modified: hasDefinedValues(modifiedFields),
         modifiedFields,
+        submitted: false,
         touched: true,
         touchedFields,
         needValidation: data.validate

@@ -90,6 +90,11 @@ const stateValidated = {
   validated: true
 }
 
+const stateSubmitted = {
+  ...stateValidated,
+  submitted: true
+}
+
 const stateValidatedWithSubmitError = {
   ...stateValidated,
   submitError: new Error('Network error'),
@@ -112,6 +117,11 @@ describe('useFormReducer(state, action)', () => {
           ...initialState,
           initialized: true
         })
+      })
+
+      it('should set submitted = false', () => {
+        const newState = useFormReducer(stateSubmitted, action)
+        expect(newState.submitted).toBe(false)
       })
     })
 
@@ -152,6 +162,11 @@ describe('useFormReducer(state, action)', () => {
           validateError: undefined,
           validated: false
         })
+      })
+
+      it('should set submitted = false', () => {
+        const newState = useFormReducer(stateSubmitted, action)
+        expect(newState.submitted).toBe(false)
       })
     })
   })
@@ -250,6 +265,11 @@ describe('useFormReducer(state, action)', () => {
         needValidation: state.validateOnInit,
         values: action.data.values
       })
+    })
+
+    it('should set submitted = false', () => {
+      const newState = useFormReducer(stateSubmitted, action)
+      expect(newState.submitted).toBe(false)
     })
   })
 
@@ -360,6 +380,11 @@ describe('useFormReducer(state, action)', () => {
         })
       })
     })
+
+    it('should set submitted = false', () => {
+      const newState = useFormReducer(stateSubmitted, action)
+      expect(newState.submitted).toBe(false)
+    })
   })
 
   describe(`with action "${ACTION_RESET}"`, () => {
@@ -380,6 +405,11 @@ describe('useFormReducer(state, action)', () => {
     it('should reset form', () => {
       const newState = useFormReducer(stateWithInitialValuesAndErrors, action)
       expect(newState).toStrictEqual(stateWithInitialValues)
+    })
+
+    it('should set submitted = false', () => {
+      const newState = useFormReducer(stateSubmitted, action)
+      expect(newState.submitted).toBe(false)
     })
   })
 
@@ -426,6 +456,11 @@ describe('useFormReducer(state, action)', () => {
           username: state.initialValues.username
         }
       })
+    })
+
+    it('should set submitted = false', () => {
+      const newState = useFormReducer(stateSubmitted, action)
+      expect(newState.submitted).toBe(false)
     })
   })
 
@@ -526,6 +561,11 @@ describe('useFormReducer(state, action)', () => {
         validated: false,
         values
       })
+    })
+
+    it('should set submitted = false', () => {
+      const newState = useFormReducer(stateSubmitted, baseAction)
+      expect(newState.submitted).toBe(false)
     })
 
     describe('with data.partial = false', () => {
