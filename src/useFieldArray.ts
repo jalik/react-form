@@ -3,7 +3,7 @@
  * Copyright (c) 2023 Karl STEIN
  */
 
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { UseFormHook } from './useForm'
 import useFormContext from './useFormContext'
 import { Values } from './useFormReducer'
@@ -44,8 +44,8 @@ function synchronizeItems<T> (array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[
 }
 
 export interface UseFieldArrayOptions<T, V extends Values> {
-  context: UseFormHook<V, Error, any>,
-  defaultValue: T,
+  context: UseFormHook<V, Error, any>
+  defaultValue: T
   name: string
 }
 
@@ -58,45 +58,35 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     defaultValue,
     name
   } = options
+
   const form = useFormContext()
+
   const {
     getValue,
     setValue
   } = context || form
+
   const fields = useRef<ArrayItem<T>[]>([])
 
-  /**
-   * The original array.
-   */
-  const array = useMemo(() => {
-    const value = getValue<T[]>(name, [])
-    fields.current = value ? synchronizeItems(value, fields.current) : []
-    return value || []
-  }, [getValue, name])
+  const updateArray = useCallback(() => {
+    setValue(name, fields.current.map((el) => el.value))
+  }, [name, setValue])
 
   /**
-   * Adds a value at the end of the array.
+   * Adds values to the end of the array.
    */
   const append = useCallback((...value: T[]): void => {
-    // Update virtual array.
     fields.current.push(...value.map(createItem))
-
-    // Update original array.
-    array.push(...value)
-    setValue(name, array)
-  }, [array, name, setValue])
+    updateArray()
+  }, [updateArray])
 
   /**
-   * Inserts a value at a given index.
+   * Inserts values at a given index.
    */
   const insert = useCallback((index: number, ...value: T[]): void => {
-    // Update virtual array.
     fields.current.splice(index, 0, ...value.map(createItem))
-
-    // Update original array.
-    array.splice(index, 0, ...value)
-    setValue(name, array)
-  }, [array, name, setValue])
+    updateArray()
+  }, [updateArray])
 
   // todo add swap(fromIndex, toIndex)
 
@@ -104,41 +94,27 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    * Moves a value from an index to another index.
    */
   const move = useCallback((fromIndex: number, toIndex: number): void => {
-    const index = Math.min(Math.max(toIndex, 0), array.length)
-
-    // Update virtual array.
+    const index = Math.min(Math.max(toIndex, 0), fields.current.length)
     const [item] = fields.current.splice(fromIndex, 1)
     fields.current.splice(index, 0, item)
-
-    // Update original array.
-    const [element] = array.splice(fromIndex, 1)
-    array.splice(index, 0, element)
-    setValue(name, array)
-  }, [array, name, setValue])
+    updateArray()
+  }, [updateArray])
 
   /**
-   * Adds a value at beginning of the array.
+   * Adds values to the beginning of the array.
    */
   const prepend = useCallback((...value: T[]): void => {
-    // Update virtual array.
     fields.current.unshift(...value.map(createItem))
-
-    // Update original array.
-    array.unshift(...value)
-    setValue(name, array)
-  }, [array, name, setValue])
+    updateArray()
+  }, [updateArray])
 
   /**
    * Removes a value from the array by its index.
    */
   const remove = useCallback((index: number): void => {
-    // Update virtual array.
     fields.current.splice(index, 1)
-
-    // Update original array.
-    array.splice(index, 1)
-    setValue(name, array)
-  }, [array, name, setValue])
+    updateArray()
+  }, [updateArray])
 
   /**
    * Handles event that appends a value.
@@ -163,6 +139,11 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     event.preventDefault()
     remove(index)
   }, [remove])
+
+  useEffect(() => {
+    const value = getValue<T[]>(name, [])
+    fields.current = value ? synchronizeItems(value, fields.current) : []
+  }, [getValue, name])
 
   return useMemo(() => ({
     append,
