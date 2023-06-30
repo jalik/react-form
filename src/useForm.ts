@@ -550,7 +550,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // Ignore action if form disabled
     if (formDisabled) return
 
-    // Flatten values to make sur mutation only contains field names as keys
+    // Flatten values to make sure mutation only contains field names as keys
     // and field values as values.
     let mutation = flatten({ ...values })
 

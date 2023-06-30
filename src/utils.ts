@@ -26,7 +26,7 @@ export function build<T> (
   // Do not check syntax errors if already done.
   if (!syntaxChecked) {
     // Check for extra space.
-    if (path.indexOf(' ') !== -1) {
+    if (path.indexOf(' .') !== -1 || path.indexOf('. ') !== -1) {
       throw new SyntaxError(`path "${path}" is not valid`)
     }
     // Check if key is not defined (ex: []).
@@ -132,18 +132,28 @@ export function clone<T> (object: T): T {
  * Returns a flat object.
  * @example { a: { test: 1 }, b: 2 } => { "a.test": 1, b: 2 }
  * @param object
+ * @param isRoot
  */
-export function flatten (object: object): Record<string, unknown> {
+export function flatten (object: Record<string, any>, isRoot = true): Record<string, unknown> {
   const result: Record<string, unknown> = {}
 
   Object.entries(object).forEach(([key, value]) => {
-    if (value != null && typeof value === 'object' && !(value instanceof Array)) {
-      const branches = flatten(value)
-      Object.entries(branches).forEach(([k, v]) => {
-        result[`${key}.${k}`] = v
-      })
+    if (!isRoot && (key.indexOf(' ') !== -1 || key.indexOf('.') !== -1)) {
+      result[`[${key}]`] = value
     } else {
       result[key] = value
+    }
+    if (value != null && typeof value === 'object' && !(value instanceof Array)) {
+      const branches = flatten(value, false)
+      Object.entries(branches).forEach(([k, v]) => {
+        if (!isRoot && (key.indexOf(' ') !== -1 || key.indexOf('.') !== -1)) {
+          result[`[${key}].${k}`] = v
+        } else if (k.indexOf('[') === 0) {
+          result[`${key}${k}`] = v
+        } else {
+          result[`${key}.${k}`] = v
+        }
+      })
     }
   })
   return result
@@ -332,7 +342,7 @@ export function resolve<T> (
   // Do not check syntax errors if already done.
   if (!syntaxChecked) {
     // Check for extra space.
-    if (path.indexOf(' ') !== -1) {
+    if (path.indexOf('. ') !== -1 || path.indexOf(' .') !== -1) {
       throw new SyntaxError(`path "${path}" is not valid`)
     }
     // Check if key is not defined (ex: []).
@@ -360,10 +370,15 @@ export function resolve<T> (
   // Resolve dot "." path.
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
     if (typeof context !== 'object' || (context instanceof Array)) {
-      throw new Error(`path ${path} is not valid for the given context`)
+      throw new SyntaxError(`path ${path} is not valid for the given context`)
     }
     // ex: "object.field" => field: "object", path: "field"
     const field = path.substring(0, dotIndex)
+
+    // Check for extra space.
+    if (field.indexOf(' ') !== -1) {
+      throw new SyntaxError(`path "${path}" is not valid`)
+    }
     return resolve(path.substring(dotIndex + 1), context[field], true)
   }
 
@@ -386,6 +401,9 @@ export function resolve<T> (
     }
     // ex: "array[0].field" => field: "array", subPath: "[0].field"
     const field = path.substring(0, bracketIndex)
+    if (field.indexOf(' ') !== -1) {
+      throw new SyntaxError(`path "${path}" is not valid`)
+    }
     return resolve(path.substring(bracketIndex), context[field], true)
   }
 

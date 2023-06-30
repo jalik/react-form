@@ -26,22 +26,30 @@ describe('resolve(path, context)', () => {
   }
 
   describe('with invalid path', () => {
-    it('should throw an error', () => {
+    it('should throw a SyntaxError', () => {
+      expect(() => {
+        resolve('object .field', { object: { field: null } })
+      }).toThrow(SyntaxError)
+
+      expect(() => {
+        resolve('object. field', { object: { field: null } })
+      }).toThrow(SyntaxError)
+
       expect(() => {
         resolve('object.field', '')
-      }).toThrow()
+      }).toThrow(SyntaxError)
 
       expect(() => {
         resolve('object.field', 1337)
-      }).toThrow()
+      }).toThrow(SyntaxError)
 
       expect(() => {
         resolve('object.field', false)
-      }).toThrow()
+      }).toThrow(SyntaxError)
 
       expect(() => {
         resolve('object.field', [])
-      }).toThrow()
+      }).toThrow(SyntaxError)
     })
   })
 
@@ -114,16 +122,16 @@ describe('resolve(path, context)', () => {
   })
 
   describe('resolve("array[ 0]", context)', () => {
-    it('should throw a SyntaxError', () => {
+    it('should not throw a SyntaxError', () => {
       expect(() => resolve('array[ 0]', context))
-        .toThrow(SyntaxError)
+        .not.toThrow(SyntaxError)
     })
   })
 
   describe('resolve("array[0 ]", context)', () => {
-    it('should throw a SyntaxError', () => {
+    it('should not throw a SyntaxError', () => {
       expect(() => resolve('array[0 ]', context))
-        .toThrow(SyntaxError)
+        .not.toThrow(SyntaxError)
     })
   })
 

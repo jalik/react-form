@@ -19,6 +19,10 @@ describe('build(path, value, context)', () => {
       }).toThrow()
 
       expect(() => {
+        build('my .test', true, context)
+      }).toThrow()
+
+      expect(() => {
         build('my.', true, context)
       }).toThrow()
 
@@ -29,6 +33,21 @@ describe('build(path, value, context)', () => {
       expect(() => {
         build('list[0', 3, context)
       }).toThrow()
+    })
+  })
+
+  describe('with path containing space', () => {
+    it('should not throw an error', () => {
+      const context = { my: { 'test 1': null } }
+      expect(() => {
+        build('my[test 1]', true, context)
+      }).not.toThrow()
+    })
+
+    it('should set value', () => {
+      const context = { my: { 'test 1': null } }
+      const result = build('my[test 1]', true, context)
+      expect(result).toStrictEqual({ my: { 'test 1': true } })
     })
   })
 
