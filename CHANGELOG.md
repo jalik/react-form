@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.1.2 (2023-07-02)
+
+- Added `getFieldValue()` to `useForm()`
+- Do not set form `validated` when validation starts
+- Fixed form `hasError` not being false in some cases
+- Fixed `validateFields()` to not dispatch fail state when validation succeeds
+- Fixed cases where field name resolution was not working
+- Fixed update of previously defined values not being removed with `setValues()`
+
 ## 5.1.1 (2023-06-28)
 
 - Fixed `useFieldArray()` not triggering rendering when array is modified
