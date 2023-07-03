@@ -456,7 +456,7 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         errors,
-        hasError: hasDefinedValues(data.errors)
+        hasError: hasDefinedValues(errors)
       }
       break
     }
