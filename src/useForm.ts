@@ -37,12 +37,9 @@ import {
   build,
   clone,
   flatten,
-  getCheckedValues,
   getFieldId,
-  getSelectedValues,
+  getFieldValue,
   hasDefinedValues,
-  isMultipleFieldElement,
-  parseInputValue,
   resolve
 } from './utils'
 
@@ -816,48 +813,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     event: React.ChangeEvent<FieldElement>,
     opts?: { parser? (value: unknown, target?: HTMLElement): any }
   ): void => {
-    const { parser } = opts || {}
     const { currentTarget } = event
-    const {
-      name,
-      type
-    } = currentTarget
-    let value
-
-    // Parses value using a custom parser or using the native parser (smart typing).
-    const parsedValue = typeof parser === 'function'
-      ? parser(currentTarget.value, currentTarget)
-      : parseInputValue(currentTarget)
-
-    const el = currentTarget.form?.elements.namedItem(name)
-
-    // Handles array value (checkboxes, select-multiple).
-    if (el && isMultipleFieldElement(el)) {
-      if (currentTarget instanceof HTMLInputElement) {
-        value = getCheckedValues(currentTarget)
-      } else if (currentTarget instanceof HTMLSelectElement) {
-        value = getSelectedValues(currentTarget)
-      }
-
-      if (value) {
-        // Parse all checked/selected values.
-        value = value.map((v) => typeof parser === 'function' ? parser(v) : v)
-      }
-    } else if (currentTarget instanceof HTMLInputElement && type === 'checkbox') {
-      if (currentTarget.value === '') {
-        // Checkbox has no value defined, so we use the checked state instead.
-        value = currentTarget.checked
-      } else if (typeof parsedValue === 'boolean') {
-        // Checkbox has a boolean value.
-        value = currentTarget.checked ? parsedValue : !parsedValue
-      } else {
-        // Checkbox value other than boolean.
-        value = currentTarget.checked ? parsedValue : undefined
-      }
-    } else {
-      value = parsedValue
-    }
-
+    const { name } = currentTarget
+    const value = getFieldValue(currentTarget, opts)
     setValue(name, value)
   }, [setValue])
 

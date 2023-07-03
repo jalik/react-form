@@ -4,6 +4,7 @@
  */
 
 import deepExtend from '@jalik/deep-extend'
+import { FieldElement } from './useForm'
 
 /**
  * Returns the copy of an object built from the path with the assigned value.
@@ -160,13 +161,6 @@ export function flatten (object: Record<string, any>, isRoot = true): Record<str
 }
 
 /**
- * Returns the field ID using name and value.
- */
-export function getFieldId (name: string, value: unknown): string {
-  return `field_${name}_${String(value)}`.replace(/[^a-zA-Z0-9_-]+/g, '_')
-}
-
-/**
  * Returns checked values from an input element.
  */
 export function getCheckedValues (element: HTMLInputElement): string[] {
@@ -182,6 +176,60 @@ export function getCheckedValues (element: HTMLInputElement): string[] {
     }
   }
   return values
+}
+
+/**
+ * Returns the field ID using name and value.
+ */
+export function getFieldId (name: string, value: unknown): string {
+  return `field_${name}_${String(value)}`.replace(/[^a-zA-Z0-9_-]+/g, '_')
+}
+
+/**
+ * Returns parsed field value.
+ * @param field
+ * @param options
+ */
+export function getFieldValue (field: FieldElement, options?: {
+  parser?: (value: string, target?: HTMLElement) => any
+}) {
+  const { parser } = options || {}
+  let value
+
+  // Parses value using a custom parser or using the native parser (smart typing).
+  const parsedValue = typeof parser === 'function'
+    ? parser(field.value, field)
+    : parseInputValue(field)
+
+  const el = field.form?.elements.namedItem(field.name)
+
+  // Handles array value (checkboxes, select-multiple).
+  if (el && isMultipleFieldElement(el)) {
+    if (field instanceof HTMLInputElement) {
+      value = getCheckedValues(field)
+    } else if (field instanceof HTMLSelectElement) {
+      value = getSelectedValues(field)
+    }
+
+    if (value) {
+      // Parse all checked/selected values.
+      value = value.map((v) => typeof parser === 'function' ? parser(v, field) : v)
+    }
+  } else if (field instanceof HTMLInputElement && field.type === 'checkbox') {
+    if (field.value === '') {
+      // Checkbox has no value defined, so we use the checked state instead.
+      value = field.checked
+    } else if (typeof parsedValue === 'boolean') {
+      // Checkbox has a boolean value.
+      value = field.checked ? parsedValue : !parsedValue
+    } else {
+      // Checkbox value other than boolean.
+      value = field.checked ? parsedValue : undefined
+    }
+  } else {
+    value = parsedValue
+  }
+  return value
 }
 
 /**
