@@ -576,7 +576,6 @@ function useFormReducer<V extends Values, E, R> (
         // todo keep track of validating fields
         disabled: data?.fields ? state.disabled : true,
         needValidation: false,
-        validated: data?.fields ? state.validated : false,
         validating: data?.fields ? state.validating : true
       }
       break
@@ -606,6 +605,7 @@ function useFormReducer<V extends Values, E, R> (
         disabled: false,
         errors,
         hasError: hasDefinedValues(errors),
+        validated: false,
         validating: false
       }
       break

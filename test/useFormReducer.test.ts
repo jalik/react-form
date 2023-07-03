@@ -990,6 +990,7 @@ describe('useFormReducer(state, action)', () => {
         disabled: false,
         errors,
         hasError: hasDefinedValues(action.data.errors),
+        validated: false,
         validating: false
       })
     })
