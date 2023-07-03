@@ -968,7 +968,8 @@ describe('useFormReducer(state, action)', () => {
         errors: {
           username: new Error('Username already exists'),
           password: undefined
-        }
+        },
+        partial: false
       }
     }
 
@@ -997,7 +998,7 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_VALIDATE_SUCCESS}"`, () => {
     const action: FormAction = {
       type: ACTION_VALIDATE_SUCCESS,
-      data: { submitAfter: false }
+      data: { fields: [], submitAfter: false }
     }
 
     it('should set validate success', () => {

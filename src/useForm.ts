@@ -502,16 +502,24 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
             }
           }
         })
-        dispatch({
-          type: ACTION_VALIDATE_FAIL,
-          data: {
-            // Keep existing errors.
-            errors: {
-              ...state.errors,
-              ...errors
+
+        if (hasDefinedValues(errors)) {
+          dispatch({
+            type: ACTION_VALIDATE_FAIL,
+            data: {
+              errors: { ...errors },
+              partial: true
             }
-          }
-        })
+          })
+        } else {
+          dispatch({
+            type: ACTION_VALIDATE_SUCCESS,
+            data: {
+              fields,
+              submitAfter: false
+            }
+          })
+        }
         return errors
       })
       .catch((error) => {
@@ -723,13 +731,16 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         if (errors && hasDefinedValues(errors)) {
           dispatch({
             type: ACTION_VALIDATE_FAIL,
-            data: { errors }
+            data: { errors, partial: false }
           })
         } else {
           const { submitAfter = false } = opts || {}
           dispatch({
             type: ACTION_VALIDATE_SUCCESS,
-            data: { submitAfter }
+            data: {
+              fields: [],
+              submitAfter
+            }
           })
         }
         return errors

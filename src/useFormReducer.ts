@@ -188,8 +188,8 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'SUBMIT_SUCCESS', data: { result: R, clear: boolean } }
   | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
-  | { type: 'VALIDATE_FAIL', data: { errors: Errors<E> } }
-  | { type: 'VALIDATE_SUCCESS', data: { submitAfter: boolean } };
+  | { type: 'VALIDATE_FAIL', data: { errors: Errors<E>, partial: boolean } }
+  | { type: 'VALIDATE_SUCCESS', data: { fields: string[], submitAfter: boolean } };
 
 /**
  * Form reducers.
@@ -592,8 +592,8 @@ function useFormReducer<V extends Values, E, R> (
       break
 
     case ACTION_VALIDATE_FAIL: {
-      const errors: Errors<E> = {}
       const { data } = action
+      const errors: Errors<E> = data.partial ? { ...state.errors } : {}
 
       Object.keys(data.errors).forEach((name) => {
         // Ignore undefined/null errors
@@ -605,24 +605,36 @@ function useFormReducer<V extends Values, E, R> (
         ...state,
         disabled: false,
         errors,
-        hasError: hasDefinedValues(data.errors),
+        hasError: hasDefinedValues(errors),
         validating: false
       }
       break
     }
 
-    case ACTION_VALIDATE_SUCCESS:
+    case ACTION_VALIDATE_SUCCESS: {
+      const { data } = action
+      const isSpecific = data.fields.length > 0
+      const errors = isSpecific ? { ...state.errors } : {}
+
+      if (isSpecific) {
+        data.fields.forEach((name) => {
+          // Clear fields errors.
+          delete errors[name]
+        })
+      }
+      const hasError = hasDefinedValues(errors)
       nextState = {
         ...state,
         // Let form disabled if submission planned after validation
-        disabled: action.data.submitAfter,
-        errors: {},
-        hasError: false,
-        validated: true,
+        disabled: data.submitAfter,
+        errors,
+        hasError,
+        validated: !hasError,
         validating: false,
         validateError: undefined
       }
       break
+    }
 
     default:
       throw new Error('Invalid action type passed to useFormReducer()')
