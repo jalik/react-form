@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.2.0 (2024-01-04)
+
+- Allow passing a function using current state in `setValues((current) => next)`, like `useState()`
+- Fixed `form.touched` being `true` when calling `setTouchedFields()` with only falsy values
+- Upgraded dependencies
+
 ## 5.1.2 (2023-07-02)
 
 - Added `getFieldValue()` to `useForm()`
