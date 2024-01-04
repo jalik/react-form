@@ -534,6 +534,78 @@ describe('useForm()', () => {
     })
   })
 
+  describe('setTouchedField(field, touched)', () => {
+    it('should set a single touched field', () => {
+      const { result } = renderHook(() => {
+        return useForm({
+          initialValues: {
+            username: undefined,
+            password: undefined
+          },
+          onSubmit: () => Promise.resolve(true)
+        })
+      })
+
+      act(() => {
+        result.current.setTouchedField('username', true)
+      })
+
+      expect(result.current.touched).toBe(true)
+      expect(result.current.touchedFields.username).toBe(true)
+      expect(result.current.touchedFields.password).toBeFalsy()
+    })
+  })
+
+  describe('setTouchedFields(fields, options)', () => {
+    it('should set all touched fields', () => {
+      const { result } = renderHook(() => {
+        return useForm({
+          initialValues: {
+            username: undefined,
+            password: undefined
+          },
+          onSubmit: () => Promise.resolve(true)
+        })
+      })
+
+      act(() => {
+        result.current.setTouchedFields({
+          username: true,
+          password: true
+        })
+      })
+
+      expect(result.current.touched).toBe(true)
+      expect(result.current.touchedFields.username).toBe(true)
+      expect(result.current.touchedFields.password).toBe(true)
+    })
+
+    describe('with only falsy values', () => {
+      it('should not set form.touched to true', () => {
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues: {
+              username: undefined,
+              password: undefined
+            },
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+
+        act(() => {
+          result.current.setTouchedFields({
+            username: false,
+            password: false
+          })
+        })
+
+        expect(result.current.touched).toBe(false)
+        expect(result.current.touchedFields.username).toBeFalsy()
+        expect(result.current.touchedFields.password).toBeFalsy()
+      })
+    })
+  })
+
   describe('setValues(values, options)', () => {
     it('should replace all values', () => {
       const initialValues = { username: undefined }

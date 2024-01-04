@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import { build, clone, hasDefinedValues, resolve } from './utils'
@@ -560,10 +560,14 @@ function useFormReducer<V extends Values, E, R> (
         ? Object.entries(data.touchedFields).filter(([, v]) => v).map(([k]) => k)
         : state.needValidation
 
+      // Check if at least one field has been touched
+      const touched = Object.values({ ...state.touchedFields, ...data.touchedFields })
+        .find((v) => v) || false
+
       nextState = {
         ...state,
         needValidation,
-        touched: true,
+        touched,
         touchedFields
       }
       break
