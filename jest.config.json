@@ -2,5 +2,6 @@
   "roots": [
     "test"
   ],
+  "testRegex": "\\.test\\.tsx?$",
   "testEnvironment": "jsdom"
 }
