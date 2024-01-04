@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import React, { ElementType, useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
@@ -181,7 +181,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    * @param options
    */
   setValues (
-    values: Values | Partial<V>,
+    values: Values | Partial<V> | ((previous: V) => V),
     options?: { partial?: boolean, validate?: boolean }
   ): void;
   /**
@@ -367,10 +367,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       validateOnInit,
       validateOnSubmit,
       validateOnTouch
-    },
-    undefined
-  )
+    })
 
+  // Holds current state (used to stabilize setter functions).
+  const currentState = useRef<FormState<V, E, R>>(state)
+
+  // Check if form is disabled regarding various states.
   const formDisabled = useMemo(() => (
     disabled || state.disabled || state.loading || state.validating || state.submitting
   ), [disabled, state.disabled, state.loading, state.submitting, state.validating])
@@ -525,7 +527,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [getValue, state.errors, state.values])
+  }, [getValue, state.values])
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
 
@@ -546,7 +548,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Defines several field values (use setInitialValues() to set all form values).
    */
   const setValues = useCallback((
-    values: Values | Partial<V>,
+    values: Values | Partial<V> | ((previous: Partial<V>) => Partial<V>),
     opts?: {
       partial?: boolean,
       validate?: boolean
@@ -555,13 +557,19 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // Ignore action if form disabled
     if (formDisabled) return
 
+    const currentValues: Partial<V> = { ...currentState.current.values }
+
+    const nextValues: Partial<V> = typeof values === 'function'
+      ? { ...values(currentValues) }
+      : { ...values }
+
     // Flatten values to make sure mutation only contains field names as keys
     // and field values as values.
-    let mutation = flatten({ ...values })
+    let mutation = flatten(nextValues)
 
     if (transformRef.current) {
       // Merge changes with current values.
-      let nextValues = clone(state.values) || {}
+      let nextValues = currentValues ? clone(currentValues) : {}
       Object.entries(mutation)
         .forEach(([name, value]) => {
           nextValues = build(name, value, nextValues)
@@ -584,6 +592,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       })
     }
 
+    // Update current state before dispatching it.
+    let nextValuesState = opts?.partial ? currentValues : {}
+    Object.entries(mutation).forEach(([name, value]) => {
+      nextValuesState = build(name, value, currentValues)
+    })
+    currentState.current.values = nextValuesState
+
     dispatch({
       type: ACTION_SET_VALUES,
       data: {
@@ -592,7 +607,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         values: mutation
       }
     })
-  }, [formDisabled, nullify, state.values, validateOnChange])
+  }, [formDisabled, nullify, validateOnChange])
 
   /**
    * Defines the value of a field.
@@ -728,7 +743,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         if (errors && hasDefinedValues(errors)) {
           dispatch({
             type: ACTION_VALIDATE_FAIL,
-            data: { errors, partial: false }
+            data: {
+              errors,
+              partial: false
+            }
           })
         } else {
           const { submitAfter = false } = opts || {}
@@ -934,6 +952,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       mountedRef.current = false
     }
   }, [])
+
+  useEffect(() => {
+    currentState.current = state
+  }, [state])
 
   useEffect((): void => {
     initializeFieldRef.current = initializeFieldFunc

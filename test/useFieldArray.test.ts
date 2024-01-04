@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import { describe, expect, it } from '@jest/globals'
@@ -42,7 +42,7 @@ describe('useFieldArray()', () => {
         return useFieldArray({
           name: 'items',
           context: form.current,
-          defaultValue: { id: null }
+          defaultValue: {}
         })
       })
 
@@ -181,7 +181,7 @@ describe('useFieldArray()', () => {
         return useFieldArray({
           name: 'items',
           context: form.current,
-          defaultValue: { id: null }
+          defaultValue: {}
         })
       })
 
@@ -251,7 +251,7 @@ describe('useFieldArray()', () => {
         return useFieldArray({
           name: 'items',
           context: form.current,
-          defaultValue: { id: null }
+          defaultValue: {}
         })
       })
 

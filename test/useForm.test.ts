@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import { act, renderHook } from '@testing-library/react-hooks'
@@ -157,7 +157,8 @@ describe('useForm()', () => {
           await result.current.submit()
         })
 
-        expect(result.current.submitResult.username).toBe('test')
+        expect(result.current.submitResult).toBeDefined()
+        expect(result.current.submitResult?.username).toBe('test')
       })
     })
 
@@ -174,8 +175,9 @@ describe('useForm()', () => {
 
         await act(async () => {
           await result.current.submit()
+          expect(result.current.submitResult).toBeDefined()
+          expect(result.current.submitResult?.username).toBe(null)
         })
-        expect(result.current.submitResult.username).toBe(null)
       })
     })
 
@@ -370,30 +372,6 @@ describe('useForm()', () => {
       })
     })
   })
-
-  // todo test handleBlur()
-  // describe('handleBlur()', () => {
-  //   it('should set touched field', () => {
-  //     const initialValues = { username: undefined }
-  //     const { result } = renderHook(() => {
-  //       return useForm({
-  //         initialValues,
-  //         onSubmit: () => Promise.resolve(true)
-  //       })
-  //     })
-  //
-  //     act(() => {
-  //       const input = document.createElement('input')
-  //       input.name = 'username'
-  //       input.onblur = result.current.handleBlur
-  //       input.focus()
-  //       input.blur()
-  //     })
-  //
-  //     expect(result.current.touched).toBe(true)
-  //     expect(result.current.touchedFields.username).toBe(true)
-  //   })
-  // })
 
   describe('load()', () => {
     it('should trigger load()', async () => {
@@ -607,20 +585,71 @@ describe('useForm()', () => {
   })
 
   describe('setValues(values, options)', () => {
-    it('should replace all values', () => {
-      const initialValues = { username: undefined }
-      const { result } = renderHook(() => {
-        return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+    describe('with options.partial = false', () => {
+      it('should replace all values', () => {
+        const initialValues = { username: undefined }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
         })
-      })
 
-      act(() => {
-        result.current.setValues({ username: 'jalik' })
-      })
+        act(() => {
+          result.current.setValues({ username: 'jalik' })
+        })
 
-      expect(result.current.values.username).toBe('jalik')
+        expect(result.current.values.username).toBe('jalik')
+      })
+    })
+
+    describe('with options.partial = true', () => {
+      it('should replace given values only', () => {
+        const initialValues = {
+          username: 'jalik',
+          password: undefined
+        }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+
+        act(() => {
+          result.current.setValues({ password: 'secret' })
+        })
+
+        expect(result.current.values.password).toBe('secret')
+        expect(result.current.values.username).toBeUndefined()
+      })
+    })
+
+    describe('with state function (s) => newState', () => {
+      it('should be called with currentState', () => {
+        const initialValues = {
+          count: 0
+        }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+
+        act(() => {
+          result.current.setValues((s) => ({
+            ...s,
+            count: s.count + 1
+          }))
+          result.current.setValues((s) => ({
+            ...s,
+            count: s.count + 1
+          }))
+        })
+
+        expect(result.current.values.count).toBe(2)
+      })
     })
   })
 
