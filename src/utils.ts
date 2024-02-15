@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import deepExtend from '@jalik/deep-extend'
@@ -67,9 +67,9 @@ export function build<T> (
     const field: string = path.substring(0, dotIndex)
 
     // Create object if it does not exist.
-    if (typeof ctx === 'undefined') {
+    if (typeof ctx === 'undefined' || ctx == null) {
       ctx = { [field]: {} }
-    } else if (typeof ctx[field] === 'undefined') {
+    } else if (typeof ctx[field] === 'undefined' || ctx[field] == null) {
       ctx[field] = {}
     }
     ctx[field] = build(path.substring(dotIndex + 1), value, ctx[field])

@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.1 (2024-02-14)
+
+- Fixed setting the value of a field whose parent is null
+
 ## 5.2.0 (2024-01-04)
 
 - Allow passing a function using current state in `setValues((current) => next)`, like `useState()`
