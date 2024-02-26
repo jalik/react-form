@@ -16,7 +16,6 @@ If you feel concerned, then it's all for you :)
 
 ## Features
 
-- Compatible with TypeScript (type declarations)
 - Fields props initialization at form level (optional)
 - Management of fields state and updates (value and onChange)
 - Tracking of modified fields
@@ -37,15 +36,21 @@ If you feel concerned, then it's all for you :)
 - Reset form or fields
 - Handling form submission errors and retries
 - Compatible with custom components libraries
-
-## Installation
-
-Install this package with `npm install @jalik/react-form` or `yarn add @jalik/react-form`.
+- TypeScript declarations ♥
 
 ## Sandbox
 
 You can play with the lib
 here: https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/UserForm.js
+
+## Installing
+
+```shell
+npm i -P @jalik/react-form
+```
+```shell
+yarn add @jalik/react-form
+```
 
 ## Creating a form
 
