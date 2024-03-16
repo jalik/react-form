@@ -388,8 +388,7 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_RESET:
       if (state.validating) {
-        // eslint-disable-next-line no-console
-        console.warn('Cannot reset form during validation.')
+        // Ignore reset during validation.
         return state
       }
       nextState = {
@@ -407,8 +406,7 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_RESET_VALUES: {
       if (state.validating) {
-        // eslint-disable-next-line no-console
-        console.warn('Cannot reset form during validation.')
+        // Ignore reset during validation.
         return state
       }
       const errors = { ...state.errors }

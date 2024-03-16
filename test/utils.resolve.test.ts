@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import { describe, expect, it } from '@jest/globals'
@@ -74,7 +74,7 @@ describe('resolve(path, context)', () => {
   describe('resolve(null, context)', () => {
     it('should throw an error', () => {
       expect(() => resolve(
-        // @ts-ignore
+        // @ts-expect-error path must be a string
         null,
         context
       ))
@@ -85,7 +85,7 @@ describe('resolve(path, context)', () => {
   describe('resolve(undefined, context)', () => {
     it('should throw an error', () => {
       expect(() => resolve(
-        // @ts-ignore
+        // @ts-expect-error path must be a string
         undefined,
         context
       ))

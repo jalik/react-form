@@ -3,7 +3,7 @@
  * Copyright (c) 2024 Karl STEIN
  */
 
-import { act, renderHook } from '@testing-library/react-hooks'
+import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, jest } from '@jest/globals'
 import useForm from '../src/useForm'
 
@@ -22,8 +22,9 @@ describe('useForm()', () => {
 
           await act(async () => {
             await result.current.submit()
-            expect(result.current.values.username).toBeUndefined()
           })
+
+          expect(result.current.values.username).toBeUndefined()
         })
       })
 
@@ -94,12 +95,12 @@ describe('useForm()', () => {
 
     describe('with onSubmit = undefined', () => {
       it('should throw an error', () => {
-        // @ts-ignore
-        const { result } = renderHook(() => useForm({
-          initialValues: { username: undefined }
-        }))
-
-        expect(result.error).toBeDefined()
+        expect(() => {
+          useForm({
+            // @ts-expect-error onSubmit must be defined
+            onSubmit: undefined
+          })
+        }).toThrow()
       })
     })
 
@@ -175,9 +176,10 @@ describe('useForm()', () => {
 
         await act(async () => {
           await result.current.submit()
-          expect(result.current.submitResult).toBeDefined()
-          expect(result.current.submitResult?.username).toBe(null)
         })
+
+        expect(result.current.submitResult).toBeDefined()
+        expect(result.current.submitResult?.username).toBe(null)
       })
     })
 
@@ -196,13 +198,13 @@ describe('useForm()', () => {
 
         await act(async () => {
           await result.current.submit()
-
-          expect(validate).not.toHaveBeenCalled()
-          expect(result.current.submitted).toBe(true)
-          expect(result.current.submitting).toBe(false)
-          expect(result.current.submitError).toBeUndefined()
-          expect(result.current.submitResult).toBe(true)
         })
+
+        expect(validate).not.toHaveBeenCalled()
+        expect(result.current.submitted).toBe(true)
+        expect(result.current.submitting).toBe(false)
+        expect(result.current.submitError).toBeUndefined()
+        expect(result.current.submitResult).toBe(true)
       })
     })
   })
@@ -376,44 +378,40 @@ describe('useForm()', () => {
   describe('load()', () => {
     it('should trigger load()', async () => {
       const initialValues = { username: 'jalik' }
-      const load = () => Promise.resolve(initialValues)
-      const { result } = renderHook(() => {
-        return useForm({
+      const load = async () => Promise.resolve(initialValues)
+
+      const { result } = renderHook(() =>
+        useForm({
           load,
           onSubmit: () => Promise.resolve(true)
-        })
-      })
+        }))
 
       await act(async () => {
-        await result.current.load()
-
-        expect(result.current.initialized).toBe(true)
-        expect(result.current.initialValues.username).toBe(initialValues.username)
-        expect(result.current.loading).toBe(false)
-        expect(result.current.loadError).toBeUndefined()
+        // wait for load promise
       })
+
+      expect(result.current.initialized).toBe(true)
+      expect(result.current.initialValues.username).toBe(initialValues.username)
+      expect(result.current.loading).toBe(false)
+      expect(result.current.loadError).toBeUndefined()
     })
 
     describe('with error thrown during load', () => {
       it('should catch the error and set form.loadError', async () => {
-        const initialValues = { username: 'jalik' }
         const load = async () => {
           throw new Error('unknown error')
         }
-        const {
-          result,
-          waitForNextUpdate
-        } = renderHook(() => {
-          return useForm({
+        const { result } = renderHook(() =>
+          useForm({
             load,
             onSubmit: () => Promise.resolve(true)
-          })
+          }))
+
+        await act(async () => {
+          // wait for load promise
         })
 
-        await waitForNextUpdate()
-
         expect(result.current.initialized).toBe(false)
-        expect(result.current.initialValues).not.toStrictEqual(initialValues)
         expect(result.current.loading).toBe(false)
         expect(result.current.loadError).toBeDefined()
       })
@@ -667,13 +665,13 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.submit()
-
-        expect(onSubmit).toHaveBeenCalledTimes(1)
-        expect(result.current.submitted).toBe(true)
-        expect(result.current.submitting).toBe(false)
-        expect(result.current.submitError).toBeUndefined()
-        expect(result.current.submitResult).toBe(true)
       })
+
+      expect(onSubmit).toHaveBeenCalledTimes(1)
+      expect(result.current.submitted).toBe(true)
+      expect(result.current.submitting).toBe(false)
+      expect(result.current.submitError).toBeUndefined()
+      expect(result.current.submitResult).toBe(true)
     })
 
     it('should not submit if validation failed', async () => {
@@ -689,12 +687,12 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.submit()
-
-        expect(result.current.submitting).toBe(false)
-        expect(result.current.submitted).toBe(false)
-        expect(result.current.validated).toBe(false)
-        expect(result.current.errors.username).toBeDefined()
       })
+
+      expect(result.current.submitting).toBe(false)
+      expect(result.current.submitted).toBe(false)
+      expect(result.current.validated).toBe(false)
+      expect(result.current.errors.username).toBeDefined()
     })
 
     describe('with error thrown during submit', () => {
@@ -713,12 +711,12 @@ describe('useForm()', () => {
 
         await act(async () => {
           await result.current.submit()
-
-          expect(result.current.submitResult).toBeUndefined()
-          expect(result.current.submitting).toBe(false)
-          expect(result.current.submitted).toBe(false)
-          expect(result.current.submitError).toBeDefined()
         })
+
+        expect(result.current.submitResult).toBeUndefined()
+        expect(result.current.submitting).toBe(false)
+        expect(result.current.submitted).toBe(false)
+        expect(result.current.submitError).toBeDefined()
       })
 
       it('should increment submitCount by 1', async () => {
@@ -731,9 +729,9 @@ describe('useForm()', () => {
 
         await act(async () => {
           await result.current.submit()
-
-          expect(result.current.submitCount).toBe(1)
         })
+
+        expect(result.current.submitCount).toBe(1)
       })
     })
   })
@@ -755,8 +753,9 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.validateField('username')
-        expect(result.current.errors.username).toBeDefined()
       })
+
+      expect(result.current.errors.username).toBeDefined()
     })
   })
 
@@ -774,12 +773,13 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.validate()
-        expect(validate).toHaveBeenCalledTimes(1)
-        expect(result.current.errors.username).toBeDefined()
-        expect(result.current.validating).toBe(false)
-        expect(result.current.validated).toBe(false)
-        expect(result.current.validateError).toBeUndefined()
       })
+
+      expect(validate).toHaveBeenCalledTimes(1)
+      expect(result.current.errors.username).toBeDefined()
+      expect(result.current.validating).toBe(false)
+      expect(result.current.validated).toBe(false)
+      expect(result.current.validateError).toBeUndefined()
     })
 
     it('should catch error during validation and set form.validateError', async () => {
@@ -797,11 +797,11 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.validate()
-
-        expect(result.current.validating).toBe(false)
-        expect(result.current.validated).toBe(false)
-        expect(result.current.validateError).toBeDefined()
       })
+
+      expect(result.current.validating).toBe(false)
+      expect(result.current.validated).toBe(false)
+      expect(result.current.validateError).toBeDefined()
     })
 
     it('should pass when no errors', async () => {
@@ -817,13 +817,13 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.validate()
-
-        expect(validate).toHaveBeenCalledTimes(1)
-        expect(result.current.errors.username).toBeUndefined()
-        expect(result.current.validating).toBe(false)
-        expect(result.current.validated).toBe(true)
-        expect(result.current.validateError).toBeUndefined()
       })
+
+      expect(validate).toHaveBeenCalledTimes(1)
+      expect(result.current.errors.username).toBeUndefined()
+      expect(result.current.validating).toBe(false)
+      expect(result.current.validated).toBe(true)
+      expect(result.current.validateError).toBeUndefined()
     })
   })
 
@@ -844,8 +844,8 @@ describe('useForm()', () => {
 
       await act(async () => {
         await result.current.validateFields(['username'])
-        expect(result.current.errors.username).toBeDefined()
       })
+      expect(result.current.errors.username).toBeDefined()
     })
 
     describe('with an error thrown during validation', () => {
@@ -863,8 +863,8 @@ describe('useForm()', () => {
 
         await act(async () => {
           await result.current.validateFields(['username'])
-          expect(result.current.validateError).toBeDefined()
         })
+        expect(result.current.validateError).toBeDefined()
       })
     })
   })

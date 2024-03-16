@@ -4,9 +4,9 @@
  */
 
 import { describe, expect, it } from '@jest/globals'
-import { act, renderHook } from '@testing-library/react-hooks'
 import useForm from '../src/useForm'
 import useFieldArray from '../src/useFieldArray'
+import { act, renderHook } from '@testing-library/react'
 
 describe('useFieldArray()', () => {
   it('should synchronize fields when value changes', () => {

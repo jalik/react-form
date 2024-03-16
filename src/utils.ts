@@ -263,7 +263,7 @@ export function inputValue<T> (value?: T): string | T {
   return value == null ? '' : value
 }
 
-export function isMultipleFieldElement (element: RadioNodeList | Element): boolean {
+export function isMultipleFieldElement (element: unknown): boolean {
   let count = 0
   const inputTypes = ['checkbox', 'file']
 

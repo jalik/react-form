@@ -3,7 +3,7 @@
  * Copyright (c) 2024 Karl STEIN
  */
 
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { SyntheticEvent, useCallback, useEffect, useMemo, useRef } from 'react'
 import { UseFormHook } from './useForm'
 import useFormContext from './useFormContext'
 import { Values } from './useFormReducer'
@@ -152,7 +152,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   /**
    * Handles event that appends a value.
    */
-  const handleAppend = useCallback((event: React.SyntheticEvent): void => {
+  const handleAppend = useCallback((event: SyntheticEvent | Event): void => {
     event.preventDefault()
     append(typeof defaultValue === 'function' ? defaultValue() : defaultValue)
   }, [append, defaultValue])
@@ -160,7 +160,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   /**
    * Handles event that prepends a value.
    */
-  const handlePrepend = useCallback((event: React.SyntheticEvent): void => {
+  const handlePrepend = useCallback((event: React.SyntheticEvent | Event): void => {
     event.preventDefault()
     prepend(typeof defaultValue === 'function' ? defaultValue() : defaultValue)
   }, [prepend, defaultValue])
@@ -168,7 +168,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   /**
    * Handles event that removes a value at a given index.
    */
-  const handleRemove = useCallback((index: number) => (event: React.SyntheticEvent): void => {
+  const handleRemove = useCallback((index: number) => (event: React.SyntheticEvent | Event): void => {
     event.preventDefault()
     remove(index)
   }, [remove])

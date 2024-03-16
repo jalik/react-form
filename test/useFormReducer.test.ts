@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import { describe, expect, it } from '@jest/globals'
@@ -27,6 +27,7 @@ import useFormReducer, {
   ACTION_VALIDATE_SUCCESS,
   Errors,
   FormAction,
+  FormState,
   initialState,
   TouchedFields
 } from '../src/useFormReducer'
@@ -40,12 +41,12 @@ const hookOptions = {
   validateOnTouch: true
 }
 
-const stateWithoutInitialValues = {
+const stateWithoutInitialValues: FormState = {
   ...initialState,
   ...hookOptions
 }
 
-const stateWithInitialValues = {
+const stateWithInitialValues: FormState = {
   ...stateWithoutInitialValues,
   initialized: true,
   initialValues: {
@@ -58,7 +59,7 @@ const stateWithInitialValues = {
   }
 }
 
-const stateWithInitialValuesAndModifiedFields = {
+const stateWithInitialValuesAndModifiedFields: FormState = {
   ...stateWithInitialValues,
   modified: true,
   modifiedFields: {
@@ -76,7 +77,7 @@ const stateWithInitialValuesAndModifiedFields = {
   }
 }
 
-const stateWithInitialValuesAndErrors = {
+const stateWithInitialValuesAndErrors: FormState = {
   ...stateWithInitialValuesAndModifiedFields,
   errors: {
     username: new Error('invalid username'),
@@ -85,17 +86,17 @@ const stateWithInitialValuesAndErrors = {
   hasError: true
 }
 
-const stateValidated = {
+const stateValidated: FormState = {
   ...stateWithInitialValuesAndModifiedFields,
   validated: true
 }
 
-const stateSubmitted = {
+const stateSubmitted: FormState = {
   ...stateValidated,
   submitted: true
 }
 
-const stateValidatedWithSubmitError = {
+const stateValidatedWithSubmitError: FormState = {
   ...stateValidated,
   submitError: new Error('Network error'),
   submitCount: 2
@@ -132,16 +133,14 @@ describe('useFormReducer(state, action)', () => {
       }
 
       it('should clear selected fields values', () => {
-        const state =
-          stateWithInitialValuesAndErrors
-        const newState = useFormReducer(state, action)
+        const state = stateWithInitialValuesAndErrors
         const errors = { ...state.errors }
         const modifiedFields = { ...state.modifiedFields }
         const touchedFields = { ...state.touchedFields }
         let initialValues = clone(state.initialValues)
         let values = clone(state.values)
 
-        action.data.fields.forEach((name: string) => {
+        action.data?.fields?.forEach((name) => {
           delete errors[name]
           delete modifiedFields[name]
           delete touchedFields[name]
@@ -149,6 +148,7 @@ describe('useFormReducer(state, action)', () => {
           values = build(name, undefined, values)
         })
 
+        const newState = useFormReducer(state, action)
         expect(newState).toStrictEqual({
           ...state,
           errors,
@@ -198,7 +198,7 @@ describe('useFormReducer(state, action)', () => {
         const state = stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
         const errors = { ...state.errors }
-        action.data.fields.forEach((name: string) => {
+        action.data?.fields?.forEach((name: string) => {
           delete errors[name]
         })
         expect(newState).toStrictEqual({
@@ -237,7 +237,7 @@ describe('useFormReducer(state, action)', () => {
         const state = stateWithInitialValuesAndErrors
         const newState = useFormReducer(state, action)
         const touchedFields = { ...state.touchedFields }
-        action.data.fields.forEach((name) => {
+        action.data?.fields?.forEach((name) => {
           delete touchedFields[name]
         })
         expect(newState).toStrictEqual({
@@ -476,7 +476,7 @@ describe('useFormReducer(state, action)', () => {
           }
         }
         const newState = useFormReducer(state, action)
-        const errors = {}
+        const errors: Errors = {}
         Object.entries(action.data.errors).forEach(([field, error]) => {
           if (error) {
             errors[field] = error
@@ -999,7 +999,10 @@ describe('useFormReducer(state, action)', () => {
   describe(`with action "${ACTION_VALIDATE_SUCCESS}"`, () => {
     const action: FormAction = {
       type: ACTION_VALIDATE_SUCCESS,
-      data: { fields: [], submitAfter: false }
+      data: {
+        fields: [],
+        submitAfter: false
+      }
     }
 
     it('should set validate success', () => {
@@ -1021,7 +1024,7 @@ describe('useFormReducer(state, action)', () => {
 
   describe('with invalid action', () => {
     const action: FormAction = {
-      // @ts-ignore
+      // @ts-expect-error type must be valid
       type: 'INVALID'
     }
 
