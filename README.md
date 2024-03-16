@@ -100,48 +100,8 @@ function SignInForm () {
 
 There are several ways to load a form:
 
-* Loading values in the parent component then passing them to the form component ;
-* Loading values inside the form component ;
-* Loading values using the `load` option in `useForm()` ;
-
-### Loading values in the parent component then passing them to the form component
-
-```tsx
-import { Field, Form, useForm } from '@jalik/react-form'
-import { useParams } from 'react-router'
-import { useState } from 'react'
-
-function UserForm (props) {
-  const { initialValues } = props
-
-  const form = useForm({
-    // initialValues must be null (or omitted) at first,
-    // so the form will understand that it will be initialized later.
-    initialValues,
-    // This option sets initialValues when it changes.
-    // IMPORTANT: when enabled, make sure to memoize initialValues to avoid infinite rendering.
-    reinitialize: true,
-    onSubmit: (values) => Promise.resolve({ saved: true })
-  })
-
-  return (
-    <Form context={form}>
-      <Field name="firstName" />
-      <Field name="lastName" />
-      <Button type="submit">Save</Button>
-    </Form>
-  )
-}
-
-function UserFormPage () {
-  const params = useParams()
-  const [user, setUser] = useState(null)
-
-  // Load user and call setUser(user)...
-
-  return <UserForm initialValues={user} />
-}
-```
+* Loading values inside or outside the form component ;
+* Loading values using the `load` option of `useForm()` ;
 
 ### Loading values inside the form component
 

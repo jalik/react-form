@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.2 (2024-03-15)
+
+- Fixed type attribute not being passed when custom component is used
+
 ## 5.2.1 (2024-02-14)
 
 - Fixed setting the value of a field whose parent is null
