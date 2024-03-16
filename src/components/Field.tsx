@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import React, {
@@ -66,7 +66,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
 function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): JSX.Element {
   const {
     children,
-    component: Component = 'input',
+    component: Component,
     disabled,
     emptyOptionLabel,
     formatter,
@@ -125,18 +125,11 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): JS
       parsedValue: parser && typeof value === 'string' ? parser(value) : value
     })
 
-    // Do not pass type to custom component to avoid bugs.
-    // Example: passing type "password" to Mantine PasswordInput breaks the "show password" toggle.
-    if (Component != null) {
-      delete fieldProps.type
-    }
-
     // Allow formatting value.
     fieldProps.value = inputValue(formatValue(fieldProps.value))
 
     return fieldProps
-  }, [Component, disabled, formatValue, getFieldProps, handleFieldChange, id, multiple, name,
-    onBlur, onChange, others, parser, required, type, value])
+  }, [disabled, formatValue, getFieldProps, handleFieldChange, id, multiple, name, onBlur, onChange, others, parser, required, type, value])
 
   const finalOptions: OptionHTMLAttributes<HTMLOptionElement>[] = useMemo(() => {
     const list: OptionHTMLAttributes<HTMLOptionElement>[] = options ? [...options] : []
