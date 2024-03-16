@@ -1,9 +1,9 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it } from '@jest/globals'
 import {
   getCheckedValues,
   getFieldId,
@@ -11,7 +11,6 @@ import {
   inputValue,
   isMultipleFieldElement,
   parseInputValue,
-  passArgs,
   randomKey
 } from '../src/utils'
 
@@ -257,27 +256,6 @@ describe('parseInputValue(input)', () => {
       const result = parseInputValue(textarea)
       expect(result).toBe(textarea.value)
       expect(typeof result).toBe('string')
-    })
-  })
-})
-
-describe('passArgs(func, ...args)', () => {
-  const calledArgs = []
-  const func = jest.fn((...args) => {
-    calledArgs.push(args)
-  })
-  const result = passArgs(func, { test: true })
-
-  it('should return a function', () => {
-    expect(typeof result).toBe('function')
-  })
-
-  describe('calling the returned function', () => {
-    it('should call the function original function with args as second param', () => {
-      result(null)
-      expect(func).toHaveBeenCalledTimes(1)
-      expect(calledArgs.length).toBe(1)
-      expect(calledArgs.pop()[1]?.test).toBe(true)
     })
   })
 })

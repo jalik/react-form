@@ -342,17 +342,6 @@ export function parseInputValue (input: HTMLElement): string | number | undefine
 }
 
 /**
- * Pass arguments to function when it is called.
- * @param func
- * @param args
- */
-export function passArgs<T> (func: (event: T, ...args: unknown[]) => void, ...args: unknown[]) {
-  return (event: T): void => {
-    func(event, ...args)
-  }
-}
-
-/**
  * Generates a random key.
  */
 export function randomKey (length = 16): string {

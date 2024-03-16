@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import Button from './components/Button'
@@ -13,7 +13,7 @@ import useFieldArray from './useFieldArray'
 import useForm from './useForm'
 import useFormContext from './useFormContext'
 
-import { getFieldId, getFieldValue, inputValue, passArgs } from './utils'
+import { getFieldId, getFieldValue, inputValue } from './utils'
 
 export {
   Button,
@@ -24,7 +24,6 @@ export {
   getFieldId,
   getFieldValue,
   inputValue,
-  passArgs,
   useFieldArray,
   useForm,
   useFormContext
