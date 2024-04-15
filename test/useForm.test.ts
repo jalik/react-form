@@ -269,6 +269,84 @@ describe('useForm()', () => {
     })
   })
 
+  describe('getButtonProps()', () => {
+    const initialValues = { username: '' }
+    const { result } = renderHook(() => {
+      return useForm({
+        disabled: false,
+        initialValues,
+        onSubmit: () => Promise.resolve(true)
+      })
+    })
+
+    describe('without custom props', () => {
+      it('should return default props', () => {
+        const props = result.current.getButtonProps()
+        expect(props).toBeDefined()
+        expect(props.disabled).toBe(false)
+        expect(typeof props.type).toBe('undefined')
+      })
+    })
+
+    describe('with custom props', () => {
+      it('should return custom props', () => {
+        const props = result.current.getButtonProps({
+          disabled: true,
+          type: 'submit'
+        })
+        expect(props).toBeDefined()
+        expect(props.disabled).toBe(true)
+        expect(props.type).toBe('submit')
+      })
+    })
+
+    describe('with { type: "submit" }', () => {
+      it('should return disabled = true when form.modified = false', () => {
+        const initialValues = { username: '' }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+        const props = result.current.getButtonProps({ type: 'submit' })
+        expect(props.disabled).toBe(true)
+      })
+    })
+
+    describe('with { type: "reset" }', () => {
+      it('should return disabled = true when form.modified = false', () => {
+        const initialValues = { username: '' }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+        const props = result.current.getButtonProps({ type: 'reset' })
+        expect(props.disabled).toBe(true)
+      })
+    })
+
+    describe('with form submitting', () => {
+      it('should return disabled = true', () => {
+        const initialValues = { username: '' }
+        const { result } = renderHook(() => {
+          return useForm({
+            initialValues,
+            onSubmit: () => Promise.resolve(true)
+          })
+        })
+        act(() => {
+          result.current.setValue('username', 'jalik')
+          result.current.submit()
+          const props = result.current.getButtonProps({ type: 'submit' })
+          expect(props.disabled).toBe(true)
+        })
+      })
+    })
+  })
+
   describe('getFieldProps(name)', () => {
     const initialValues = { username: 'jalik' }
     const { result } = renderHook(() => {

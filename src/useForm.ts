@@ -65,6 +65,11 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    */
   clearTouchedFields (fields?: string[]): void;
   /**
+   * Returns form button props.
+   * @param props
+   */
+  getButtonProps (props?: React.ComponentProps<'button'>): React.ComponentProps<'button'>;
+  /**
    * Returns field props by name.
    * @param name
    * @param props
@@ -800,6 +805,21 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     })
   }, [])
 
+  const handleButtonClick = useCallback((listener: (ev: React.MouseEvent<HTMLButtonElement>) => void) => (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const { currentTarget } = event
+
+    if (listener) {
+      listener(event)
+    } else if (currentTarget.type === 'submit') {
+      submit()
+    } else if (currentTarget.type === 'reset') {
+      reset()
+    }
+  }, [reset, submit])
+
   /**
    * Handles leaving of a field.
    */
@@ -864,6 +884,22 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     event.stopPropagation()
     validateAndSubmit()
   }, [validateAndSubmit])
+
+  /**
+   * Returns button props.
+   */
+  const getButtonProps = useCallback((props: React.ComponentProps<'button'>): React.ComponentProps<'button'> => {
+    const type = props?.type || 'button'
+    return {
+      ...props,
+      disabled: formDisabled || props?.disabled ||
+        // Disable submit or reset button if form is not modified.
+        (!state.modified && (type === 'submit' || type === 'reset')),
+      onClick: props?.onClick != null
+        ? handleButtonClick(props?.onClick)
+        : undefined
+    }
+  }, [formDisabled, handleButtonClick, state.modified])
 
   /**
    * Returns props of a field.
@@ -1002,6 +1038,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clear,
     clearErrors,
     clearTouchedFields,
+    getButtonProps,
     getFieldProps,
     getInitialValue,
     getValue,
@@ -1024,11 +1061,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validate: debouncedValidate,
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields
-  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getFieldProps, getInitialValue,
-    getValue, handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, setInitialValues,
-    load, removeFields, reset, setError, setErrors, setValue, setValues, debouncedValidateAndSubmit,
-    setTouchedField, setTouchedFields, debouncedValidate, debouncedValidateField,
-    debouncedValidateFields])
+  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps,
+    getFieldProps, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSetValue,
+    handleSubmit, setInitialValues, load, removeFields, reset, setError, setErrors, setValue,
+    setValues, debouncedValidateAndSubmit, setTouchedField, setTouchedFields, debouncedValidate,
+    debouncedValidateField, debouncedValidateFields])
 }
 
 export default useForm
