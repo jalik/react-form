@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import React, { ElementType } from 'react'
@@ -17,7 +17,7 @@ export type FieldErrorProps<C extends ElementType> = React.ComponentProps<C> & {
   name: string;
 }
 
-function FieldError<C extends ElementType = 'span'> (props: FieldErrorProps<C>): JSX.Element | null {
+function FieldError<C extends ElementType = 'span'> (props: FieldErrorProps<C>): React.ReactElement | null {
   const {
     component: Component = 'span',
     name,

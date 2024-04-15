@@ -63,7 +63,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
   value?: string | T;
 }
 
-function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): JSX.Element {
+function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): React.ReactElement {
   const {
     children,
     component: Component,

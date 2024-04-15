@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import React, { ElementType, useCallback, useMemo } from 'react'
@@ -17,7 +17,7 @@ export type ButtonProps<C extends ElementType> = React.ComponentProps<C> & {
   type?: 'button' | 'reset' | 'submit',
 }
 
-function Button<C extends ElementType = 'button'> (props: ButtonProps<C>): JSX.Element {
+function Button<C extends ElementType = 'button'> (props: ButtonProps<C>): React.ReactElement {
   const {
     children,
     component: Component = 'button',

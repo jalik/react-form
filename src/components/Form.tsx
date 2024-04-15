@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2024 Karl STEIN
  */
 
 import { UseFormHook } from '../useForm'
@@ -15,7 +15,7 @@ export type FormProps<V extends Values, E, R> = React.ComponentProps<'form'> & {
   context: UseFormHook<V, E, R>;
 }
 
-function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V, E, R>): JSX.Element {
+function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V, E, R>): React.ReactElement {
   const {
     children,
     context,
