@@ -11,26 +11,21 @@ import { randomKey, resolve } from './utils'
 
 export type ArrayItem<T> = {
   key: string | number;
+  name: string,
   value: T;
-}
-
-/**
- * Returns an array item with key and value.
- */
-function createItem<T> (value: T): ArrayItem<T> {
-  return {
-    key: randomKey(),
-    value
-  }
 }
 
 /**
  * Returns fields synchronized with original array.
  */
-function getFieldsFromArray<T> (array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[] {
+function getFieldsFromArray<T> (name: string, array: T[], fields: ArrayItem<T>[]): ArrayItem<T>[] {
   return array.map((value, index) => {
     if (typeof fields[index] === 'undefined') {
-      return createItem(value)
+      return {
+        key: randomKey(),
+        name: `${name}[${index}]`,
+        value
+      }
     }
     return {
       ...fields[index],
@@ -66,7 +61,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
 
   const fields = useMemo(() => {
     const value = getValue<T[]>(name, [])
-    return value ? getFieldsFromArray(value, fieldsRef.current) : []
+    return value ? getFieldsFromArray(name, value, fieldsRef.current) : []
   }, [getValue, name])
 
   /**
@@ -175,7 +170,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
 
   useEffect(() => {
     const value = getValue<T[]>(name, [])
-    fieldsRef.current = value ? getFieldsFromArray(value, fieldsRef.current) : []
+    fieldsRef.current = value ? getFieldsFromArray(name, value, fieldsRef.current) : []
   }, [getValue, name])
 
   return useMemo(() => ({

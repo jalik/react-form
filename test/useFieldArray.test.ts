@@ -8,9 +8,16 @@ import useForm from '../src/useForm'
 import useFieldArray from '../src/useFieldArray'
 import { act, renderHook } from '@testing-library/react'
 
+type Item = {
+  id: number
+}
+type ItemsForm = {
+  items: Item[]
+}
+
 describe('useFieldArray()', () => {
   it('should synchronize fields when value changes', () => {
-    const initialValues = {
+    const initialValues: ItemsForm = {
       items: [{ id: 1 }]
     }
     const { result: form } = renderHook(() => {
@@ -27,9 +34,34 @@ describe('useFieldArray()', () => {
     expect(form.current.values.items).toStrictEqual([{ id: 2 }])
   })
 
+  it('should return stable fields', () => {
+    const initialValues: ItemsForm = {
+      items: [{ id: 1 }, { id: 2 }]
+    }
+    const { result: form } = renderHook(() => {
+      return useForm({
+        initialValues,
+        onSubmit: () => Promise.resolve(true)
+      })
+    })
+    const { result: array } = renderHook(() => {
+      return useFieldArray<Partial<Item>, ItemsForm>({
+        name: 'items',
+        context: form.current,
+        defaultValue: {}
+      })
+    })
+
+    expect(array.current.fields).toBeInstanceOf(Array)
+    expect(array.current.fields.length).toBe(initialValues.items.length)
+    expect(typeof array.current.fields[0].key).toBe('string')
+    expect(array.current.fields[0].name).toBe('items[0]')
+    expect(array.current.fields[0].value).toStrictEqual(initialValues.items[0])
+  })
+
   describe('append(...values)', () => {
     it('should append defaultValue to array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: []
       }
       const { result: form } = renderHook(() => {
@@ -61,7 +93,7 @@ describe('useFieldArray()', () => {
 
   describe('handleAppend()', () => {
     it('should append values to array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: []
       }
       const { result: form } = renderHook(() => {
@@ -96,7 +128,7 @@ describe('useFieldArray()', () => {
 
   describe('handlePrepend()', () => {
     it('should prepend defaultValue to array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: []
       }
       const { result: form } = renderHook(() => {
@@ -131,7 +163,7 @@ describe('useFieldArray()', () => {
 
   describe('handleRemove()', () => {
     it('should remove value by index from array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: [
           { id: 1 },
           { id: 2 },
@@ -165,7 +197,7 @@ describe('useFieldArray()', () => {
 
   describe('insert(index, ...values)', () => {
     it('should insert values at an index in the array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: [
           { id: 1 },
           { id: 2 }
@@ -202,7 +234,7 @@ describe('useFieldArray()', () => {
 
   describe('move(from, to)', () => {
     it('should move value from an index to another', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: [
           { id: 1 },
           { id: 2 },
@@ -238,7 +270,7 @@ describe('useFieldArray()', () => {
 
   describe('prepend(...values)', () => {
     it('should prepend values to array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: []
       }
       const { result: form } = renderHook(() => {
@@ -270,7 +302,7 @@ describe('useFieldArray()', () => {
 
   describe('remove(...indexes)', () => {
     it('should remove values at indexes in the array', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: [
           { id: 1 },
           { id: 2 },
@@ -305,7 +337,7 @@ describe('useFieldArray()', () => {
 
   describe('swap(from, to)', () => {
     it('should swap values from an index to another', () => {
-      const initialValues = {
+      const initialValues: ItemsForm = {
         items: [
           { id: 1 },
           { id: 2 },
