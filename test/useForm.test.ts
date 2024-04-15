@@ -387,6 +387,26 @@ describe('useForm()', () => {
     })
   })
 
+  describe('getFormProps()', () => {
+    const initialValues = { username: '' }
+    const { result } = renderHook(() => {
+      return useForm({
+        initialValues,
+        onSubmit: () => Promise.resolve(true)
+      })
+    })
+
+    describe('without custom props', () => {
+      it('should return default props', () => {
+        const props = result.current.getFormProps()
+        expect(props).toBeDefined()
+        expect(props.method).toBe('post')
+        expect(typeof props.onSubmit).toBe('function')
+        expect(typeof props.onReset).toBe('function')
+      })
+    })
+  })
+
   describe('getInitialValue(name)', () => {
     it('should return initial value', () => {
       const initialValues = { username: 'jalik' }

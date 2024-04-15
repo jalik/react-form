@@ -22,19 +22,11 @@ function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V
     ...others
   } = props
 
-  const {
-    handleReset,
-    handleSubmit
-  } = context
+  const { getFormProps } = context
 
   return (
     <FormContext.Provider value={context}>
-      <form
-        method="post"
-        {...others}
-        onReset={handleReset}
-        onSubmit={handleSubmit}
-      >
+      <form {...getFormProps(others)}>
         {children}
       </form>
     </FormContext.Provider>

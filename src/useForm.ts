@@ -79,6 +79,11 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
     props?: React.ComponentProps<Component>
   ): React.ComponentProps<Component>;
   /**
+   * Returns form props.
+   * @param props
+   */
+  getFormProps (props?: React.ComponentProps<'form'>): React.ComponentProps<'form'>;
+  /**
    * Returns field's initial value.
    * @param name
    */
@@ -981,6 +986,17 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     return finalProps
   }, [formDisabled, getValue, handleBlur, handleChange, state])
 
+  /**
+   * Returns form props.
+   */
+  const getFormProps = useCallback((props: React.ComponentProps<'form'>): React.ComponentProps<'form'> => {
+    return {
+      ...props,
+      onReset: handleReset,
+      onSubmit: handleSubmit
+    }
+  }, [handleReset, handleSubmit])
+
   // Keep track of mount state.
   useEffect(() => {
     mountedRef.current = true
@@ -1040,6 +1056,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clearTouchedFields,
     getButtonProps,
     getFieldProps,
+    getFormProps,
     getInitialValue,
     getValue,
     handleBlur,
@@ -1047,25 +1064,25 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     handleReset,
     handleSetValue,
     handleSubmit,
-    setInitialValues,
     load,
     removeFields,
     reset,
     setError,
     setErrors,
+    setInitialValues,
+    setTouchedField,
+    setTouchedFields,
     setValue,
     setValues,
     submit: debouncedValidateAndSubmit,
-    setTouchedField,
-    setTouchedFields,
     validate: debouncedValidate,
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields
   }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps,
-    getFieldProps, getInitialValue, getValue, handleBlur, handleChange, handleReset, handleSetValue,
-    handleSubmit, setInitialValues, load, removeFields, reset, setError, setErrors, setValue,
-    setValues, debouncedValidateAndSubmit, setTouchedField, setTouchedFields, debouncedValidate,
-    debouncedValidateField, debouncedValidateFields])
+    getFieldProps, getFormProps, getInitialValue, getValue, handleBlur, handleChange, handleReset,
+    handleSetValue, handleSubmit, setInitialValues, load, removeFields, reset, setError, setErrors,
+    setValue, setValues, debouncedValidateAndSubmit, setTouchedField, setTouchedFields,
+    debouncedValidate, debouncedValidateField, debouncedValidateFields])
 }
 
 export default useForm
