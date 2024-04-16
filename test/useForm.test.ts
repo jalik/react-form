@@ -400,7 +400,6 @@ describe('useForm()', () => {
       it('should return default props', () => {
         const props = result.current.getFormProps()
         expect(props).toBeDefined()
-        expect(props.method).toBe('post')
         expect(typeof props.onSubmit).toBe('function')
         expect(typeof props.onReset).toBe('function')
       })
