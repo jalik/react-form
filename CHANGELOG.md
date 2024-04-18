@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.3.0 (2024-04-17)
+
+- Added attribute `name` to fields returned by `useFieldArray()`
+- Added `getButtonProps()` to `useForm()`
+- Added `getFormProps()` to `useForm()`
+
 ## 5.2.2 (2024-03-15)
 
 - Fixed type attribute not being passed when custom component is used
