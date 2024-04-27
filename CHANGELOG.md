@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.3.1 (2024-04-26)
+
+- Fixed value not being read from target when using `handleChange()`
+- Fixed type of `errors[path]` to be `Error | undefined` instead of `Error | void | undefined` in `useForm()`
+
 ## 5.3.0 (2024-04-17)
 
 - Added attribute `name` to fields returned by `useFieldArray()`
