@@ -26,7 +26,7 @@ export const ACTION_VALIDATE_ERROR = 'VALIDATE_ERROR'
 export const ACTION_VALIDATE_FAIL = 'VALIDATE_FAIL'
 export const ACTION_VALIDATE_SUCCESS = 'VALIDATE_SUCCESS'
 
-export type Errors<E = Error> = Record<string, void | E | undefined>;
+export type Errors<E = Error> = Record<string, E | undefined>;
 export type ModifiedFields = Record<string, boolean>;
 export type TouchedFields = Record<string, boolean>;
 export type Values = Record<string, any>;

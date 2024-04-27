@@ -303,7 +303,7 @@ export interface UseFormOptions<V extends Values, E, R> {
     name: string,
     value: unknown,
     values: Partial<V>
-  ): Promise<void | E | undefined>;
+  ): Promise<E | undefined>;
   /**
    * Enables validation on field change.
    */
@@ -492,7 +492,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     })
 
     const validate = validateFieldRef.current
-    const promises: Promise<[string, void | E | undefined]>[] = validate
+    const promises: Promise<[string, E | undefined]>[] = validate
       ? fields.map((name: string) => {
         return Promise.resolve(validate(name, getValue(name), state.values))
           .then((error) => [name, error])
