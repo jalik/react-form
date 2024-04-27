@@ -110,20 +110,21 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   }, [handleChange, parser])
 
   const finalProps = useMemo(() => {
-    const fieldProps = getFieldProps(name, {
-      ...others,
-      disabled,
-      id,
-      multiple,
-      onBlur,
-      onChange: onChange || handleFieldChange,
-      required,
-      type,
-      value,
-      // Get parsed value if parser is passed,
-      // so we can compare parsed value to field value (if checked).
-      parsedValue: parser && typeof value === 'string' ? parser(value) : value
-    })
+    const fieldProps = getFieldProps(name,
+      {
+        ...others,
+        disabled,
+        id,
+        multiple,
+        onBlur,
+        onChange: onChange || handleFieldChange,
+        required,
+        type,
+        value
+      },
+      // Pass parser so we can compare form value and field value.
+      { parser }
+    )
 
     // Allow formatting value.
     fieldProps.value = inputValue(formatValue(fieldProps.value))

@@ -73,10 +73,12 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    * Returns field props by name.
    * @param name
    * @param props
+   * @param opts
    */
   getFieldProps<Component extends ElementType = any> (
     name: string,
-    props?: React.ComponentProps<Component>
+    props?: React.ComponentProps<Component>,
+    opts?: { parser?: (value: string, target?: HTMLElement) => any }
   ): React.ComponentProps<Component>;
   /**
    * Returns form props.
@@ -854,7 +856,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const handleChange = useCallback((
     event: React.ChangeEvent<FieldElement>,
-    opts?: { parser? (value: unknown, target?: HTMLElement): any }
+    opts?: { parser? (value: string, target?: HTMLElement): any }
   ): void => {
     const { currentTarget } = event
     const { name } = currentTarget
@@ -915,7 +917,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const getFieldProps = useCallback(<Component extends ElementType> (
     name: string,
-    props?: React.ComponentProps<Component>
+    props?: React.ComponentProps<Component>,
+    opts?: { parser?: (value: string, target?: HTMLElement) => any }
   ): React.ComponentProps<Component> => {
     const contextValue = getValue<any>(name)
     const inputValue = props?.value
@@ -960,8 +963,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
 
       if (type === 'checkbox' || type === 'radio') {
-        const parsedValue = typeof props?.parsedValue !== 'undefined'
-          ? props?.parsedValue
+        const parsedValue = typeof opts?.parser !== 'undefined'
+          ? opts.parser(inputValue)
           : inputValue
 
         if (contextValue instanceof Array) {
