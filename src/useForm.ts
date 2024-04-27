@@ -816,13 +816,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     event.preventDefault()
     event.stopPropagation()
 
-    const { currentTarget } = event
+    const target = event.currentTarget || event.target
 
     if (listener) {
       listener(event)
-    } else if (currentTarget.type === 'submit') {
+    } else if (target.type === 'submit') {
       submit()
-    } else if (currentTarget.type === 'reset') {
+    } else if (target.type === 'reset') {
       reset()
     }
   }, [reset, submit])
@@ -831,7 +831,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
-    const { name } = event.currentTarget
+    const target = event.currentTarget || event.target
+    const { name } = target
     let touch = true
 
     if (trimOnBlur) {
@@ -858,9 +859,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     event: React.ChangeEvent<FieldElement>,
     opts?: { parser? (value: string, target?: HTMLElement): any }
   ): void => {
-    const { currentTarget } = event
-    const { name } = currentTarget
-    const value = getFieldValue(currentTarget, opts)
+    const target = event.currentTarget || event.target
+    const { name } = target
+    const value = getFieldValue(target, opts)
     setValue(name, value)
   }, [setValue])
 
