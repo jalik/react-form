@@ -48,6 +48,7 @@ here: https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/
 ```shell
 npm i -P @jalik/react-form
 ```
+
 ```shell
 yarn add @jalik/react-form
 ```
@@ -296,6 +297,8 @@ const form = useForm({
   debug: false,
   // optional, used to disable all fields and buttons
   disabled: false,
+  disableOnSubmit: true,
+  disableOnValidate: true,
   // optional, used to set initial values
   initialValues: undefined,
   // optional, used to replace empty string by null on change and on submit
@@ -303,12 +306,12 @@ const form = useForm({
   // optional, used to set field props dynamically
   initializeField: (name, formState) => ({
     className: formState.modifiedFields[name] ? 'input-modified' : undefined,
-    required: name === 'username',
+    required: name === 'username'
   }),
   // optional, used to load initial values
   load: () => Promise.resolve({
     id: 1,
-    username: 'test',
+    username: 'test'
   }),
   // REQUIRED, called when form is submitted
   onSubmit: (values) => Promise.resolve({ success: true }),
@@ -317,6 +320,8 @@ const form = useForm({
   },
   // optional, used to initialize form everytime initialValues changes
   reinitialize: false,
+  // Use submitted values to set initial values after form submission, so when form is reset, the last submitted values are used.
+  setInitialValuesOnSuccess: false,
   // optional, used to debounce submit
   submitDelay: 100,
   // optional, called when a field value changed
@@ -328,7 +333,7 @@ const form = useForm({
     if (mutation.lastname || mutation.firstname) {
       mutation.username = [
         values.firstname,
-        (values.lastname || '')[0],
+        (values.lastname || '')[0]
       ].join('.').toLowerCase()
     }
     return mutation
@@ -367,7 +372,7 @@ const form = useForm({
   // optional, used to validate all fields on submit
   validateOnSubmit: true,
   // optional, used to validate field on touch
-  validateOnTouch: false,
+  validateOnTouch: false
 })
 ```
 
@@ -389,6 +394,8 @@ const {
   disabled,
   // fields errors
   errors,
+  // returns the field props by name
+  getButtonProps,
   // returns the field props by name
   getFieldProps,
   // returns the field initial value by name
