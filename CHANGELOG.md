@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.4.0 (2024-05-06)
+
+- Fixed submit success not being updated when promise returned no result
+- Added option `disableOnSubmit: boolean` to `useForm()`
+- Added option `disableOnValidate: boolean` to `useForm()`
+- Added option `setInitialValuesOnSuccess: boolean` to `useForm()`
+
 ## 5.3.1 (2024-04-26)
 
 - Fixed value not being read from target when using `handleChange()`
