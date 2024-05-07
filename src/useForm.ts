@@ -271,6 +271,10 @@ export interface UseFormOptions<V extends Values, E, R> {
    */
   reinitialize?: boolean;
   /**
+   * Use submitted values as initial values after form submission.
+   */
+  setInitialValuesOnSuccess?: boolean;
+  /**
    * The delay before submitting the form.
    */
   submitDelay?: number;
@@ -347,6 +351,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     onSubmit,
     onSubmitted,
     reinitialize = false,
+    setInitialValuesOnSuccess = false,
     submitDelay = 100,
     transform: transformFunc,
     trimOnBlur = false,
@@ -570,6 +575,16 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const debouncedValidateField = useDebouncePromise(validateField, validateDelay)
 
   /**
+   * Defines initial values (after loading for example).
+   */
+  const setInitialValues = useCallback((values: Partial<V>): void => {
+    dispatch({
+      type: ACTION_INIT_VALUES,
+      data: { values }
+    })
+  }, [])
+
+  /**
    * Defines several field values (use setInitialValues() to set all form values).
    */
   const setValues = useCallback((
@@ -727,7 +742,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           type: ACTION_SUBMIT_SUCCESS,
           data: {
             result,
-            clear: clearAfterSubmit
+            clear: clearAfterSubmit,
+            setInitialValuesOnSuccess
           }
         })
         if (onSubmitted) {
@@ -741,7 +757,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [clearAfterSubmit, nullify, onSubmitted, state.values, trimOnSubmit])
+  }, [clearAfterSubmit, nullify, onSubmitted, setInitialValuesOnSuccess, state.values, trimOnSubmit])
 
   /**
    * Validates form values.
@@ -812,16 +828,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [state.validated, submit, validate, validateOnSubmit])
 
   const debouncedValidateAndSubmit = useDebouncePromise<R>(validateAndSubmit, submitDelay)
-
-  /**
-   * Defines initial values (after loading for example).
-   */
-  const setInitialValues = useCallback((values: Partial<V>): void => {
-    dispatch({
-      type: ACTION_INIT_VALUES,
-      data: { values }
-    })
-  }, [])
 
   const handleButtonClick = useCallback((listener: (ev: React.MouseEvent<HTMLButtonElement>) => void) => (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
