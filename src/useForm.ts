@@ -260,7 +260,7 @@ export interface UseFormOptions<V extends Values, E, R> {
    * Called when form is submitted.
    * @param values
    */
-  onSubmit (values: Partial<V>): Promise<void | R>;
+  onSubmit (values: Partial<V>): Promise<R>;
   /**
    * Called when form has been successfully submitted.
    * @param result
@@ -723,17 +723,15 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     dispatch({ type: ACTION_SUBMIT })
     return Promise.resolve(onSubmitRef.current(values))
       .then((result) => {
-        if (result) {
-          dispatch({
-            type: ACTION_SUBMIT_SUCCESS,
-            data: {
-              result,
-              clear: clearAfterSubmit
-            }
-          })
-          if (onSubmitted) {
-            onSubmitted(result)
+        dispatch({
+          type: ACTION_SUBMIT_SUCCESS,
+          data: {
+            result,
+            clear: clearAfterSubmit
           }
+        })
+        if (onSubmitted) {
+          onSubmitted(result)
         }
         return result
       })

@@ -184,7 +184,7 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'SET_VALUES', data: { partial: boolean, validate: boolean, values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
-  | { type: 'SUBMIT_SUCCESS', data: { result: R, clear: boolean } }
+  | { type: 'SUBMIT_SUCCESS', data: { result?: R, clear?: boolean } }
   | { type: 'VALIDATE', data?: { fields?: string[] } }
   | { type: 'VALIDATE_ERROR', error: Error }
   | { type: 'VALIDATE_FAIL', data: { errors: Errors<E>, partial: boolean } }
