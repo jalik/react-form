@@ -39,7 +39,7 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
   /**
    * Disables all fields and buttons.
    */
-  disabled: boolean;
+  disabled?: boolean;
   /**
    * Contains fields errors.
    */
@@ -139,7 +139,6 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
 }
 
 export const initialState = {
-  disabled: false,
   errors: {},
   hasError: false,
   initialized: false,
@@ -321,7 +320,6 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_LOAD:
       nextState = {
         ...state,
-        disabled: true,
         loadError: undefined,
         loading: true
       }
@@ -330,7 +328,6 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_LOAD_ERROR:
       nextState = {
         ...state,
-        disabled: false,
         loadError: action.error,
         loading: false
       }
@@ -510,7 +507,6 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_SUBMIT:
       nextState = {
         ...state,
-        disabled: true,
         submitting: true,
         submitCount: state.submitCount + 1
       }
@@ -519,7 +515,6 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_SUBMIT_ERROR:
       nextState = {
         ...state,
-        disabled: false,
         submitError: action.error,
         submitting: false
       }
@@ -529,7 +524,6 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...(action.data.clear ? initialState : state),
         debug: state.debug,
-        disabled: false,
         initialized: true,
         modified: false,
         modifiedFields: {},
@@ -576,7 +570,6 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...state,
         // todo keep track of validating fields
-        disabled: data?.fields ? state.disabled : true,
         needValidation: false,
         validating: data?.fields ? state.validating : true
       }
@@ -586,7 +579,6 @@ function useFormReducer<V extends Values, E, R> (
     case ACTION_VALIDATE_ERROR:
       nextState = {
         ...state,
-        disabled: false,
         validating: false,
         validateError: action.error
       }
@@ -604,7 +596,6 @@ function useFormReducer<V extends Values, E, R> (
       })
       nextState = {
         ...state,
-        disabled: false,
         errors,
         hasError: hasDefinedValues(errors),
         validated: false,
@@ -627,8 +618,6 @@ function useFormReducer<V extends Values, E, R> (
       const hasError = hasDefinedValues(errors)
       nextState = {
         ...state,
-        // Let form disabled if submission planned after validation
-        disabled: data.submitAfter,
         errors,
         hasError,
         validated: !hasError,

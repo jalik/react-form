@@ -283,7 +283,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: true,
         loading: true
       })
     })
@@ -302,7 +301,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: false,
         loadError: action.error,
         loading: false
       })
@@ -322,7 +320,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: false,
         initialValues: action.data.values,
         initialized: true,
         loading: false,
@@ -764,7 +761,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: true,
         submitting: true,
         submitCount: state.submitCount + 1
       })
@@ -784,7 +780,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: false,
         submitError: action.error,
         submitting: false
       })
@@ -807,7 +802,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: false,
         initialized: true,
         modified: false,
         modifiedFields: {},
@@ -917,7 +911,6 @@ describe('useFormReducer(state, action)', () => {
         const newState = useFormReducer(state, action)
         expect(newState).toStrictEqual({
           ...state,
-          disabled: true,
           needValidation: false,
           validating: true
         })
@@ -954,7 +947,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: false,
         validating: false,
         validateError: action.error
       })
@@ -987,7 +979,6 @@ describe('useFormReducer(state, action)', () => {
       })
       expect(newState).toStrictEqual({
         ...state,
-        disabled: false,
         errors,
         hasError: hasDefinedValues(action.data.errors),
         validated: false,
@@ -1012,7 +1003,6 @@ describe('useFormReducer(state, action)', () => {
       const newState = useFormReducer(state, action)
       expect(newState).toStrictEqual({
         ...state,
-        disabled: action.data.submitAfter === true,
         errors: {},
         hasError: false,
         validated: true,

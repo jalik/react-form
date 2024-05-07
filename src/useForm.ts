@@ -223,6 +223,14 @@ export interface UseFormOptions<V extends Values, E, R> {
    */
   clearAfterSubmit?: boolean;
   /**
+   * Should the form be disabled during submit.
+   */
+  disableOnSubmit?: boolean;
+  /**
+   * Should the form be disabled during validation.
+   */
+  disableOnValidate?: boolean;
+  /**
    * Enables debugging.
    */
   debug?: boolean;
@@ -330,6 +338,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clearAfterSubmit = false,
     debug = false,
     disabled = false,
+    disableOnSubmit = true,
+    disableOnValidate = true,
     initialValues,
     initializeField: initializeFieldFunc,
     load: loadFunc,
@@ -369,8 +379,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     {
       ...initialState,
       debug,
-      // Disables fields if default values are undefined.
-      disabled: disabled || !initialValues,
       initialized: initialValues != null,
       initialValues: initialValues || {},
       loading: typeof loadFunc === 'function',
@@ -386,8 +394,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Check if form is disabled regarding various states.
   const formDisabled = useMemo(() => (
-    disabled || state.disabled || state.loading || state.validating || state.submitting
-  ), [disabled, state.disabled, state.loading, state.submitting, state.validating])
+    disabled ||
+    // Disables fields if default values are undefined.
+    !initialValues ||
+    state.loading ||
+    (disableOnValidate && state.validating) ||
+    (disableOnSubmit && state.submitting)
+  ), [disableOnSubmit, disableOnValidate, disabled, initialValues, state.loading, state.submitting, state.validating])
 
   /**
    * Clears all values or selected fields only.
