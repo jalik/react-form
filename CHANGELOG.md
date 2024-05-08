@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.4.1 (2024-05-08)
+
+- Fixed `initialValues` not being cleared when options `clearAfterSubmit` and `setInitialValuesOnSuccess` are both `true`
+
 ## 5.4.0 (2024-05-06)
 
 - Fixed submit success not being updated when promise returned no result

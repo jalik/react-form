@@ -528,9 +528,9 @@ function useFormReducer<V extends Values, E, R> (
         ...(action.data.clear ? initialState : state),
         debug: state.debug,
         initialized: true,
-        initialValues: action.data.setInitialValuesOnSuccess
-          ? state.values
-          : state.initialValues,
+        initialValues: action.data.clear
+          ? initialState.initialValues
+          : (action.data.setInitialValuesOnSuccess ? state.values : state.initialValues),
         modified: false,
         modifiedFields: {},
         submitCount: 0,
