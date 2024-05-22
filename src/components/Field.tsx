@@ -198,17 +198,4 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   )
 }
 
-Field.defaultProps = {
-  component: undefined,
-  disabled: undefined,
-  emptyOptionLabel: '...',
-  formatter: undefined,
-  multiple: undefined,
-  options: undefined,
-  parser: undefined,
-  required: undefined,
-  type: 'text',
-  value: undefined
-}
-
 export default Field

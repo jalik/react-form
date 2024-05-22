@@ -37,8 +37,4 @@ function FieldError<C extends ElementType = 'span'> (props: FieldErrorProps<C>):
   )
 }
 
-FieldError.defaultProps = {
-  component: undefined
-}
-
 export default FieldError

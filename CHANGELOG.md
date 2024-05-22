@@ -1,8 +1,13 @@
 # Changelog
 
+## 5.4.2 (2024-05-21)
+
+- Removed `defaultProps` as recommended by React
+
 ## 5.4.1 (2024-05-08)
 
-- Fixed `initialValues` not being cleared when options `clearAfterSubmit` and `setInitialValuesOnSuccess` are both `true`
+- Fixed `initialValues` not being cleared when options `clearAfterSubmit`
+  and `setInitialValuesOnSuccess` are both `true`
 
 ## 5.4.0 (2024-05-06)
 
@@ -14,7 +19,8 @@
 ## 5.3.1 (2024-04-26)
 
 - Fixed value not being read from target when using `handleChange()`
-- Fixed type of `errors[path]` to be `Error | undefined` instead of `Error | void | undefined` in `useForm()`
+- Fixed type of `errors[path]` to be `Error | undefined` instead of `Error | void | undefined`
+  in `useForm()`
 
 ## 5.3.0 (2024-04-17)
 

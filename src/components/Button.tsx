@@ -21,20 +21,20 @@ function Button<C extends ElementType = 'button'> (props: ButtonProps<C>): React
   const {
     children,
     component: Component = 'button',
+    type = 'button',
     ...others
   } = props
 
   const { getButtonProps } = useFormContext()
 
   return (
-    <Component {...getButtonProps(others)}>
+    <Component {...getButtonProps({
+      ...others,
+      type
+    })}>
       {children}
     </Component>
   )
-}
-
-Button.defaultProps = {
-  type: 'button'
 }
 
 export default Button
