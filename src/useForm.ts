@@ -70,6 +70,15 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    */
   getButtonProps (props?: React.ComponentProps<'button'>): React.ComponentProps<'button'>;
   /**
+   * Returns field error.
+   * @param name
+   */
+  getError (name: string): E | undefined;
+  /**
+   * Returns form errors.
+   */
+  getErrors (): Errors<E>;
+  /**
    * Returns field props by name.
    * @param name
    * @param props
@@ -434,6 +443,20 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       data: { fields }
     })
   }, [])
+
+  /**
+   * Returns form errors.
+   */
+  const getErrors = useCallback((): Errors<E> => {
+    return { ...state.errors }
+  }, [state.errors])
+
+  /**
+   * Returns field error.
+   */
+  const getError = useCallback((name: string): E | undefined => (
+    getErrors()[name]
+  ), [getErrors])
 
   /**
    * Returns initial values.
@@ -1098,6 +1121,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clearErrors,
     clearTouchedFields,
     getButtonProps,
+    getError,
+    getErrors,
     getFieldProps,
     getFormProps,
     getInitialValue,
@@ -1123,10 +1148,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validate: debouncedValidate,
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields
-  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps, getFieldProps,
-    getFormProps, getInitialValue, getInitialValues, getValue, getValues, handleBlur, handleChange,
-    handleReset, handleSetValue, handleSubmit, load, removeFields, reset, setError, setErrors,
-    setInitialValues, setTouchedField, setTouchedFields, setValue, setValues,
+  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps, getError,
+    getErrors, getFieldProps, getFormProps, getInitialValue, getInitialValues, getValue, getValues,
+    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, load, removeFields, reset,
+    setError, setErrors, setInitialValues, setTouchedField, setTouchedFields, setValue, setValues,
     debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField, debouncedValidateFields])
 }
 
