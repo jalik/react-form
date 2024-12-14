@@ -42,7 +42,7 @@
     "test": "jest --passWithNoTests --coverage=true"
   },
   "dependencies": {
-    "@jalik/deep-extend": "^1.2.1"
+    "@jalik/deep-extend": "^2.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.5",
@@ -72,7 +72,7 @@
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "react": "^16.9.0 || ^17.0.0 || ^18.0.0",
-    "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0"
+    "react": ">=16.9.0",
+    "react-dom": ">=16.9.0"
   }
 }

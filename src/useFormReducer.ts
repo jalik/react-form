@@ -461,7 +461,7 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_SET_VALUES: {
       const { data } = action
-      const errors = clone(state.errors)
+      const errors = { ...state.errors }
       const touchedFields = clone(state.touchedFields)
       const modifiedFields = clone(state.modifiedFields)
       let values: Partial<V> = data.partial ? clone(state.values) : {}

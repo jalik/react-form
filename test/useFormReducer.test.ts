@@ -575,7 +575,7 @@ describe('useFormReducer(state, action)', () => {
       }
       const state = stateWithInitialValuesAndErrors
       const newState = useFormReducer(state, action)
-      const errors = clone(state.errors)
+      const errors = { ...state.errors }
       const modifiedFields = clone(state.modifiedFields)
       const { data } = action
       let values = {}
@@ -620,7 +620,7 @@ describe('useFormReducer(state, action)', () => {
 
       const state = stateWithInitialValuesAndErrors
       const newState = useFormReducer(state, action)
-      const errors = clone(state.errors)
+      const errors = { ...state.errors }
       const modifiedFields = clone(state.modifiedFields)
       const { data } = action
       let values = clone(state.values)
