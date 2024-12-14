@@ -16,7 +16,7 @@ import {
 
 describe('getFieldId(name, value)', () => {
   it('should return a generated field using name and value', () => {
-    const result = getFieldId('test', true)
+    const result = getFieldId('test', '0000000000')
     expect(result).toBeDefined()
     expect(result.length).toBeGreaterThan(0)
   })

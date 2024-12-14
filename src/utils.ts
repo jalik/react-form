@@ -179,10 +179,10 @@ export function getCheckedValues (element: HTMLInputElement): string[] {
 }
 
 /**
- * Returns the field ID using name and value.
+ * Returns a field ID using a name and form ID.
  */
-export function getFieldId (name: string, value: unknown): string {
-  return `field_${name}_${String(value)}`.replace(/[^a-zA-Z0-9_-]+/g, '_')
+export function getFieldId (name: string, formId: string): string {
+  return `F${formId}_${name}`.replace(/[^a-zA-Z0-9_-]+/g, '_')
 }
 
 /**

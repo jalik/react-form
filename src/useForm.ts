@@ -40,6 +40,7 @@ import {
   getFieldId,
   getFieldValue,
   hasDefinedValues,
+  randomKey,
   resolve
 } from './utils'
 
@@ -386,6 +387,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   if (typeof onSubmit !== 'function') {
     throw new Error('onSubmit must be a function')
   }
+
+  // Generate a unique ID for the form.
+  const formId = randomKey(10)
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc)
@@ -988,7 +992,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // Set default props.
     const finalProps: any = {
-      id: getFieldId(name, typeof inputValue !== 'undefined' ? inputValue : contextValue),
+      id: getFieldId(name, formId),
       name,
       onBlur: handleBlur,
       onChange: handleChange,
@@ -1050,7 +1054,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     finalProps.disabled = formDisabled || props?.disabled
 
     return finalProps
-  }, [formDisabled, getValue, handleBlur, handleChange, state])
+  }, [formDisabled, formId, getValue, handleBlur, handleChange, state])
 
   /**
    * Returns form props.
