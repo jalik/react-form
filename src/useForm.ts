@@ -14,6 +14,7 @@ import useFormReducer, {
   ACTION_LOAD_ERROR,
   ACTION_LOAD_SUCCESS,
   ACTION_REMOVE,
+  ACTION_REQUEST_VALIDATION,
   ACTION_RESET,
   ACTION_RESET_VALUES,
   ACTION_SET_ERRORS,
@@ -43,6 +44,8 @@ import {
   randomKey,
   resolve
 } from './utils'
+
+type FormMode = 'controlled' | 'experimental_uncontrolled'
 
 export type FieldElement =
   HTMLInputElement
@@ -149,6 +152,10 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    * Loads the form initial values.
    */
   load (): void;
+  /**
+   * The form mode (controlled/uncontrolled).
+   */
+  mode: FormMode;
   /**
    * Removes given fields.
    * @param fields
@@ -261,6 +268,10 @@ export interface UseFormOptions<V extends Values, E, R> {
    */
   initialValues?: Partial<V>;
   /**
+   * The form mode (controlled/uncontrolled).
+   */
+  mode?: FormMode;
+  /**
    * Replaces empty string by null on change and on submit.
    */
   nullify?: boolean;
@@ -365,6 +376,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     initialValues,
     initializeField: initializeFieldFunc,
     load: loadFunc,
+    mode = 'controlled',
     nullify = false,
     onSubmit,
     onSubmitted,
@@ -388,16 +400,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     throw new Error('onSubmit must be a function')
   }
 
+  useEffect(() => {
+    if (mode === 'experimental_uncontrolled') {
+      console.warn('WARNING: uncontrolled mode is experimental and may not work as expected')
+    }
+  }, [mode])
+
   // Generate a unique ID for the form.
   const formId = randomKey(10)
-
-  // Defines function references.
-  const initializeFieldRef = useRef(initializeFieldFunc)
-  const mountedRef = useRef(false)
-  const onSubmitRef = useRef(onSubmit)
-  const transformRef = useRef(transformFunc)
-  const validateFieldRef = useRef(validateFieldFunc)
-  const validateRef = useRef(validateFunc)
 
   // Defines the form state.
   const [state, dispatch] = useReducer(
@@ -406,14 +416,23 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       ...initialState,
       debug,
       initialized: initialValues != null,
-      initialValues: initialValues || {},
+      initialValues: initialValues ?? {},
       loading: typeof loadFunc === 'function',
-      values: initialValues || {},
+      values: initialValues ?? {},
       validateOnChange,
       validateOnInit,
       validateOnSubmit,
       validateOnTouch
     })
+
+  // Defines function references.
+  const initializeFieldRef = useRef(initializeFieldFunc)
+  const mountedRef = useRef(false)
+  const onSubmitRef = useRef(onSubmit)
+  const transformRef = useRef(transformFunc)
+  const validateFieldRef = useRef(validateFieldFunc)
+  const validateRef = useRef(validateFunc)
+  const valuesRef = useRef(state.values)
 
   // Holds current state (used to stabilize setter functions).
   const currentState = useRef<FormState<V, E, R>>(state)
@@ -479,9 +498,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   /**
    * Returns form values.
    */
-  const getValues = useCallback(() => {
-    return clone(state.values)
-  }, [state.values])
+  const getValues = useCallback((): Partial<V> => {
+    if (mode === 'controlled') {
+      return clone(state.values)
+    }
+    return clone(valuesRef.current)
+  }, [mode, state.values])
 
   /**
    * Returns the value of a field.
@@ -517,7 +539,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [loadFunc])
 
   /**
-   * Removes fields definitely (also removes errors, modified/touched states, etc).
+   * Removes fields definitely (also removes errors, modified/touched states...).
    */
   const removeFields = useCallback((fields: string[]): void => {
     // Ignore action if form disabled
@@ -528,6 +550,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       data: { fields }
     })
   }, [formDisabled])
+
+  const requestValidation = useCallback((validation: boolean | string[]): void => {
+    dispatch({
+      type: ACTION_REQUEST_VALIDATION,
+      data: validation
+    })
+  }, [])
 
   /**
    * Defines form field errors.
@@ -561,7 +590,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const validate = validateFieldRef.current
     const promises: Promise<[string, E | undefined]>[] = validate
       ? fields.map((name: string) => {
-        return Promise.resolve(validate(name, getValue(name), state.values))
+        return Promise.resolve(validate(name, getValue(name), getValues()))
           .then((error) => [name, error])
       })
       : []
@@ -606,7 +635,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [getValue, state.values])
+  }, [getValue, getValues])
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
 
@@ -688,15 +717,28 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     })
     currentState.current.values = nextValuesState
 
-    dispatch({
-      type: ACTION_SET_VALUES,
-      data: {
-        partial: opts?.partial === true,
-        validate: opts?.validate != null ? opts.validate : validateOnChange,
-        values: mutation
+    if (mode === 'controlled') {
+      dispatch({
+        type: ACTION_SET_VALUES,
+        data: {
+          partial: opts?.partial === true,
+          validate: opts?.validate != null ? opts.validate : validateOnChange,
+          values: mutation
+        }
+      })
+    } else if (mode === 'experimental_uncontrolled') {
+      if (opts?.partial) {
+        valuesRef.current = { ...valuesRef.current, ...nextValues }
+      } else {
+        valuesRef.current = { ...nextValues }
       }
-    })
-  }, [formDisabled, nullify, validateOnChange])
+      if (opts?.validate) {
+        requestValidation(opts?.partial
+          ? Object.keys(mutation)
+          : true)
+      }
+    }
+  }, [formDisabled, mode, nullify, requestValidation, validateOnChange])
 
   /**
    * Defines the value of a field.
@@ -766,7 +808,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Submits form.
    */
   const submit = useCallback((): Promise<void | R> => {
-    let values = clone(state.values)
+    let values = clone(getValues())
 
     if (trimOnSubmit || nullify) {
       const mutation = flatten(values)
@@ -806,7 +848,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [clearAfterSubmit, nullify, onSubmitted, setInitialValuesOnSuccess, state.values, trimOnSubmit])
+  }, [clearAfterSubmit, getValues, nullify, onSubmitted, setInitialValuesOnSuccess, trimOnSubmit])
 
   /**
    * Validates form values.
@@ -826,7 +868,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     dispatch({ type: ACTION_VALIDATE })
 
-    return Promise.resolve(validateRef.current(clone(state.values), { ...state.modifiedFields }))
+    return Promise.resolve(validateRef.current(clone(getValues()), { ...state.modifiedFields }))
       .then((errors) => {
         if (errors && hasDefinedValues(errors)) {
           dispatch({
@@ -855,7 +897,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         })
         return error
       })
-  }, [state.modifiedFields, state.touchedFields, state.values, validateFields])
+  }, [getValues, state.modifiedFields, state.touchedFields, validateFields])
 
   const debouncedValidate = useDebouncePromise(validate, validateDelay)
 
@@ -893,13 +935,40 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [reset, submit])
 
+  // const getModifiedFields = useCallback((): Record<string, boolean> => {
+  //   const initial = getInitialValues()
+  //   const values = getValues()
+  //   const modifiedFields: Record<string, boolean> = {}
+  //
+  //   const fInitial = flatten(initial)
+  //   const fValues = flatten(values)
+  //
+  //   const initialFields = Object.keys(fInitial)
+  //   const valuesFields = Object.keys(fValues)
+  //
+  //   for (let i = 0; i < initialFields.length; i++) {
+  //     const field = initialFields[i]
+  //
+  //     if (fValues[field] !== fInitial[field]) {
+  //       modifiedFields[field] = true
+  //     }
+  //   }
+  //   for (let i = 0; i < valuesFields.length; i++) {
+  //     const field = valuesFields[i]
+  //
+  //     if (fValues[field] !== fInitial[field]) {
+  //       modifiedFields[field] = true
+  //     }
+  //   }
+  //   return modifiedFields
+  // }, [getInitialValues, getValues])
+
   /**
    * Handles leaving of a field.
    */
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
-    const target = event.currentTarget || event.target
+    const target = event.currentTarget ?? event.target
     const { name } = target
-    let touch = true
 
     if (trimOnBlur) {
       let value = getValue(name)
@@ -908,14 +977,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         // Remove extra spaces.
         value = value.trim()
         setValue(name, value, { validate: state.validateOnTouch })
-        // Avoid unnecessary render because setValue already touch the field.
-        touch = false
+        return
       }
     }
-
-    if (touch) {
-      setTouchedField(name, true)
-    }
+    setTouchedField(name, true)
   }, [getValue, setTouchedField, setValue, state.validateOnTouch, trimOnBlur])
 
   /**
@@ -928,7 +993,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const target = event.currentTarget || event.target
     const { name } = target
     const value = getFieldValue(target, opts)
-    setValue(name, value)
+    setValue(name, value /* fixme { validate: validateOnChange } */)
   }, [setValue])
 
   /**
@@ -968,12 +1033,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       ...props,
       disabled: formDisabled || props?.disabled ||
         // Disable submit or reset button if form is not modified.
-        (!state.modified && (type === 'submit' || type === 'reset')),
+        ((!state.modified && mode === 'controlled') &&
+          (type === 'submit' || type === 'reset')),
       onClick: props?.onClick != null
         ? handleButtonClick(props?.onClick)
         : undefined
     }
-  }, [formDisabled, handleButtonClick, state.modified])
+  }, [formDisabled, handleButtonClick, mode, state.modified])
 
   /**
    * Returns props of a field.
@@ -985,18 +1051,35 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const getFieldProps = useCallback(<Component extends ElementType> (
     name: string,
     props?: React.ComponentProps<Component>,
-    opts?: { parser?: (value: string, target?: HTMLElement) => any }
+    opts?: {
+      mode?: FormMode;
+      parser?: (value: string, target?: HTMLElement) => any;
+    }
   ): React.ComponentProps<Component> => {
-    const contextValue = getValue<any>(name)
+    const contextValue = getValue(name)
     const inputValue = props?.value
+
+    const checkedAttribute = (opts?.mode ?? mode) === 'controlled'
+      ? 'checked'
+      : 'defaultChecked'
+
+    const valueAttribute = (opts?.mode ?? mode) === 'controlled'
+      ? 'value'
+      : 'defaultValue'
 
     // Set default props.
     const finalProps: any = {
+      ...props,
       id: getFieldId(name, formId),
       name,
       onBlur: handleBlur,
-      onChange: handleChange,
-      value: contextValue
+      onChange: (event: React.ChangeEvent<FieldElement>) => {
+        handleChange(event, opts)
+      }
+    }
+
+    if (props?.type !== 'checkbox' && props?.type !== 'radio') {
+      finalProps[valueAttribute] = contextValue
     }
 
     // Merge custom props from initializeField() function.
@@ -1025,7 +1108,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       if (inputValue === null || inputValue === '') {
         if (type === 'radio') {
           // Convert null value for radio only.
-          finalProps.value = ''
+          finalProps[valueAttribute] = ''
         }
       }
 
@@ -1035,13 +1118,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           : inputValue
 
         if (contextValue instanceof Array) {
-          finalProps.checked = contextValue.indexOf(parsedValue) !== -1
+          finalProps[checkedAttribute] = contextValue.indexOf(parsedValue) !== -1
           // Remove required attribute on multiple fields.
           finalProps.required = false
         } else {
           // Get checked state from checkbox without value
           // or by comparing checkbox value and context value.
-          finalProps.checked = type === 'checkbox' &&
+          finalProps[checkedAttribute] = type === 'checkbox' &&
           (inputValue == null || inputValue === '') &&
           typeof contextValue === 'boolean'
             ? contextValue
@@ -1053,8 +1136,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // Set disabled depending on form state or field state.
     finalProps.disabled = formDisabled || props?.disabled
 
+    // For controlled components, replace null by empty string.
+    if (finalProps.value === null && (opts?.mode ?? mode) === 'controlled') {
+      finalProps.value = ''
+    }
+
     return finalProps
-  }, [formDisabled, formId, getValue, handleBlur, handleChange, state])
+  }, [formDisabled, formId, getValue, handleBlur, handleChange, mode, state])
 
   /**
    * Returns form props.
@@ -1113,6 +1201,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [debouncedValidateFields, state.needValidation, validate])
 
+  useEffect(() => {
+    if (mode === 'experimental_uncontrolled') {
+      valuesRef.current = state.values
+    }
+  }, [mode, state.values])
+
   // Load initial values using a function.
   useEffect(() => {
     load()
@@ -1139,6 +1233,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     handleSetValue,
     handleSubmit,
     load,
+    mode,
     removeFields,
     reset,
     setError,
@@ -1154,9 +1249,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateFields: debouncedValidateFields
   }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps, getError,
     getErrors, getFieldProps, getFormProps, getInitialValue, getInitialValues, getValue, getValues,
-    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, load, removeFields, reset,
-    setError, setErrors, setInitialValues, setTouchedField, setTouchedFields, setValue, setValues,
-    debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField, debouncedValidateFields])
+    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, load, mode, removeFields,
+    reset, setError, setErrors, setInitialValues, setTouchedField, setTouchedFields, setValue,
+    setValues, debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField,
+    debouncedValidateFields])
 }
 
 export default useForm

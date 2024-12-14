@@ -85,7 +85,8 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
 
   const {
     getFieldProps,
-    handleChange
+    handleChange,
+    mode
   } = useFormContext()
 
   // Check incompatible attributes
@@ -117,7 +118,9 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
         id,
         multiple,
         onBlur,
-        onChange: onChange || handleFieldChange,
+        onChange: mode === 'controlled'
+          ? (onChange ?? handleFieldChange)
+          : undefined,
         required,
         type,
         value
@@ -130,7 +133,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
     fieldProps.value = inputValue(formatValue(fieldProps.value))
 
     return fieldProps
-  }, [disabled, formatValue, getFieldProps, handleFieldChange, id, multiple, name, onBlur, onChange, others, parser, required, type, value])
+  }, [disabled, formatValue, getFieldProps, handleFieldChange, id, mode, multiple, name, onBlur, onChange, others, parser, required, type, value])
 
   const finalOptions: OptionHTMLAttributes<HTMLOptionElement>[] = useMemo(() => {
     const list: OptionHTMLAttributes<HTMLOptionElement>[] = options ? [...options] : []

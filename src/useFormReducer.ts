@@ -13,6 +13,7 @@ export const ACTION_LOAD = 'LOAD'
 export const ACTION_LOAD_ERROR = 'LOAD_ERROR'
 export const ACTION_LOAD_SUCCESS = 'LOAD_SUCCESS'
 export const ACTION_REMOVE = 'REMOVE'
+export const ACTION_REQUEST_VALIDATION = 'REQUEST_VALIDATION'
 export const ACTION_RESET = 'RESET'
 export const ACTION_RESET_VALUES = 'RESET_VALUES'
 export const ACTION_SET_ERRORS = 'SET_ERRORS'
@@ -170,6 +171,7 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'LOAD_ERROR', error: Error }
   | { type: 'LOAD_SUCCESS', data: { values: Partial<V> } }
   | { type: 'REMOVE', data: { fields: string[] } }
+  | { type: 'REQUEST_VALIDATION', data: boolean | string[] }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
   | { type: 'SET_ERRORS', data: { errors: Errors<E>, partial: boolean } }
@@ -385,6 +387,13 @@ function useFormReducer<V extends Values, E, R> (
       }
       break
     }
+
+    case ACTION_REQUEST_VALIDATION:
+      nextState = {
+        ...state,
+        needValidation: action.data
+      }
+      break
 
     case ACTION_RESET:
       if (state.validating) {
