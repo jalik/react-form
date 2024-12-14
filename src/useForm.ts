@@ -95,11 +95,15 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    */
   getInitialValues (): Partial<V>;
   /**
-   * Returns current field value.
+   * Returns field value.
    * @param name
    * @param defaultValue
    */
   getValue<T> (name: string, defaultValue?: T): T | undefined;
+  /**
+   * Returns form values.
+   */
+  getValues (): Partial<V>;
   /**
    * Handles field blur event.
    * @param event
@@ -446,12 +450,19 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   ), [getInitialValues])
 
   /**
+   * Returns form values.
+   */
+  const getValues = useCallback(() => {
+    return clone(state.values)
+  }, [state.values])
+
+  /**
    * Returns the value of a field.
    */
   const getValue = useCallback(<T> (name: string, defaultValue?: T): T | undefined => {
-    const value = resolve<T>(name, clone(state.values))
+    const value = resolve<T>(name, getValues())
     return typeof value !== 'undefined' ? value : defaultValue
-  }, [state.values])
+  }, [getValues])
 
   /**
    * Loads and set initial values.
@@ -1092,6 +1103,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getInitialValue,
     getInitialValues,
     getValue,
+    getValues,
     handleBlur,
     handleChange,
     handleReset,
@@ -1112,7 +1124,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields
   }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps, getFieldProps,
-    getFormProps, getInitialValue, getInitialValues, getValue, handleBlur, handleChange,
+    getFormProps, getInitialValue, getInitialValues, getValue, getValues, handleBlur, handleChange,
     handleReset, handleSetValue, handleSubmit, load, removeFields, reset, setError, setErrors,
     setInitialValues, setTouchedField, setTouchedFields, setValue, setValues,
     debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField, debouncedValidateFields])
