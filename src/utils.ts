@@ -270,7 +270,7 @@ export function isMultipleFieldElement (element: unknown): boolean {
   if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) {
     if (element.form && element.name != null) {
       for (let i = 0; i < element.form.elements.length; i += 1) {
-        const elm = element.form.elements[i]
+        const elm: any = element.form.elements[i]
 
         if (elm instanceof HTMLSelectElement &&
           elm.name === element.name &&
