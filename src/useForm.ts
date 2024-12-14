@@ -91,6 +91,10 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    */
   getInitialValue<T> (name: string): T | undefined;
   /**
+   * Returns initial values.
+   */
+  getInitialValues (): Partial<V>;
+  /**
    * Returns current field value.
    * @param name
    * @param defaultValue
@@ -428,11 +432,18 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [])
 
   /**
+   * Returns initial values.
+   */
+  const getInitialValues = useCallback(() => {
+    return clone(state.initialValues)
+  }, [state.initialValues])
+
+  /**
    * Returns the initial value of a field.
    */
   const getInitialValue = useCallback(<T> (name: string): T | undefined => (
-    resolve<T>(name, clone(state.initialValues))
-  ), [state.initialValues])
+    resolve<T>(name, getInitialValues())
+  ), [getInitialValues])
 
   /**
    * Returns the value of a field.
@@ -1079,6 +1090,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getFieldProps,
     getFormProps,
     getInitialValue,
+    getInitialValues,
     getValue,
     handleBlur,
     handleChange,
@@ -1099,11 +1111,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validate: debouncedValidate,
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields
-  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps,
-    getFieldProps, getFormProps, getInitialValue, getValue, handleBlur, handleChange, handleReset,
-    handleSetValue, handleSubmit, setInitialValues, load, removeFields, reset, setError, setErrors,
-    setValue, setValues, debouncedValidateAndSubmit, setTouchedField, setTouchedFields,
-    debouncedValidate, debouncedValidateField, debouncedValidateFields])
+  }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps, getFieldProps,
+    getFormProps, getInitialValue, getInitialValues, getValue, handleBlur, handleChange,
+    handleReset, handleSetValue, handleSubmit, load, removeFields, reset, setError, setErrors,
+    setInitialValues, setTouchedField, setTouchedFields, setValue, setValues,
+    debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField, debouncedValidateFields])
 }
 
 export default useForm
