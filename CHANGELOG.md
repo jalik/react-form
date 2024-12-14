@@ -1,5 +1,14 @@
 # Changelog
 
+## v5.5.0 (2024-12-13)
+
+- feat: add option `mode` (`'controlled' | 'experimental_uncontrolled'`) to `useForm()`
+- feat: add method `getError()` to `useForm()`
+- feat: add method `getErrors()` to `useForm()`
+- feat: add method `getInitialValues()` to `useForm()`
+- feat: add method `getValues()` to `useForm()`
+- feat: improve generated field `id` returned by `getFieldProps()` in `useForm()`
+
 ## 5.4.2 (2024-05-21)
 
 - Removed `defaultProps` as recommended by React
