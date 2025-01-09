@@ -293,8 +293,9 @@ export interface UseFormOptions<V extends Values, E, R> {
   /**
    * Called when form has been successfully submitted.
    * @param result
+   * @param values
    */
-  onSubmitted? (result: R): void;
+  onSubmitted? (result: R, values: Partial<V>): void;
   /**
    * Resets form with initial values whenever they change.
    */
@@ -838,7 +839,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           }
         })
         if (onSubmitted) {
-          onSubmitted(result)
+          onSubmitted(result, values)
         }
         return result
       })
