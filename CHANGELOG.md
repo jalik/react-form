@@ -1,5 +1,10 @@
 # Changelog
 
+## v5.6.0 (2025-01-09)
+
+- feat: add submitted `values` as second argument to `onSubmitted()` returned by `useForm()`
+- chore(deps): upgrade dependencies
+
 ## v5.5.0 (2024-12-13)
 
 - feat: add option `mode` (`'controlled' | 'experimental_uncontrolled'`) to `useForm()`
