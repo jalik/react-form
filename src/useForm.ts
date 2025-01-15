@@ -52,6 +52,19 @@ export type FieldElement =
   | HTMLSelectElement
   | HTMLTextAreaElement
 
+export type GetButtonProps = {
+  disabled?: boolean;
+  onClick?: (...args: any) => void;
+  type?: 'submit' | 'reset' | 'button';
+  [key: string]: any;
+}
+
+export type GetButtonPropsReturnType = {
+  disabled?: boolean;
+  onClick?: (...args: any) => void;
+  type?: any;
+}
+
 export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> {
   /**
    * Clears the form (values, errors...).
@@ -72,7 +85,7 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    * Returns form button props.
    * @param props
    */
-  getButtonProps (props?: React.ComponentProps<'button'>): React.ComponentProps<'button'>;
+  getButtonProps (props?: GetButtonProps): GetButtonPropsReturnType;
   /**
    * Returns field error.
    * @param name
@@ -1028,19 +1041,30 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   /**
    * Returns button props.
    */
-  const getButtonProps = useCallback((props: React.ComponentProps<'button'>): React.ComponentProps<'button'> => {
-    const type = props?.type || 'button'
-    return {
-      ...props,
-      disabled: formDisabled || props?.disabled ||
-        // Disable submit or reset button if form is not modified.
-        ((!state.modified && mode === 'controlled') &&
-          (type === 'submit' || type === 'reset')),
-      onClick: props?.onClick != null
-        ? handleButtonClick(props?.onClick)
-        : undefined
+  const getButtonProps = useCallback((props: GetButtonProps = {}): GetButtonPropsReturnType => {
+    const type = props.type ?? 'button'
+    const result: GetButtonPropsReturnType = { ...props }
+
+    if (props.disabled ||
+      formDisabled ||
+      // Disable submit or reset button if form is not modified.
+      ((!state.modified && mode === 'controlled') && (type === 'submit' || type === 'reset'))) {
+      result.disabled = true
     }
-  }, [formDisabled, handleButtonClick, mode, state.modified])
+
+    if (props.onClick != null) {
+      result.onClick = handleButtonClick(props.onClick)
+    } else if (type === 'submit') {
+      result.onClick = () => {
+        validateAndSubmit()
+      }
+    } else if (type === 'reset') {
+      result.onClick = () => {
+        reset()
+      }
+    }
+    return result
+  }, [formDisabled, handleButtonClick, mode, reset, state.modified, validateAndSubmit])
 
   /**
    * Returns props of a field.
