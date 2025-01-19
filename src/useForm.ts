@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import React, { ElementType, useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
@@ -104,8 +104,12 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   getFieldProps<Component extends ElementType = any> (
     name: string,
     props?: React.ComponentProps<Component>,
-    opts?: { parser?: (value: string, target?: HTMLElement) => any }
-  ): React.ComponentProps<Component>;
+    opts?: {
+      mode?: FormMode;
+      format?: (value: unknown) => string;
+      parser?: (value: string, target?: HTMLElement) => any;
+    }
+  ): any;
   /**
    * Returns form props.
    * @param props
@@ -1076,19 +1080,20 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const getFieldProps = useCallback(<Component extends ElementType> (
     name: string,
     props?: React.ComponentProps<Component>,
-    opts?: {
+    opts: {
       mode?: FormMode;
+      format?: (value: unknown) => string;
       parser?: (value: string, target?: HTMLElement) => any;
-    }
-  ): React.ComponentProps<Component> => {
+    } = {}
+  ) => {
     const contextValue = getValue(name)
     const inputValue = props?.value
 
-    const checkedAttribute = (opts?.mode ?? mode) === 'controlled'
+    const checkedAttribute = (opts.mode ?? mode) === 'controlled'
       ? 'checked'
       : 'defaultChecked'
 
-    const valueAttribute = (opts?.mode ?? mode) === 'controlled'
+    const valueAttribute = (opts.mode ?? mode) === 'controlled'
       ? 'value'
       : 'defaultValue'
 
@@ -1138,7 +1143,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
 
       if (type === 'checkbox' || type === 'radio') {
-        const parsedValue = typeof opts?.parser !== 'undefined'
+        const parsedValue = typeof opts.parser !== 'undefined'
           ? opts.parser(inputValue)
           : inputValue
 
@@ -1162,8 +1167,18 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     finalProps.disabled = formDisabled || props?.disabled
 
     // For controlled components, replace null by empty string.
-    if (finalProps.value === null && (opts?.mode ?? mode) === 'controlled') {
+    if ((opts.mode ?? mode) === 'controlled' && finalProps.value == null) {
       finalProps.value = ''
+    }
+
+    // Convert value to string.
+    const { format = String } = opts
+    if (format != null &&
+      finalProps[valueAttribute] != null &&
+      typeof finalProps[valueAttribute] !== 'string' &&
+      !(finalProps[valueAttribute] instanceof Array)
+    ) {
+      finalProps[valueAttribute] = format(finalProps[valueAttribute])
     }
 
     return finalProps
