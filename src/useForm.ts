@@ -96,7 +96,7 @@ export interface UseFormHook<V extends Values, E = Error, R = any> extends FormS
   /**
    * Contains form errors.
    */
-  errors: UseFormErrorsHook<V, E>['errors'];
+  errors: UseFormErrorsHook<V, E>['errorsState'];
   /**
    * Returns form button props.
    * @param props
@@ -482,7 +482,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   const {
     clearErrors,
-    errors,
+    errorsState,
     getError,
     getErrors,
     hasError,
@@ -637,7 +637,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     return Promise
       .all(promises)
       .then((results) => {
-        let validationErrors: Errors<E> = { ...errors }
+        let validationErrors: Errors<E> = { ...errorsState }
 
         results.forEach((result) => {
           if (result) {
@@ -664,7 +664,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           error
         })
       })
-  }, [clearErrors, errors, getValue, getValues, setErrors])
+  }, [clearErrors, errorsState, getValue, getValues, setErrors])
 
   const debouncedValidateFields = useDebouncePromise(validateFields, validateDelay)
 
@@ -1293,7 +1293,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clearErrors,
     clearTouchedFields,
     disabled: formDisabled,
-    errors,
+    errors: errorsState,
     getButtonProps,
     getError,
     getErrors,
