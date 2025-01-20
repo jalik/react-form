@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import deepExtend from '@jalik/deep-extend'
@@ -254,6 +254,15 @@ export function getSelectedValues (element: HTMLSelectElement): string[] {
 export function hasDefinedValues (obj: Record<string, unknown>): boolean {
   return Object.values(obj)
     .filter((value) => value != null).length > 0
+}
+
+/**
+ * Checks if an object contains true values.
+ * @param obj
+ */
+export function hasTrueValues (obj: Record<string, boolean>): boolean {
+  return Object.values(obj)
+    .filter((value) => value).length > 0
 }
 
 /**

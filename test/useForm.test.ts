@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { act, renderHook } from '@testing-library/react'
@@ -97,7 +97,6 @@ describe('useForm()', () => {
       it('should throw an error', () => {
         expect(() => {
           useForm({
-            // @ts-expect-error onSubmit must be defined
             onSubmit: undefined
           })
         }).toThrow()
@@ -582,7 +581,7 @@ describe('useForm()', () => {
         })
 
         expect(result.current.modifiedFields.username).toBe(true)
-        expect(result.current.modifiedFields.password).toBeUndefined()
+        expect(result.current.modifiedFields.password).toBeFalsy()
         expect(result.current.values.username).toBe('test')
         expect(result.current.values.password).toBe(initialValues.password)
       })

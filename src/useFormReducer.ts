@@ -3,10 +3,9 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { build, clone, hasDefinedValues, resolve } from './utils'
+import { build, clone, resolve } from './utils'
 
 export const ACTION_CLEAR = 'CLEAR'
-export const ACTION_CLEAR_TOUCHED_FIELDS = 'CLEAR_TOUCHED_FIELDS'
 export const ACTION_INIT_VALUES = 'INIT_VALUES'
 export const ACTION_LOAD = 'LOAD'
 export const ACTION_LOAD_ERROR = 'LOAD_ERROR'
@@ -15,7 +14,6 @@ export const ACTION_REMOVE = 'REMOVE'
 export const ACTION_REQUEST_VALIDATION = 'REQUEST_VALIDATION'
 export const ACTION_RESET = 'RESET'
 export const ACTION_RESET_VALUES = 'RESET_VALUES'
-export const ACTION_SET_TOUCHED_FIELDS = 'SET_TOUCHED_FIELDS'
 export const ACTION_SET_VALUES = 'SET_VALUES'
 export const ACTION_SUBMIT = 'SUBMIT'
 export const ACTION_SUBMIT_ERROR = 'SUBMIT_ERROR'
@@ -56,14 +54,6 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
    */
   loading: boolean;
   /**
-   * Tells if the form was modified.
-   */
-  modified: boolean;
-  /**
-   * The fields that were modified.
-   */
-  modifiedFields: ModifiedFields;
-  /**
    * Tells if the form will trigger a validation or if it will validate some fields.
    */
   needValidation: boolean | string[];
@@ -87,14 +77,6 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
    * Tells if the form is submitting.
    */
   submitting: boolean;
-  /**
-   * Tells if the form was touched.
-   */
-  touched: boolean;
-  /**
-   * The fields that were touched.
-   */
-  touchedFields: TouchedFields;
   /**
    * The validation error.
    */
@@ -135,16 +117,12 @@ export const initialState: FormState = {
   initialValues: {},
   loadError: undefined,
   loading: false,
-  modified: false,
-  modifiedFields: {},
   needValidation: false,
   submitCount: 0,
   submitError: undefined,
   submitResult: undefined,
   submitted: false,
   submitting: false,
-  touched: false,
-  touchedFields: {},
   validateError: undefined,
   validated: false,
   validateOnChange: false,
@@ -157,7 +135,6 @@ export const initialState: FormState = {
 
 export type FormAction<V = Values, E = Error, R = any> =
   { type: 'CLEAR', data?: { fields?: string[] } }
-  | { type: 'CLEAR_TOUCHED_FIELDS', data?: { fields?: string[] } }
   | { type: 'INIT_VALUES', data: { values: Partial<V> } }
   | { type: 'LOAD' }
   | { type: 'LOAD_ERROR', error: Error }
@@ -166,14 +143,6 @@ export type FormAction<V = Values, E = Error, R = any> =
   | { type: 'REQUEST_VALIDATION', data: boolean | string[] }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
-  | {
-  type: 'SET_TOUCHED_FIELDS',
-  data: {
-    partial: boolean,
-    touchedFields: TouchedFields,
-    validate: boolean
-  }
-}
   | { type: 'SET_VALUES', data: { partial: boolean, validate: boolean, values: Values } }
   | { type: 'SUBMIT' }
   | { type: 'SUBMIT_ERROR', error: Error }
@@ -205,14 +174,10 @@ function useFormReducer<V extends Values, E, R> (
       const { data } = action
 
       if (data?.fields?.length) {
-        const modifiedFields = { ...state.modifiedFields }
-        const touchedFields = { ...state.touchedFields }
         let initialValues = clone(state.initialValues)
         let values = clone(state.values)
 
         data.fields.forEach((name: string) => {
-          delete modifiedFields[name]
-          delete touchedFields[name]
           initialValues = build(name, undefined, initialValues)
           values = build(name, undefined, values)
         })
@@ -220,11 +185,7 @@ function useFormReducer<V extends Values, E, R> (
         nextState = {
           ...state,
           initialValues,
-          modified: hasDefinedValues(modifiedFields),
-          modifiedFields,
           submitted: false,
-          touched: hasDefinedValues(touchedFields),
-          touchedFields,
           values,
           validateError: undefined,
           validated: false
@@ -238,29 +199,6 @@ function useFormReducer<V extends Values, E, R> (
           validateOnInit: state.validateOnInit,
           validateOnSubmit: state.validateOnSubmit,
           validateOnTouch: state.validateOnTouch
-        }
-      }
-      break
-    }
-
-    case ACTION_CLEAR_TOUCHED_FIELDS: {
-      const { data } = action
-
-      if (data?.fields?.length) {
-        const touchedFields: TouchedFields = { ...state.touchedFields }
-        data.fields.forEach((name) => {
-          delete touchedFields[name]
-        })
-        nextState = {
-          ...state,
-          touched: hasDefinedValues(touchedFields),
-          touchedFields
-        }
-      } else {
-        nextState = {
-          ...state,
-          touched: false,
-          touchedFields: {}
         }
       }
       break
@@ -322,25 +260,16 @@ function useFormReducer<V extends Values, E, R> (
     //  solution: handle array operations (append, prepend...) in reducer.
     case ACTION_REMOVE: {
       const { data } = action
-      const modifiedFields = { ...state.modifiedFields }
-      const touchedFields = { ...state.touchedFields }
       let values = clone(state.values)
 
       data.fields.forEach((name) => {
-        delete modifiedFields[name]
-        delete touchedFields[name]
-
         if (typeof resolve(name, values) !== 'undefined') {
           values = build(name, undefined, values)
         }
       })
       nextState = {
         ...state,
-        modified: hasDefinedValues(modifiedFields),
-        modifiedFields,
         submitted: false,
-        touched: hasDefinedValues(touchedFields),
-        touchedFields,
         values
       }
       break
@@ -376,26 +305,18 @@ function useFormReducer<V extends Values, E, R> (
         // Ignore reset during validation.
         return state
       }
-      const modifiedFields = { ...state.modifiedFields }
-      const touchedFields = { ...state.touchedFields }
       const initialValues = clone(state.initialValues)
       let values = clone(state.values)
 
       const { data } = action
       data.fields.forEach((name: string) => {
-        delete modifiedFields[name]
-        delete touchedFields[name]
         const initialValue = resolve(name, initialValues)
         values = build(name, initialValue, values)
       })
 
       nextState = {
         ...state,
-        modified: hasDefinedValues(modifiedFields),
-        modifiedFields,
         submitted: false,
-        touched: hasDefinedValues(touchedFields),
-        touchedFields,
         values,
         validateError: undefined,
         validated: false
@@ -405,34 +326,15 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_SET_VALUES: {
       const { data } = action
-      const touchedFields = clone(state.touchedFields)
-      const modifiedFields = clone(state.modifiedFields)
       let values: Partial<V> = data.partial ? clone(state.values) : {}
 
       Object.entries(data.values).forEach(([name, value]) => {
         values = build(name, value, values)
-
-        // Compare initial value to detect change,
-        // ignore when comparing null and undefined together.
-        const initialValue = resolve(name, state.initialValues)
-        const modified = value !== initialValue && (initialValue != null || value != null)
-
-        if (modified) {
-          modifiedFields[name] = modified
-          touchedFields[name] = modified
-        } else {
-          delete modifiedFields[name]
-          delete touchedFields[name]
-        }
       })
 
       nextState = {
         ...state,
-        modified: hasDefinedValues(modifiedFields),
-        modifiedFields,
         submitted: false,
-        touched: true,
-        touchedFields,
         needValidation: data.validate
           ? Object.keys(data.values)
           : state.needValidation,
@@ -466,45 +368,17 @@ function useFormReducer<V extends Values, E, R> (
         initialValues: action.data.clear
           ? (initialState as FormState<V, E, R>).initialValues
           : (action.data.setInitialValuesOnSuccess ? state.values : state.initialValues),
-        modified: false,
-        modifiedFields: {},
         submitCount: 0,
         submitError: undefined,
         submitting: false,
         submitResult: action.data.result,
         submitted: true,
-        touched: false,
-        touchedFields: {},
         validateOnChange: state.validateOnChange,
         validateOnInit: state.validateOnInit,
         validateOnSubmit: state.validateOnSubmit,
         validateOnTouch: state.validateOnTouch
       }
       break
-
-    case ACTION_SET_TOUCHED_FIELDS: {
-      const { data } = action
-      const touchedFields: TouchedFields = data.partial
-        ? { ...state.touchedFields, ...data.touchedFields }
-        : { ...data.touchedFields }
-
-      // Trigger validation if needed
-      const needValidation = data.validate
-        ? Object.entries(data.touchedFields).filter(([, v]) => v).map(([k]) => k)
-        : state.needValidation
-
-      // Check if at least one field has been touched
-      const touched = Object.values({ ...state.touchedFields, ...data.touchedFields })
-        .find((v) => v) || false
-
-      nextState = {
-        ...state,
-        needValidation,
-        touched,
-        touchedFields
-      }
-      break
-    }
 
     case ACTION_VALIDATE: {
       const { data } = action
