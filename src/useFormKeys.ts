@@ -4,19 +4,35 @@
  */
 
 import { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react'
-import { UseFormHook } from './useForm'
 import { FormState, Values } from './useFormReducer'
 
 export type FormKeys = Record<string, number>
 
 export type UseFormKeysOptions<V extends Values, E, R> = {
+  /**
+   * The form key.
+   */
   formKey: string;
-  state: FormState<V, E, R>;
+  /**
+   * The form status.
+   */
+  state: FormState<V, E, R>; // todo remove
 }
 
 export type UseFormKeysHook = {
+  /**
+   * Changes the key of a path.
+   * @param path
+   */
   changeKey (path: string): void;
+  /**
+   * Returns the key of a path.
+   * @param path
+   */
   getKey (path: string): string;
+  /**
+   * Sets all keys.
+   */
   setKeys: Dispatch<SetStateAction<FormKeys>>;
 }
 
@@ -26,7 +42,7 @@ function useFormKeys<V extends Values, E, R> (options: UseFormKeysOptions<V, E, 
   const keysRef = useRef<Record<string, string>>({})
   const [keys, setKeys] = useState<FormKeys>({})
 
-  const getKey = useCallback<UseFormHook<V, E, R>['key']>((path: string): string => {
+  const getKey = useCallback<UseFormKeysHook['getKey']>((path) => {
     if (keysRef.current[path] == null) {
       keysRef.current[path] = `${formKey}-${path}-${keys[path]}`
     }
