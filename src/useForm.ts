@@ -3,7 +3,15 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import React, { ElementType, useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import React, {
+  ElementType,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState
+} from 'react'
 import useDebouncePromise from './useDebouncePromise'
 import useFormReducer, {
   ACTION_CLEAR,
@@ -44,6 +52,8 @@ import {
   randomKey,
   resolve
 } from './utils'
+import useFormKeys, { UseFormKeysHook } from './useFormKeys'
+import useFormWatch, { FieldStatus, UseFormWatchHook } from './useFormWatch'
 
 type FormMode = 'controlled' | 'experimental_uncontrolled'
 
@@ -51,6 +61,9 @@ export type FieldElement =
   HTMLInputElement
   | HTMLSelectElement
   | HTMLTextAreaElement
+
+// @ts-ignore
+export type FieldKey<V extends Values> = (keyof V & string) | (string & {})
 
 export type GetButtonProps = {
   disabled?: boolean;
@@ -166,6 +179,10 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    */
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
   /**
+   * Returns the key of a field.
+   */
+  key: UseFormKeysHook['getKey'];
+  /**
    * Loads the form initial values.
    */
   load (): void;
@@ -227,7 +244,10 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
   setValue (
     name: string,
     value?: unknown,
-    options?: { validate?: boolean }
+    options?: {
+      forceUpdate?: boolean,
+      validate?: boolean
+    }
   ): void;
   /**
    * Sets all or partial fields values.
@@ -236,7 +256,11 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    */
   setValues (
     values: Values | Partial<V> | ((previous: V) => V),
-    options?: { partial?: boolean, validate?: boolean }
+    options?: {
+      forceUpdate?: boolean,
+      partial?: boolean,
+      validate?: boolean
+    }
   ): void;
   /**
    * Calls the onSubmit function with form values.
@@ -257,6 +281,10 @@ export interface UseFormHook<V extends Values, E, R> extends FormState<V, E, R> 
    * @param fields
    */
   validateFields (fields?: string[]): Promise<void | Errors<E> | undefined>;
+  /**
+   * Executes a callback when the field changed.
+   */
+  watch: UseFormWatchHook<V, E, R>['watch'];
 }
 
 export interface UseFormOptions<V extends Values, E, R> {
@@ -425,7 +453,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [mode])
 
   // Generate a unique ID for the form.
-  const formId = randomKey(10)
+  const [formKey] = useState(randomKey(10))
 
   // Defines the form state.
   const [state, dispatch] = useReducer(
@@ -442,6 +470,19 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       validateOnSubmit,
       validateOnTouch
     })
+
+  const {
+    changeKey,
+    getKey
+  } = useFormKeys<V, E, R>({
+    formKey,
+    state
+  })
+
+  const {
+    notifyWatchers,
+    watch
+  } = useFormWatch<V, E, R>({ state })
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc)
@@ -683,12 +724,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   /**
    * Defines several field values (use setInitialValues() to set all form values).
    */
-  const setValues = useCallback((
+  const setValues = useCallback<UseFormHook<V, E, R>['setValues']>((
     values: Values | Partial<V> | ((previous: Partial<V>) => Partial<V>),
-    opts?: {
+    opts: {
+      forceUpdate?: boolean,
       partial?: boolean,
       validate?: boolean
-    }
+    } = {}
   ): void => {
     // Ignore action if form disabled
     if (formDisabled) return
@@ -745,6 +787,24 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         }
       })
     } else if (mode === 'experimental_uncontrolled') {
+      Object.entries(mutation).forEach(([name, value]) => {
+        const previousValue = resolve(name, currentValues) ?? null
+
+        if (value !== previousValue) {
+          const status: FieldStatus = {
+            modified: value !== previousValue,
+            name,
+            previousValue,
+            touched: true,
+            value
+          }
+          notifyWatchers(name, status)
+
+          if (opts?.forceUpdate) {
+            changeKey(name)
+          }
+        }
+      })
       if (opts?.partial) {
         valuesRef.current = { ...valuesRef.current, ...nextValues }
       } else {
@@ -756,17 +816,21 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           : true)
       }
     }
-  }, [formDisabled, mode, nullify, requestValidation, validateOnChange])
+  }, [changeKey, formDisabled, mode, notifyWatchers, nullify, requestValidation, validateOnChange])
 
   /**
    * Defines the value of a field.
    */
-  const setValue = useCallback((
+  const setValue = useCallback<UseFormHook<V, E, R>['setValue']>((
     name: string,
     value?: unknown,
-    opts?: { validate?: boolean }
+    opts?: {
+      forceUpdate?: boolean,
+      validate?: boolean
+    }
   ): void => {
     setValues({ [name]: value }, {
+      forceUpdate: opts?.forceUpdate,
       partial: true,
       validate: opts?.validate
     })
@@ -1100,7 +1164,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // Set default props.
     const finalProps: any = {
       ...props,
-      id: getFieldId(name, formId),
+      id: getFieldId(name, formKey),
       name,
       onBlur: handleBlur,
       onChange: (event: React.ChangeEvent<FieldElement>) => {
@@ -1182,7 +1246,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     return finalProps
-  }, [formDisabled, formId, getValue, handleBlur, handleChange, mode, state])
+  }, [formDisabled, formKey, getValue, handleBlur, handleChange, mode, state])
 
   /**
    * Returns form props.
@@ -1272,6 +1336,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     handleReset,
     handleSetValue,
     handleSubmit,
+    key: getKey,
     load,
     mode,
     removeFields,
@@ -1286,13 +1351,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     submit: debouncedValidateAndSubmit,
     validate: debouncedValidate,
     validateField: debouncedValidateField,
-    validateFields: debouncedValidateFields
+    validateFields: debouncedValidateFields,
+    watch
   }), [state, formDisabled, clear, clearErrors, clearTouchedFields, getButtonProps, getError,
     getErrors, getFieldProps, getFormProps, getInitialValue, getInitialValues, getValue, getValues,
-    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, load, mode, removeFields,
-    reset, setError, setErrors, setInitialValues, setTouchedField, setTouchedFields, setValue,
-    setValues, debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField,
-    debouncedValidateFields])
+    handleBlur, handleChange, handleReset, handleSetValue, handleSubmit, getKey, load, mode,
+    removeFields, reset, setError, setErrors, setInitialValues, setTouchedField, setTouchedFields,
+    setValue, setValues, debouncedValidateAndSubmit, debouncedValidate, debouncedValidateField,
+    debouncedValidateFields, watch])
 }
 
 export default useForm

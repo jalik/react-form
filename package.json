@@ -42,7 +42,8 @@
     "test": "jest --passWithNoTests --coverage=true"
   },
   "dependencies": {
-    "@jalik/deep-extend": "^2.0.0"
+    "@jalik/deep-extend": "^2.0.0",
+    "@jalik/observer": "^2.2.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.0",
