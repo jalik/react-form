@@ -3,14 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { build, clone, resolve } from './utils'
-
 export const ACTION_CLEAR = 'CLEAR'
-export const ACTION_INIT_VALUES = 'INIT_VALUES'
-export const ACTION_LOAD = 'LOAD'
-export const ACTION_LOAD_ERROR = 'LOAD_ERROR'
-export const ACTION_LOAD_SUCCESS = 'LOAD_SUCCESS'
-export const ACTION_REMOVE = 'REMOVE'
 export const ACTION_REQUEST_VALIDATION = 'REQUEST_VALIDATION'
 export const ACTION_RESET = 'RESET'
 export const ACTION_RESET_VALUES = 'RESET_VALUES'
@@ -37,22 +30,6 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
    * Disables all fields and buttons.
    */
   disabled?: boolean;
-  /**
-   * Tells if the form was initialized.
-   */
-  initialized: boolean;
-  /**
-   * Contains initial form values.
-   */
-  initialValues: Partial<V>;
-  /**
-   * The loading error.
-   */
-  loadError?: Error;
-  /**
-   * Tells if the form is loading.
-   */
-  loading: boolean;
   /**
    * Tells if the form will trigger a validation or if it will validate some fields.
    */
@@ -105,18 +82,10 @@ export interface FormState<V extends Values = Values, E = Error, R = any> {
    * Tells if the form is validating.
    */
   validating: boolean;
-  /**
-   * The current form values.
-   */
-  values: Partial<V>;
 }
 
 export const initialState: FormState = {
   debug: false,
-  initialized: false,
-  initialValues: {},
-  loadError: undefined,
-  loading: false,
   needValidation: false,
   submitCount: 0,
   submitError: undefined,
@@ -129,17 +98,11 @@ export const initialState: FormState = {
   validateOnInit: false,
   validateOnSubmit: false,
   validateOnTouch: false,
-  validating: false,
-  values: {}
+  validating: false
 }
 
 export type FormAction<V = Values, E = Error, R = any> =
   { type: 'CLEAR', data?: { fields?: string[] } }
-  | { type: 'INIT_VALUES', data: { values: Partial<V> } }
-  | { type: 'LOAD' }
-  | { type: 'LOAD_ERROR', error: Error }
-  | { type: 'LOAD_SUCCESS', data: { values: Partial<V> } }
-  | { type: 'REMOVE', data: { fields: string[] } }
   | { type: 'REQUEST_VALIDATION', data: boolean | string[] }
   | { type: 'RESET' }
   | { type: 'RESET_VALUES', data: { fields: string[] } }
@@ -174,19 +137,9 @@ function useFormReducer<V extends Values, E, R> (
       const { data } = action
 
       if (data?.fields?.length) {
-        let initialValues = clone(state.initialValues)
-        let values = clone(state.values)
-
-        data.fields.forEach((name: string) => {
-          initialValues = build(name, undefined, initialValues)
-          values = build(name, undefined, values)
-        })
-
         nextState = {
           ...state,
-          initialValues,
           submitted: false,
-          values,
           validateError: undefined,
           validated: false
         }
@@ -194,83 +147,11 @@ function useFormReducer<V extends Values, E, R> (
         nextState = {
           ...initialState as FormState<V, E, R>,
           debug: state.debug,
-          initialized: true,
           validateOnChange: state.validateOnChange,
           validateOnInit: state.validateOnInit,
           validateOnSubmit: state.validateOnSubmit,
           validateOnTouch: state.validateOnTouch
         }
-      }
-      break
-    }
-
-    case ACTION_INIT_VALUES: {
-      const { data } = action
-      nextState = {
-        ...initialState as FormState<V, E, R>,
-        debug: state.debug,
-        initialized: true,
-        initialValues: clone(data.values),
-        // Trigger validation if needed
-        needValidation: state.validateOnInit,
-        validateOnChange: state.validateOnChange,
-        validateOnInit: state.validateOnInit,
-        validateOnSubmit: state.validateOnSubmit,
-        validateOnTouch: state.validateOnTouch,
-        values: data.values
-      }
-      break
-    }
-
-    case ACTION_LOAD:
-      nextState = {
-        ...state,
-        loadError: undefined,
-        loading: true
-      }
-      break
-
-    case ACTION_LOAD_ERROR:
-      nextState = {
-        ...state,
-        loadError: action.error,
-        loading: false
-      }
-      break
-
-    case ACTION_LOAD_SUCCESS: {
-      const { data } = action
-      nextState = {
-        ...initialState as FormState<V, E, R>,
-        debug: state.debug,
-        initialized: true,
-        initialValues: clone(data.values),
-        loadError: undefined,
-        loading: false,
-        values: data.values,
-        validateOnChange: state.validateOnChange,
-        validateOnInit: state.validateOnInit,
-        validateOnSubmit: state.validateOnSubmit,
-        validateOnTouch: state.validateOnTouch
-      }
-      break
-    }
-
-    // fixme see how to keep errors and modifiedFields when an array field is moved to another index
-    //  solution: handle array operations (append, prepend...) in reducer.
-    case ACTION_REMOVE: {
-      const { data } = action
-      let values = clone(state.values)
-
-      data.fields.forEach((name) => {
-        if (typeof resolve(name, values) !== 'undefined') {
-          values = build(name, undefined, values)
-        }
-      })
-      nextState = {
-        ...state,
-        submitted: false,
-        values
       }
       break
     }
@@ -290,9 +171,6 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...initialState as FormState<V, E, R>,
         debug: state.debug,
-        initialized: state.initialized,
-        initialValues: state.initialValues,
-        values: clone(state.initialValues),
         validateOnChange: state.validateOnChange,
         validateOnInit: state.validateOnInit,
         validateOnSubmit: state.validateOnSubmit,
@@ -305,19 +183,9 @@ function useFormReducer<V extends Values, E, R> (
         // Ignore reset during validation.
         return state
       }
-      const initialValues = clone(state.initialValues)
-      let values = clone(state.values)
-
-      const { data } = action
-      data.fields.forEach((name: string) => {
-        const initialValue = resolve(name, initialValues)
-        values = build(name, initialValue, values)
-      })
-
       nextState = {
         ...state,
         submitted: false,
-        values,
         validateError: undefined,
         validated: false
       }
@@ -326,11 +194,6 @@ function useFormReducer<V extends Values, E, R> (
 
     case ACTION_SET_VALUES: {
       const { data } = action
-      let values: Partial<V> = data.partial ? clone(state.values) : {}
-
-      Object.entries(data.values).forEach(([name, value]) => {
-        values = build(name, value, values)
-      })
 
       nextState = {
         ...state,
@@ -338,8 +201,7 @@ function useFormReducer<V extends Values, E, R> (
         needValidation: data.validate
           ? Object.keys(data.values)
           : state.needValidation,
-        validated: false,
-        values
+        validated: false
       }
       break
     }
@@ -364,10 +226,9 @@ function useFormReducer<V extends Values, E, R> (
       nextState = {
         ...(action.data.clear ? initialState as FormState<V, E, R> : state),
         debug: state.debug,
-        initialized: true,
-        initialValues: action.data.clear
-          ? (initialState as FormState<V, E, R>).initialValues
-          : (action.data.setInitialValuesOnSuccess ? state.values : state.initialValues),
+        // todo initialValues: action.data.clear
+        //   ? (initialState as FormState<V, E, R>).initialValues
+        //   : (action.data.setInitialValuesOnSuccess ? state.values : state.initialValues),
         submitCount: 0,
         submitError: undefined,
         submitting: false,
