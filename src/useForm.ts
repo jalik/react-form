@@ -546,11 +546,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   })
 
   const {
-    changeKey,
-    getKey
-  } = useFormKeys<V, E, R>({
-    formKey,
-    state
+    getKey,
+    replaceKeysFromValues
+  } = useFormKeys({
+    formKey
   })
 
   const {
@@ -594,6 +593,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   } = useFormValues<V>({
     initialValues,
     mode,
+    onValuesChange: replaceKeysFromValues,
     reinitialize
   })
 
@@ -780,7 +780,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
     })
 
-    setValues(nextValues, { partial })
+    setValues(nextValues, {
+      partial,
+      forceUpdate
+    })
 
     // Clear errors when validation is not triggered after.
     if (!validate && hasDefinedValues(fieldErrors)) {
@@ -811,10 +814,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           value
         }
         notifyWatchers(name, status)
-
-        if (forceUpdate) {
-          changeKey(name)
-        }
       }
     })
 
@@ -837,7 +836,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // Update touched fields.
     setTouched(modifiedFields, { partial })
-  }, [changeKey, formDisabled, getInitialValue, mode, notifyWatchers, nullify, requestValidation, setErrors, setModified, setTouched, setValues, validateOnChange, valuesRef])
+  }, [formDisabled, getInitialValue, mode, notifyWatchers, nullify, requestValidation, setErrors, setModified, setTouched, setValues, validateOnChange, valuesRef])
 
   /**
    * Defines the value of a field.

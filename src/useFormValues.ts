@@ -18,6 +18,11 @@ export type UseFormValuesOptions<V extends Values> = {
    */
   mode: FormMode;
   /**
+   * Executes a callback when values changed.
+   * @param values
+   */
+  onValuesChange?: (values: Partial<V>, previousValues: Partial<V>) => void;
+  /**
    * Resets values with initial values when they change.
    */
   reinitialize?: boolean;
@@ -109,6 +114,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   const {
     initialValues,
     mode,
+    onValuesChange,
     reinitialize
   } = options
 
@@ -121,6 +127,8 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
 
   const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
     const { forceUpdate } = opts ?? {}
+
+    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
     let data: Partial<V> = {}
 
     if (paths) {
@@ -133,8 +141,12 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
 
     if (mode === 'controlled' || forceUpdate) {
       setValuesState(data)
+
+      if (onValuesChange) {
+        onValuesChange(data, prevData)
+      }
     }
-  }, [mode])
+  }, [mode, onValuesChange])
 
   const getInitialValues = useCallback<UseFormValuesHook<V>['getInitialValues']>(() => {
     return initialValuesRef.current != null
@@ -160,6 +172,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
     const { forceUpdate = true } = opts ?? {}
 
+    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
     const data = clone(values)
     valuesRef.current = data
     initialValuesRef.current = data
@@ -168,14 +181,19 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     if (mode === 'controlled' || forceUpdate) {
       setInitialValuesState(data)
       setValuesState(data)
+
+      if (onValuesChange) {
+        onValuesChange(data, prevData)
+      }
     }
-  }, [mode])
+  }, [mode, onValuesChange])
 
   const removeValues = useCallback<UseFormValuesHook<V>['removeValues']>((paths, opts) => {
     const { forceUpdate } = opts ?? {}
 
     // fixme see how to keep errors and modifiedFields when an array field is moved to another index
     //  solution: handle array operations (append, prepend...) in reducer.
+    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
     let initialData: Partial<V> = clone(initialValuesRef.current ?? {} as Partial<V>)
     let data: Partial<V> = clone(valuesRef.current ?? {} as Partial<V>)
 
@@ -194,12 +212,17 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     if (mode === 'controlled' || forceUpdate) {
       setInitialValuesState(initialData)
       setValuesState(data)
+
+      if (onValuesChange) {
+        onValuesChange(data, prevData)
+      }
     }
-  }, [mode])
+  }, [mode, onValuesChange])
 
   const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
     const { forceUpdate } = opts ?? {}
 
+    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
     const initialData: Partial<V> = clone(initialValuesRef.current ?? {} as Partial<V>)
     let data: Partial<V> = initialData
 
@@ -213,15 +236,21 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
 
     if (mode === 'controlled' || forceUpdate) {
       setValuesState(data)
+
+      if (onValuesChange) {
+        onValuesChange(data, prevData)
+      }
     }
     valuesRef.current = data
-  }, [mode])
+  }, [mode, onValuesChange])
 
   const setValues = useCallback<UseFormValuesHook<V>['setValues']>((values, opts) => {
     const {
       forceUpdate,
       partial
     } = opts ?? {}
+
+    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
 
     let data: Partial<V> = partial
       ? clone(valuesRef.current ?? {} as Partial<V>)
@@ -243,8 +272,12 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
 
     if (mode === 'controlled' || forceUpdate) {
       setValuesState(data)
+
+      if (onValuesChange) {
+        onValuesChange(data, prevData)
+      }
     }
-  }, [mode])
+  }, [mode, onValuesChange])
 
   useEffect(() => {
     // Set values using initial values when they are provided or if they changed.
