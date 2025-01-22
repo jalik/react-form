@@ -137,6 +137,14 @@ export interface UseFormHook<V extends Values, E = Error, R = any> extends FormS
    */
   getInitialValues (): Partial<V> | undefined;
   /**
+   * Returns modified fields.
+   */
+  getModified: UseFormStatusHook['getModified'];
+  /**
+   * Returns touched fields.
+   */
+  getTouched: UseFormStatusHook['getTouched'];
+  /**
    * Returns field value.
    * @param name
    * @param defaultValue
@@ -560,6 +568,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const {
     clearModified,
     clearTouched,
+    getModified,
+    getTouched,
     isModified,
     isTouched,
     modified,
@@ -1275,6 +1285,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getFormProps,
     getInitialValue,
     getInitialValues,
+    getModified,
+    getTouched,
     getValue,
     getValues,
     handleBlur,

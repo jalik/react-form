@@ -47,6 +47,14 @@ export type UseFormStatusHook = {
     }
   ): void;
   /**
+   * Returns modified fields.
+   */
+  getModified (): ModifiedFields;
+  /**
+   * Returns modified fields.
+   */
+  getTouched (): TouchedFields;
+  /**
    * Tells if the field was modified else the form if no path is passed.
    * @param path
    */
@@ -185,6 +193,14 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [mode])
 
+  const getModified = useCallback<UseFormStatusHook['getModified']>(() => {
+    return modifiedRef.current
+  }, [])
+
+  const getTouched = useCallback<UseFormStatusHook['getTouched']>(() => {
+    return touchedRef.current
+  }, [])
+
   const isModified = useCallback<UseFormStatusHook['isModified']>((path) => {
     if (path) {
       return modifiedRef.current[path] ?? false
@@ -294,6 +310,8 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
   return {
     clearModified,
     clearTouched,
+    getModified,
+    getTouched,
     modified: hasTrueValues(modifiedRef.current),
     modifiedRef,
     modifiedState,
