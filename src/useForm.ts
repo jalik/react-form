@@ -48,6 +48,7 @@ import useFormErrors, { UseFormErrorsHook } from './useFormErrors'
 import useFormStatus, { UseFormStatusHook, UseFormStatusOptions } from './useFormStatus'
 import useFormValues, { UseFormValuesHook } from './useFormValues'
 import useFormLoader from './useFormLoader'
+import useFormList, { UseFormListHook } from './useFormList'
 
 export type FormMode = 'controlled' | 'experimental_uncontrolled'
 
@@ -72,7 +73,7 @@ export type GetButtonPropsReturnType = {
   type?: any;
 }
 
-export interface UseFormHook<V extends Values, E = Error, R = any> extends FormState<V, E, R> {
+export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, R> & {
   /**
    * Clears the form (values, errors...).
    * @param fields
@@ -343,9 +344,16 @@ export interface UseFormHook<V extends Values, E = Error, R = any> extends FormS
    * Form values.
    */
   values: UseFormValuesHook<V>['valuesState'];
-}
+} & Pick<UseFormListHook,
+  'appendListItem' |
+  'insertListItem' |
+  'moveListItem' |
+  'prependListItem' |
+  'removeListItem' |
+  'replaceListItem' |
+  'swapListItem'>
 
-export interface UseFormOptions<V extends Values, E, R> {
+export type UseFormOptions<V extends Values, E, R> = {
   /**
    * Tells if form values should be cleared after submit.
    */
@@ -540,6 +548,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       validateOnTouch
     })
 
+  // Handle form errors.
+  const formErrors = useFormErrors<V, E, R>({
+    initialErrors,
+    state
+  })
   const {
     clearErrors,
     errorsState,
@@ -548,23 +561,23 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     hasError,
     setError,
     setErrors
-  } = useFormErrors<V, E, R>({
-    initialErrors,
-    state
-  })
+  } = formErrors
 
+  // Handle form keys.
+  const formKeys = useFormKeys({
+    formKey
+  })
   const {
     getKey,
     replaceKeysFromValues
-  } = useFormKeys({
-    formKey
+  } = formKeys
+
+  // Handle form status.
+  const formStatus = useFormStatus({
+    initialModified,
+    initialTouched,
+    mode
   })
-
-  const {
-    notifyWatchers,
-    watch
-  } = useFormWatch<V, E, R>({ state })
-
   const {
     clearModified,
     clearTouched,
@@ -581,12 +594,15 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setTouched,
     touched,
     touchedRef
-  } = useFormStatus({
-    initialModified,
-    initialTouched,
-    mode
-  })
+  } = formStatus
 
+  // Handle form values.
+  const formValues = useFormValues<V>({
+    initialValues,
+    mode,
+    onValuesChange: replaceKeysFromValues,
+    reinitialize
+  })
   const {
     clearValues,
     getInitialValues,
@@ -600,23 +616,34 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setInitialValues,
     setValues,
     valuesRef
-  } = useFormValues<V>({
-    initialValues,
-    mode,
-    onValuesChange: replaceKeysFromValues,
-    reinitialize
+  } = formValues
+
+  // Handle form lists.
+  const formList = useFormList<V, E>({
+    formErrors,
+    formStatus,
+    formValues
   })
 
-  const {
-    load,
-    loading,
-    loadError
-  } = useFormLoader<V>({
+  // Handle form loading.
+  const formLoader = useFormLoader<V>({
     loader,
     onSuccess (result) {
       setInitialValues(result ?? {}, { forceUpdate: true })
     }
   })
+  const {
+    load,
+    loading,
+    loadError
+  } = formLoader
+
+  // Handle form watchers.
+  const formWatch = useFormWatch<V, E, R>({ state })
+  const {
+    notifyWatchers,
+    watch
+  } = formWatch
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc)
@@ -1273,6 +1300,16 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   return {
     ...state,
+
+    // lists
+    appendListItem: formList.appendListItem,
+    insertListItem: formList.insertListItem,
+    moveListItem: formList.moveListItem,
+    prependListItem: formList.prependListItem,
+    removeListItem: formList.removeListItem,
+    replaceListItem: formList.replaceListItem,
+    swapListItem: formList.swapListItem,
+
     clear,
     clearErrors,
     clearTouchedFields: clearTouched,

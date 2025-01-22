@@ -233,6 +233,19 @@ export function getFieldValue (field: FieldElement, options?: {
 }
 
 /**
+ * Returns the index of an object path.
+ * @param key
+ */
+export function getIndexFromPath (key: string): number | null {
+  const match = key.match(/\[(\d+)]$/)
+
+  if (match && match[1] != null) {
+    return parseInt(match[1], 10)
+  }
+  return null
+}
+
+/**
  * Returns selected values from a select element.
  */
 export function getSelectedValues (element: HTMLSelectElement): string[] {
@@ -456,4 +469,87 @@ export function resolve<T> (
   // Return root attribute.
   // ex: "field"
   return context[path]
+}
+
+/**
+ * Moves path value in a record.
+ * @param record
+ * @param path
+ * @param fromIndex
+ * @param toIndex
+ */
+export function movePathIndices<T extends Record<string, unknown>> (record: T, path: string, fromIndex: number, toIndex: number): T {
+  const minIndex = Math.min(fromIndex, toIndex)
+  const maxIndex = Math.max(fromIndex, toIndex)
+  const result: Record<string, unknown> = {}
+
+  Object.keys(record).forEach((key) => {
+    result[key] = record[key]
+
+    if (key.startsWith(`${path}[`)) {
+      const pathIndex = getIndexFromPath(key)
+
+      if (pathIndex != null && pathIndex >= minIndex && pathIndex < maxIndex) {
+        result[`${path}[${pathIndex + 1}]`] = record[key]
+      }
+    }
+  })
+  const fromValue = record[`${path}[${fromIndex}]`]
+  const toValue = record[`${path}[${toIndex}]`]
+  result[`${path}[${toIndex}]`] = fromValue
+  result[`${path}[${fromIndex}]`] = toValue
+  return result as T
+}
+
+/**
+ * Swaps two list values in a record.
+ * @param record
+ * @param path
+ * @param fromIndex
+ * @param toIndex
+ */
+export function swapPathIndices<T extends Record<string, unknown>> (record: T, path: string, fromIndex: number, toIndex: number): T {
+  const fromValue = record[`${path}[${fromIndex}]`]
+  const toValue = record[`${path}[${toIndex}]`]
+  return {
+    ...record,
+    [`${path}[${fromIndex}]`]: toValue,
+    [`${path}[${toIndex}]`]: fromValue
+  }
+}
+
+/**
+ * Updates indices in paths of a record.
+ * @param record
+ * @param path
+ * @param index
+ * @param change
+ */
+export function updatePathIndices<T extends Record<string, unknown>> (
+  record: T,
+  path: string,
+  index: number,
+  change: number
+): T {
+  const result: Record<string, unknown> = {}
+
+  Object.keys(record).forEach((key) => {
+    result[key] = record[key]
+
+    if (key.startsWith(`${path}[`)) {
+      const pathIndex = getIndexFromPath(key)
+
+      if (pathIndex != null && pathIndex >= index) {
+        result[`${path}[${pathIndex + change}]`] = record[key]
+
+        // Delete the first index when inserting items
+        // or the last index when removing items.
+        if ((change > 0 && pathIndex === index) ||
+          (change < 0 && pathIndex === index + 1)) {
+          delete result[key]
+        }
+      }
+    }
+  })
+  return result as T
 }

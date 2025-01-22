@@ -3,16 +3,21 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import React, { SyntheticEvent, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { SyntheticEvent, useCallback, useMemo, useRef } from 'react'
 import { UseFormHook } from './useForm'
 import useFormContext from './useFormContext'
 import { Values } from './useFormReducer'
-import { resolve } from './utils'
 
 export type ArrayItem<T> = {
   key: string | number;
   name: string,
   value: T;
+}
+
+export type UseFieldArrayOptions<T, V extends Values> = {
+  context: UseFormHook<V, Error, any>;
+  defaultValue: T;
+  name: string;
 }
 
 /**
@@ -35,12 +40,6 @@ function getFieldsFromArray<T> (getKey: (path: string) => string, path: string, 
   })
 }
 
-export type UseFieldArrayOptions<T, V extends Values> = {
-  context: UseFormHook<V, Error, any>
-  defaultValue: T
-  name: string
-}
-
 /**
  * Returns utils to manage an array of fields.
  */
@@ -56,113 +55,50 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const {
     key,
     getValue,
-    setValues
+    appendListItem,
+    insertListItem,
+    moveListItem,
+    prependListItem,
+    removeListItem,
+    replaceListItem,
+    swapListItem
   } = context ?? form
 
   const fieldsRef = useRef<ArrayItem<T>[]>([])
 
   const fields = useMemo(() => {
     const value = getValue<T[]>(name, [])
-    return value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
+    fieldsRef.current = value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
+    return fieldsRef.current
   }, [getValue, key, name])
 
-  /**
-   * Adds values to the end of the array.
-   */
-  const append = useCallback((...values: T[]): void => {
-    setValues((s) => {
-      const value = resolve<T[]>(name, s) ?? []
-      return { [name]: [...value, ...values] }
-    }, {
-      partial: true,
-      forceUpdate: true
-    })
-  }, [name, setValues])
+  const append = useCallback((...items: T[]) => {
+    appendListItem(name, ...items)
+  }, [appendListItem, name])
 
-  /**
-   * Inserts values at a given index.
-   */
-  const insert = useCallback((index: number, ...values: T[]): void => {
-    setValues((s) => {
-      const value = [...(resolve<T[]>(name, s) ?? [])]
-      value.splice(index, 0, ...values)
-      return { [name]: value }
-    }, {
-      partial: true,
-      forceUpdate: true
-    })
-  }, [name, setValues])
+  const insert = useCallback((index: number, ...items: T[]) => {
+    insertListItem(name, index, ...items)
+  }, [insertListItem, name])
 
-  /**
-   * Moves a value from an index to another index.
-   */
-  const move = useCallback((fromIndex: number, toIndex: number): void => {
-    setValues((s) => {
-      const value = [...(resolve<T[]>(name, s) ?? [])]
-      const index = Math.min(Math.max(toIndex, 0), value.length)
-      const [item] = value.splice(fromIndex, 1)
-      value.splice(index, 0, item)
-      return { [name]: value }
-    }, {
-      partial: true,
-      forceUpdate: true
-    })
-  }, [name, setValues])
+  const move = useCallback((fromIndex: number, toIndex: number) => {
+    moveListItem(name, fromIndex, toIndex)
+  }, [moveListItem, name])
 
-  /**
-   * Adds values to the beginning of the array.
-   */
-  const prepend = useCallback((...values: T[]): void => {
-    setValues((s) => {
-      const value = resolve<T[]>(name, s) ?? []
-      return { [name]: [...values, ...value] }
-    }, {
-      partial: true,
-      forceUpdate: true
-    })
-  }, [name, setValues])
+  const prepend = useCallback((...items: T[]) => {
+    prependListItem(name, ...items)
+  }, [prependListItem, name])
 
-  /**
-   * Removes values from the array by index.
-   */
-  const remove = useCallback((...indexes: number[]): void => {
-    setValues((s) => {
-      const value = [...(resolve<T[]>(name, s) ?? [])]
-      const reversedIndexes = [...indexes].reverse()
-      reversedIndexes.forEach((index) => {
-        value.splice(index, 1)
-      })
-      return { [name]: value }
-    }, {
-      partial: true,
-      forceUpdate: true
-    })
-  }, [name, setValues])
+  const replace = useCallback((index: number, item: T) => {
+    replaceListItem(name, index, item)
+  }, [replaceListItem, name])
 
-  /**
-   * Swaps values from an index to another index.
-   */
-  const swap = useCallback((fromIndex: number, toIndex: number): void => {
-    setValues((s) => {
-      const value = resolve<T[]>(name, s) ?? []
-      let a
-      let b
+  const remove = useCallback((...indices: number[]) => {
+    removeListItem(name, ...indices)
+  }, [removeListItem, name])
 
-      if (fromIndex < toIndex) {
-        b = value.splice(toIndex, 1)[0]
-        a = value.splice(fromIndex, 1)[0]
-      } else {
-        a = value.splice(fromIndex, 1)[0]
-        b = value.splice(toIndex, 1)[0]
-      }
-      value.splice(fromIndex, 0, b)
-      value.splice(toIndex, 0, a)
-      return { [name]: value }
-    }, {
-      partial: true,
-      forceUpdate: true
-    })
-  }, [name, setValues])
+  const swap = useCallback((fromIndex: number, toIndex: number) => {
+    swapListItem(name, fromIndex, toIndex)
+  }, [swapListItem, name])
 
   /**
    * Handles event that appends a value.
@@ -185,15 +121,10 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    */
   const handleRemove = useCallback((index: number) => (event: React.SyntheticEvent | Event): void => {
     event.preventDefault()
-    remove(index)
-  }, [remove])
+    removeListItem(name, index)
+  }, [name, removeListItem])
 
-  useEffect(() => {
-    const value = getValue<T[]>(name, [])
-    fieldsRef.current = value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
-  }, [getValue, key, name])
-
-  return useMemo(() => ({
+  return {
     append,
     fields,
     handleAppend,
@@ -203,8 +134,9 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     move,
     prepend,
     remove,
+    replace,
     swap
-  }), [append, fields, handleAppend, handlePrepend, handleRemove, insert, move, prepend, remove, swap])
+  }
 }
 
 export default useFieldArray

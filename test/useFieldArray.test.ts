@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { describe, expect, it } from '@jest/globals'
@@ -300,8 +300,8 @@ describe('useFieldArray()', () => {
     })
   })
 
-  describe('remove(...indexes)', () => {
-    it('should remove values at indexes in the array', () => {
+  describe('remove(...indices)', () => {
+    it('should remove values at indices in the array', () => {
       const initialValues: ItemsForm = {
         items: [
           { id: 1 },
