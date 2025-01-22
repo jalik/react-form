@@ -90,6 +90,18 @@ export type UseFormValuesHook<V extends Values> = {
     values: Partial<V>,
     options?: { forceUpdate?: boolean }): void;
   /**
+   * Sets a single value.
+   * @param path
+   * @param value
+   * @param options
+   */
+  setValue (
+    path: string,
+    value: any,
+    options?: {
+      forceUpdate?: boolean,
+    }): void;
+  /**
    * Sets given values of all values.
    * @param values
    * @param options
@@ -279,6 +291,11 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     }
   }, [mode, onValuesChange])
 
+  const setValue = useCallback<UseFormValuesHook<V>['setValue']>((name, value, opts) => {
+    // @ts-expect-error fixme: Argument of type { [x: string]: any; } is not assignable to parameter of type Partial<V>
+    setValues({ [name]: value }, opts)
+  }, [setValues])
+
   useEffect(() => {
     // Set values using initial values when they are provided or if they changed.
     if (initialValues && (!initializedRef.current || reinitialize)) {
@@ -298,6 +315,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     removeValues,
     resetValues,
     setInitialValues: initialize,
+    setValue,
     setValues,
     valuesRef,
     valuesState
