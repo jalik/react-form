@@ -7,8 +7,16 @@ import { Values } from './useFormReducer'
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { build, clone, resolve } from './utils'
 import { FormMode } from './useForm'
+import { UseFormKeysHook } from './useFormKeys'
+
+// todo add autocompletion with keyof for string in Record
+export type PathsOrValues<V extends Values> = Record<string, unknown> | Partial<V>
 
 export type UseFormValuesOptions<V extends Values> = {
+  /**
+   * The form keys hook.
+   */
+  formKeys: UseFormKeysHook;
   /**
    * Contains initial form values.
    */
@@ -40,7 +48,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns the initial value of a field.
    */
-  getInitialValue<T> (path: string): T | undefined;
+  getInitialValue<T> (path: string, defaultValue?: T): T | undefined;
   /**
    * Returns the initial values.
    */
@@ -48,7 +56,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns a value.
    */
-  getValue<T> (path: string): T | undefined;
+  getValue<T> (path: string, defaultValue?: T): T | undefined;
   /**
    * Returns values.
    */
@@ -87,7 +95,7 @@ export type UseFormValuesHook<V extends Values> = {
    * @param options
    */
   setInitialValues (
-    values: Partial<V>,
+    values: PathsOrValues<V>,
     options?: { forceUpdate?: boolean }): void;
   /**
    * Sets a single value.
@@ -98,19 +106,18 @@ export type UseFormValuesHook<V extends Values> = {
   setValue (
     path: string,
     value: any,
-    options?: {
-      forceUpdate?: boolean,
-    }): void;
+    options?: { forceUpdate?: boolean }): void;
   /**
    * Sets given values of all values.
    * @param values
    * @param options
    */
   setValues (
-    values: Partial<V>,
+    values: PathsOrValues<V>,
     options?: {
-      forceUpdate?: boolean,
-      partial: boolean
+      forceUpdate?: boolean;
+      initialize?: boolean;
+      partial: boolean;
     }): void;
   /**
    * The values reference.
@@ -124,6 +131,7 @@ export type UseFormValuesHook<V extends Values> = {
 
 function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): UseFormValuesHook<V> {
   const {
+    formKeys,
     initialValues,
     mode,
     onValuesChange,
@@ -137,135 +145,36 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   const valuesRef = useRef<Partial<V>>(initialValues ?? {})
   const [valuesState, setValuesState] = useState<Partial<V>>(valuesRef.current)
 
-  const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
-    const { forceUpdate } = opts ?? {}
-
-    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
-    let data: Partial<V> = {}
-
-    if (paths) {
-      data = clone(valuesRef.current ?? {} as Partial<V>)
-      paths.forEach((path) => {
-        data = build(path, undefined, data)
-      })
-    }
-    valuesRef.current = data
-
-    if (mode === 'controlled' || forceUpdate) {
-      setValuesState(data)
-
-      if (onValuesChange) {
-        onValuesChange(data, prevData)
-      }
-    }
-  }, [mode, onValuesChange])
+  const { replaceKeysFromValues } = formKeys
 
   const getInitialValues = useCallback<UseFormValuesHook<V>['getInitialValues']>(() => {
-    return initialValuesRef.current != null
-      ? clone(initialValuesRef.current ?? {} as Partial<V>)
-      : undefined
+    return initialValuesRef.current
   }, [])
 
-  const getInitialValue = useCallback<UseFormValuesHook<V>['getInitialValue']>(<T> (path: string) => (
-    resolve<T>(path, getInitialValues())
-  ), [getInitialValues])
+  const getInitialValue = useCallback<UseFormValuesHook<V>['getInitialValue']>(<T> (path: string, defaultValue?: T) => {
+    const value = resolve<T>(path, getInitialValues())
+    return typeof value !== 'undefined' ? value : defaultValue
+  }, [getInitialValues])
 
   const getValues = useCallback<UseFormValuesHook<V>['getValues']>(() => {
-    return clone(valuesRef.current)
+    return valuesRef.current
   }, [])
 
-  const getValue = useCallback<UseFormValuesHook<V>['getValue']>(<T> (name: string, defaultValue?: T) => {
-    const value = resolve<T>(name, getValues())
-    return typeof value !== 'undefined'
-      ? value
-      : defaultValue
+  const getValue = useCallback<UseFormValuesHook<V>['getValue']>(<T> (path: string, defaultValue?: T) => {
+    const value = resolve<T>(path, getValues())
+    return typeof value !== 'undefined' ? value : defaultValue
   }, [getValues])
-
-  const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
-    const { forceUpdate = true } = opts ?? {}
-
-    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
-    const data = clone(values)
-    valuesRef.current = data
-    initialValuesRef.current = data
-    initializedRef.current = true
-
-    if (mode === 'controlled' || forceUpdate) {
-      setInitialValuesState(data)
-      setValuesState(data)
-
-      if (onValuesChange) {
-        onValuesChange(data, prevData)
-      }
-    }
-  }, [mode, onValuesChange])
-
-  const removeValues = useCallback<UseFormValuesHook<V>['removeValues']>((paths, opts) => {
-    const { forceUpdate } = opts ?? {}
-
-    // fixme see how to keep errors and modifiedFields when an array field is moved to another index
-    //  solution: handle array operations (append, prepend...) in reducer.
-    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
-    let initialData: Partial<V> = clone(initialValuesRef.current ?? {} as Partial<V>)
-    let data: Partial<V> = clone(valuesRef.current ?? {} as Partial<V>)
-
-    // Remove from values and initial values.
-    paths.forEach((path) => {
-      if (typeof resolve(path, initialValuesRef) !== 'undefined') {
-        initialData = build(path, undefined, initialData)
-      }
-      if (typeof resolve(path, data) !== 'undefined') {
-        data = build(path, undefined, data)
-      }
-    })
-    initialValuesRef.current = data
-    valuesRef.current = data
-
-    if (mode === 'controlled' || forceUpdate) {
-      setInitialValuesState(initialData)
-      setValuesState(data)
-
-      if (onValuesChange) {
-        onValuesChange(data, prevData)
-      }
-    }
-  }, [mode, onValuesChange])
-
-  const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
-    const { forceUpdate } = opts ?? {}
-
-    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
-    const initialData: Partial<V> = clone(initialValuesRef.current ?? {} as Partial<V>)
-    let data: Partial<V> = initialData
-
-    if (paths) {
-      data = clone(valuesRef.current ?? {} as Partial<V>)
-      paths.forEach((path) => {
-        const initialValue = resolve(path, initialData)
-        data = build(path, initialValue, data)
-      })
-    }
-
-    if (mode === 'controlled' || forceUpdate) {
-      setValuesState(data)
-
-      if (onValuesChange) {
-        onValuesChange(data, prevData)
-      }
-    }
-    valuesRef.current = data
-  }, [mode, onValuesChange])
 
   const setValues = useCallback<UseFormValuesHook<V>['setValues']>((values, opts) => {
     const {
       forceUpdate,
+      initialize,
       partial
     } = opts ?? {}
 
-    const prevData = clone(valuesRef.current ?? {} as Partial<V>)
-
+    const prevData = valuesRef.current
     let data: Partial<V> = partial
-      ? clone(valuesRef.current ?? {} as Partial<V>)
+      ? valuesRef.current
       : {} as Partial<V>
 
     Object.entries(values).forEach(([path, value]) => {
@@ -273,33 +182,110 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     })
     valuesRef.current = data
 
-    if (!initializedRef.current) {
-      initialValuesRef.current = data
+    // Update initial values.
+    if (!initializedRef.current || initialize) {
+      initialValuesRef.current = clone(data)
       initializedRef.current = true
 
-      if (mode === 'controlled' || forceUpdate) {
+      if (mode === 'controlled') {
         setInitialValuesState(data)
       }
     }
 
+    // Update values.
     if (mode === 'controlled' || forceUpdate) {
       setValuesState(data)
+
+      // Force update by replacing keys.
+      if (mode === 'experimental_uncontrolled') {
+        replaceKeysFromValues(values)
+      }
 
       if (onValuesChange) {
         onValuesChange(data, prevData)
       }
     }
-  }, [mode, onValuesChange])
+  }, [replaceKeysFromValues, mode, onValuesChange])
 
-  const setValue = useCallback<UseFormValuesHook<V>['setValue']>((name, value, opts) => {
-    // @ts-expect-error fixme: Argument of type { [x: string]: any; } is not assignable to parameter of type Partial<V>
-    setValues({ [name]: value }, opts)
+  const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
+    const currentValue = getValue(path)
+
+    if (currentValue !== value) {
+      setValues({ [path]: value }, {
+        ...opts,
+        partial: true
+      })
+    }
+  }, [getValue, setValues])
+
+  const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
+    let data: Partial<V> = {}
+
+    if (paths) {
+      paths.forEach((path) => {
+        data = build(path, undefined, data)
+      })
+    }
+    setValues(data, {
+      forceUpdate: true,
+      ...opts,
+      partial: paths != null && paths.length > 0
+    })
+  }, [setValues])
+
+  const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
+    setValues(values, {
+      forceUpdate: true,
+      ...opts,
+      initialize: true,
+      partial: false
+    })
+  }, [setValues])
+
+  const removeValues = useCallback<UseFormValuesHook<V>['removeValues']>((paths, opts) => {
+    let initialData: Partial<V> = initialValuesRef.current ?? {}
+    let data: Partial<V> = valuesRef.current
+
+    if (paths) {
+      // Remove from values and initial values.
+      paths.forEach((path) => {
+        if (typeof resolve(path, initialValuesRef) !== 'undefined') {
+          initialData = build(path, undefined, initialData)
+        }
+        if (typeof resolve(path, data) !== 'undefined') {
+          data = build(path, undefined, data)
+        }
+      })
+    }
+    setValues(data, {
+      forceUpdate: true,
+      ...opts,
+      partial: false
+    })
+  }, [setValues])
+
+  const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
+    const initialData: Partial<V> = initialValuesRef.current ?? {}
+    let data: Partial<V> = initialData
+
+    if (paths) {
+      data = valuesRef.current
+      paths.forEach((path) => {
+        const initialValue = resolve(path, initialData)
+        data = build(path, initialValue, data)
+      })
+    }
+    setValues(data, {
+      forceUpdate: true,
+      ...opts,
+      partial: false
+    })
   }, [setValues])
 
   useEffect(() => {
     // Set values using initial values when they are provided or if they changed.
     if (initialValues && (!initializedRef.current || reinitialize)) {
-      initialize(initialValues)
+      initialize(initialValues, { forceUpdate: true })
     }
   }, [initialValues, initialize, reinitialize])
 

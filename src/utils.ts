@@ -56,9 +56,9 @@ export function build<T> (
 
   // Use a copy of the object to not mutate the original.
   if (context instanceof Array) {
-    ctx = [...context]
+    ctx = clone(context)
   } else if (typeof context === 'object' && context !== null) {
-    ctx = { ...context }
+    ctx = clone(context)
   }
 
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
@@ -123,37 +123,57 @@ export function build<T> (
 }
 
 /**
+ * Builds an object using paths and values.
+ * @param paths
+ */
+export function reconstruct<T> (paths: Record<string, unknown>): T | null {
+  let result: T | null = null
+
+  Object.entries(paths).forEach(([path, value]) => {
+    result = build(path, value, result ?? paths)
+  })
+  return result
+}
+
+/**
  * Returns a deeply cloned object.
  */
 export function clone<T> (object: T): T {
-  return deepExtend({}, object)
+  if (object instanceof Array) {
+    return deepExtend([], object)
+  } else {
+    return deepExtend({}, object)
+  }
 }
 
 /**
  * Returns a flat object.
  * @example { a: { test: 1 }, b: 2 } => { "a.test": 1, b: 2 }
  * @param object
- * @param isRoot
+ * @param path
+ * @param preserveKeys
  */
-export function flatten (object: Record<string, any>, isRoot = true): Record<string, unknown> {
+export function flatten (object: Record<string, any>, path?: string | null, preserveKeys = false): Record<string, unknown> {
   const result: Record<string, unknown> = {}
+  const isArray = object instanceof Array
 
   Object.entries(object).forEach(([key, value]) => {
-    if (!isRoot && (key.indexOf(' ') !== -1 || key.indexOf('.') !== -1)) {
-      result[`[${key}]`] = value
-    } else {
-      result[key] = value
-    }
-    if (value != null && typeof value === 'object' && !(value instanceof Array)) {
-      const branches = flatten(value, false)
+    // Add brackets around key if it includes space or dot.
+    const currentKey = isArray || ((key.includes(' ') || key.includes('.')) && !preserveKeys)
+      ? `[${key}]`
+      : key
+
+    // Get current path from parent path and current key.
+    const currentPath = path != null
+      ? (currentKey.startsWith('[') ? `${path}${currentKey}` : `${path}.${currentKey}`)
+      : currentKey
+
+    result[currentPath] = value
+
+    if (value != null && typeof value === 'object') {
+      const branches = flatten(value, currentPath)
       Object.entries(branches).forEach(([k, v]) => {
-        if (!isRoot && (key.indexOf(' ') !== -1 || key.indexOf('.') !== -1)) {
-          result[`[${key}].${k}`] = v
-        } else if (k.indexOf('[') === 0) {
-          result[`${key}${k}`] = v
-        } else {
-          result[`${key}.${k}`] = v
-        }
+        result[k] = v
       })
     }
   })

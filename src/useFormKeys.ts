@@ -4,6 +4,9 @@
  */
 
 import { Dispatch, SetStateAction, useCallback, useState } from 'react'
+import { flatten } from './utils'
+import { PathsOrValues } from './useFormValues'
+import { Values } from './useFormReducer'
 
 export type FormKeys = Record<string, number>
 
@@ -29,7 +32,7 @@ export type UseFormKeysHook = {
    * Replaces all keys from values.
    * @param values
    */
-  replaceKeysFromValues (values: Record<string, unknown>): void;
+  replaceKeysFromValues (values: PathsOrValues<Values>): void;
   /**
    * Sets all keys.
    */
@@ -42,12 +45,12 @@ function useFormKeys (options: UseFormKeysOptions): UseFormKeysHook {
   const [keys, setKeys] = useState<FormKeys>({})
 
   const getKey = useCallback<UseFormKeysHook['getKey']>((path) => {
-    return `${formKey}-${path}-${keys[path] ?? 0}`
+    return `${formKey}-${path}-v${keys[path] ?? 0}`
   }, [formKey, keys])
 
   const replaceKeys = useCallback<UseFormKeysHook['replaceKeys']>((paths) => {
     setKeys((s) => {
-      const result: FormKeys = {}
+      const result: FormKeys = { ...s }
       paths.forEach((path) => {
         result[path] = (s[path] ?? 0) + 1
       })
@@ -56,7 +59,7 @@ function useFormKeys (options: UseFormKeysOptions): UseFormKeysHook {
   }, [])
 
   const replaceKeysFromValues = useCallback<UseFormKeysHook['replaceKeysFromValues']>((values) => {
-    replaceKeys(Object.keys(values))
+    replaceKeys(Object.keys(flatten(values)))
   }, [replaceKeys])
 
   return {

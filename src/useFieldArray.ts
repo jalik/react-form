@@ -61,16 +61,20 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     prependListItem,
     removeListItem,
     replaceListItem,
-    swapListItem
+    swapListItem,
+    values
   } = context ?? form
 
   const fieldsRef = useRef<ArrayItem<T>[]>([])
 
-  const fields = useMemo(() => {
-    const value = getValue<T[]>(name, [])
-    fieldsRef.current = value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
-    return fieldsRef.current
-  }, [getValue, key, name])
+  const fields = useMemo<ArrayItem<T>[]>(() => {
+    if (values != null) {
+      const value = getValue<T[]>(name, [])
+      // fixme in controlled mode, when adding item, fields is not updated
+      fieldsRef.current = value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
+    }
+    return fieldsRef.current ?? []
+  }, [getValue, key, name, values])
 
   const append = useCallback((...items: T[]) => {
     appendListItem(name, ...items)

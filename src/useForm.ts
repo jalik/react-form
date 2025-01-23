@@ -40,15 +40,17 @@ import {
   getFieldValue,
   hasDefinedValues,
   randomKey,
+  reconstruct,
   resolve
 } from './utils'
 import useFormKeys, { UseFormKeysHook } from './useFormKeys'
 import useFormWatch, { FieldStatus, UseFormWatchHook } from './useFormWatch'
 import useFormErrors, { UseFormErrorsHook } from './useFormErrors'
 import useFormStatus, { UseFormStatusHook, UseFormStatusOptions } from './useFormStatus'
-import useFormValues, { UseFormValuesHook } from './useFormValues'
+import useFormValues, { PathsOrValues, UseFormValuesHook } from './useFormValues'
 import useFormLoader from './useFormLoader'
 import useFormList, { UseFormListHook } from './useFormList'
+import deepExtend from '@jalik/deep-extend'
 
 export type FormMode = 'controlled' | 'experimental_uncontrolled'
 
@@ -266,7 +268,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * Sets initial values.
    * @param values
    */
-  setInitialValues (values: Partial<V>): void;
+  setInitialValues (values: PathsOrValues<V>): void;
   /**
    * Sets a single touched field.
    * @param name
@@ -302,7 +304,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * @param options
    */
   setValues (
-    values: Values | Partial<V> | ((previous: V) => V),
+    values: PathsOrValues<V> | ((previous: V) => V),
     options?: {
       forceUpdate?: boolean,
       partial?: boolean,
@@ -436,7 +438,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * @param mutation
    * @param values
    */
-  transform? (mutation: Values, values: Partial<V>): Partial<V>;
+  transform? (mutation: Record<string, unknown>, values: Partial<V>): Record<string, unknown>;
   /**
    * Enables trimming on blur.
    */
@@ -568,8 +570,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     formKey
   })
   const {
-    getKey,
-    replaceKeysFromValues
+    getKey
   } = formKeys
 
   // Handle form status.
@@ -587,27 +588,31 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     isTouched,
     modified,
     modifiedRef,
+    modifiedState,
     resetModified,
     resetTouched,
     setModified,
     setTouchedField,
     setTouched,
     touched,
-    touchedRef
+    touchedRef,
+    touchedState
   } = formStatus
 
   // Handle form values.
   const formValues = useFormValues<V>({
+    formKeys,
     initialValues,
     mode,
-    onValuesChange: replaceKeysFromValues,
+    // todo pass onValuesChange from useForm options
+    // onValuesChange: replaceKeysFromValues,
     reinitialize
   })
   const {
     clearValues,
     getInitialValues,
     initializedRef,
-    initialValuesRef,
+    initialValuesState,
     getInitialValue,
     getValue,
     getValues,
@@ -615,7 +620,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     resetValues,
     setInitialValues,
     setValues,
-    valuesRef
+    valuesRef,
+    valuesState
   } = formValues
 
   // Handle form lists.
@@ -669,7 +675,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Clears all values or selected fields only.
    */
   const clear = useCallback<UseFormHook<V, E, R>['clear']>((fields, opts) => {
-    const { forceUpdate } = opts ?? {}
+    const { forceUpdate = true } = opts ?? {}
     clearValues(fields, { forceUpdate })
     clearErrors(fields)
     clearModified(fields, { forceUpdate })
@@ -680,14 +686,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Removes fields definitely (also removes errors, modified/touched states...).
    */
   const removeFields = useCallback<UseFormHook<V, E, R>['removeFields']>((fields, opts) => {
-    // Ignore action if form is disabled
-    if (formDisabled) return
     const { forceUpdate } = opts ?? {}
     removeValues(fields, { forceUpdate })
     clearErrors(fields)
     clearModified(fields, { forceUpdate })
     clearTouched(fields, { forceUpdate })
-  }, [clearErrors, clearModified, clearTouched, formDisabled, removeValues])
+  }, [clearErrors, clearModified, clearTouched, removeValues])
 
   const requestValidation = useCallback((validation: boolean | string[]): void => {
     dispatch({
@@ -776,40 +780,27 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       validate = false
     } = opts ?? {}
 
-    const currentValues = { ...valuesRef.current }
+    const fieldErrors: Errors<E> = {}
 
-    let nextValues: Partial<V> = typeof values === 'function'
+    const currentValues = clone(valuesRef.current)
+
+    let nextValues: PathsOrValues<V> = typeof values === 'function'
       ? { ...values(currentValues as any) }
       : { ...values }
 
     // Flatten values to make sure mutation only contains field names as keys
     // and field values as values.
-    let mutation = flatten(nextValues)
+    let mutation = flatten(nextValues, null, true)
 
-    if (transformRef.current) {
-      // Apply transformation to changed values.
-      mutation = transformRef.current(mutation, nextValues)
-    }
-
-    if (nullify) {
-      Object.entries(mutation).forEach(([path, value]) => {
-        if (typeof value === 'string') {
-          let nextValue: string | null = value
-
-          if (nextValue === '' && nullify) {
-            // Replace empty string with null.
-            nextValue = null
-          }
-          mutation[path] = nextValue
-        }
-      })
-    }
-
-    const fieldErrors: Errors<E> = {}
-
-    // Update next values from updated mutation.
     Object.entries(mutation).forEach(([path, value]) => {
-      nextValues = build(path, value, nextValues)
+      let nextValue = value
+
+      // Replace empty string with null.
+      if (nullify && value === '') {
+        nextValue = null
+        mutation[path] = nextValue
+      }
+      nextValues = build(path, nextValue, nextValues)
 
       // Clear errors when validation is not triggered after.
       if (!validate) {
@@ -817,7 +808,18 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
     })
 
-    setValues(nextValues, {
+    // Apply transformation to values.
+    // todo move to useFormValues().setValues()
+    if (transformRef.current) {
+      mutation = transformRef.current(mutation, reconstruct(deepExtend(currentValues, nextValues)) ?? {})
+
+      // Update next values from mutation.
+      Object.entries(mutation).forEach(([path, value]) => {
+        nextValues = build(path, value, nextValues)
+      })
+    }
+
+    setValues(mutation, {
       partial,
       forceUpdate
     })
@@ -897,7 +899,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Resets form values.
    */
   const reset = useCallback<UseFormHook<V, E, R>['reset']>((fields, opts) => {
-    const { forceUpdate } = opts ?? {}
+    const { forceUpdate = true } = opts ?? {}
 
     if (fields) {
       dispatch({
@@ -1333,7 +1335,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     handleSubmit,
     hasError,
     initialized: initializedRef.current,
-    initialValues: initialValuesRef.current,
+    initialValues: initialValuesState,
     isModified,
     isTouched,
     key: getKey,
@@ -1342,7 +1344,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     loadError,
     mode,
     modified,
-    modifiedFields: modifiedRef.current,
+    modifiedFields: modifiedState,
     removeFields,
     reset,
     resetTouched,
@@ -1350,7 +1352,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setErrors,
     setInitialValues,
     touched,
-    touchedFields: touchedRef.current,
+    touchedFields: touchedState,
     setTouchedField,
     setTouchedFields: setTouched,
     setValue: setFormValue,
@@ -1359,7 +1361,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validate: debouncedValidate,
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields,
-    values: valuesRef.current,
+    values: valuesState,
     watch
   }
 }
