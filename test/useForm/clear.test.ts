@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   it('should clear all values', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialModified: { a: true },
-      onSubmit: () => Promise.resolve()
+      initialModified: { a: true }
     }))
     expect(hook.result.current.isModified()).toBe(true)
 

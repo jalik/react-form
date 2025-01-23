@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   it('should append items to a list', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialValues: { a: [1] },
-      onSubmit: () => Promise.resolve()
+      initialValues: { a: [1] }
     }))
     expect(hook.result.current.getValue('a')).toStrictEqual([1])
     act(() => hook.result.current.appendListItem('a', 2, 3))

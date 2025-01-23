@@ -10,8 +10,7 @@ import useForm, { FormMode } from '../../src/useForm'
 function tests (mode: FormMode) {
   it('should allow initialValues to be undefined', () => {
     const hook = renderHook(() => useForm({
-      mode,
-      onSubmit: () => Promise.resolve()
+      mode
     }))
     expect(hook.result.current.initialValues).toBe(undefined)
   })
@@ -23,8 +22,7 @@ function tests (mode: FormMode) {
         a: 1,
         b: 2,
         c: null
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.getValue('a')).toBe(1)
     expect(hook.result.current.getValue('b')).toBe(2)

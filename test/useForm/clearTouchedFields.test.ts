@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   it('should clear touched fields', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialTouched: { a: true },
-      onSubmit: () => Promise.resolve()
+      initialTouched: { a: true }
     }))
     expect(hook.result.current.isTouched()).toBe(true)
 

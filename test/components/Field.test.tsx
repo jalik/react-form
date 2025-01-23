@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { expect, it } from '@jest/globals'
@@ -11,8 +11,7 @@ import '@testing-library/jest-dom/jest-globals'
 it('should render component with passed props', () => {
   const hook = renderHook(() =>
     useForm({
-      initialValues: { password: null },
-      onSubmit: () => Promise.resolve(true)
+      initialValues: { password: null }
     }))
 
   render(

@@ -15,8 +15,7 @@ function tests (mode: FormMode) {
         initialValues: {
           a: 1,
           b: 2
-        },
-        onSubmit: () => Promise.resolve()
+        }
       }))
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
@@ -36,8 +35,7 @@ function tests (mode: FormMode) {
           a: 1,
           b: 2,
           c: 3
-        },
-        onSubmit: () => Promise.resolve()
+        }
       }))
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
@@ -57,8 +55,7 @@ function tests (mode: FormMode) {
       initialValues: {
         a: 1,
         b: 2
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.getInitialValue('a')).toBe(1)
     expect(hook.result.current.getInitialValue('b')).toBe(2)

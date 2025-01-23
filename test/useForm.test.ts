@@ -16,7 +16,7 @@ describe('useForm()', () => {
             return useForm({
               clearAfterSubmit: true,
               initialValues: { username: 'test' },
-              onSubmit: () => Promise.resolve(true)
+              onSubmit: (values) => Promise.resolve(values)
             })
           })
 
@@ -34,7 +34,7 @@ describe('useForm()', () => {
             return useForm({
               clearAfterSubmit: false,
               initialValues: { username: 'test' },
-              onSubmit: () => Promise.resolve(true)
+              onSubmit: (values) => Promise.resolve(values)
             })
           })
 
@@ -50,8 +50,7 @@ describe('useForm()', () => {
       it('should set state.disabled = true', () => {
         const { result } = renderHook(() => useForm({
           disabled: true,
-          initialValues: { username: undefined },
-          onSubmit: () => Promise.resolve(true)
+          initialValues: { username: undefined }
         }))
 
         expect(result.current.disabled).toBe(true)
@@ -66,8 +65,7 @@ describe('useForm()', () => {
         }
 
         const { result } = renderHook(() => useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         }))
 
         expect(result.current.initialValues).toBe(initialValues)
@@ -80,8 +78,7 @@ describe('useForm()', () => {
         const { result } = renderHook(() => {
           return useForm({
             initialValues: { username: undefined },
-            nullify: true,
-            onSubmit: () => Promise.resolve(true)
+            nullify: true
           })
         })
 
@@ -94,12 +91,10 @@ describe('useForm()', () => {
     })
 
     describe('with onSubmit = undefined', () => {
-      it('should throw an error', () => {
+      it('should not throw an error', () => {
         expect(() => {
-          useForm({
-            onSubmit: undefined
-          })
-        }).toThrow()
+          renderHook(() => useForm({ onSubmit: undefined }))
+        }).not.toThrow()
       })
     })
 
@@ -108,7 +103,7 @@ describe('useForm()', () => {
         const onSubmitted = jest.fn()
         const { result } = renderHook(() => useForm({
           initialValues: { username: undefined },
-          onSubmit: () => Promise.resolve(true),
+          onSubmit: (values) => Promise.resolve(values),
           onSubmitted
         }))
 
@@ -124,7 +119,6 @@ describe('useForm()', () => {
         const { result } = renderHook(() => {
           return useForm({
             initialValues: { username: undefined },
-            onSubmit: () => Promise.resolve(true),
             transform: (mutation) => {
               const result = { ...mutation }
               Object.entries(result).forEach(([name]) => {
@@ -189,7 +183,7 @@ describe('useForm()', () => {
         const { result } = renderHook(() => {
           return useForm({
             initialValues,
-            onSubmit: () => Promise.resolve(true),
+            onSubmit: (values) => Promise.resolve(values),
             validate,
             validateOnSubmit: false
           })
@@ -203,7 +197,7 @@ describe('useForm()', () => {
         expect(result.current.submitted).toBe(true)
         expect(result.current.submitting).toBe(false)
         expect(result.current.submitError).toBeUndefined()
-        expect(result.current.submitResult).toBe(true)
+        expect(result.current.submitResult).toMatchObject(initialValues)
       })
     })
   })
@@ -212,8 +206,7 @@ describe('useForm()', () => {
     it('should clear form state', () => {
       const { result } = renderHook(() => {
         return useForm({
-          initialValues: { username: 'jalik' },
-          onSubmit: () => Promise.resolve(true)
+          initialValues: { username: 'jalik' }
         })
       })
 
@@ -235,8 +228,7 @@ describe('useForm()', () => {
     it('should clear all errors', () => {
       const { result } = renderHook(() => {
         return useForm({
-          initialValues: { username: undefined },
-          onSubmit: () => Promise.resolve(true)
+          initialValues: { username: undefined }
         })
       })
 
@@ -253,8 +245,7 @@ describe('useForm()', () => {
     it('should clear all touched fields', () => {
       const { result } = renderHook(() => {
         return useForm({
-          initialValues: { username: undefined },
-          onSubmit: () => Promise.resolve(true)
+          initialValues: { username: undefined }
         })
       })
 
@@ -273,8 +264,7 @@ describe('useForm()', () => {
     const { result } = renderHook(() => {
       return useForm({
         disabled: false,
-        initialValues,
-        onSubmit: () => Promise.resolve(true)
+        initialValues
       })
     })
 
@@ -304,8 +294,7 @@ describe('useForm()', () => {
         const initialValues = { username: '' }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
         const props = result.current.getButtonProps({ type: 'submit' })
@@ -318,8 +307,7 @@ describe('useForm()', () => {
         const initialValues = { username: '' }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
         const props = result.current.getButtonProps({ type: 'reset' })
@@ -332,8 +320,7 @@ describe('useForm()', () => {
         const initialValues = { username: '' }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
         act(() => {
@@ -350,8 +337,7 @@ describe('useForm()', () => {
     const initialValues = { username: 'jalik' }
     const { result } = renderHook(() => {
       return useForm({
-        initialValues,
-        onSubmit: () => Promise.resolve(true)
+        initialValues
       })
     })
 
@@ -390,8 +376,7 @@ describe('useForm()', () => {
     const initialValues = { username: '' }
     const { result } = renderHook(() => {
       return useForm({
-        initialValues,
-        onSubmit: () => Promise.resolve(true)
+        initialValues
       })
     })
 
@@ -410,8 +395,7 @@ describe('useForm()', () => {
       const initialValues = { username: 'jalik' }
       const { result } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
 
@@ -424,8 +408,7 @@ describe('useForm()', () => {
       const initialValues = { username: undefined }
       const { result } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
 
@@ -443,8 +426,7 @@ describe('useForm()', () => {
         const initialValues = { username: undefined }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
         act(() => {
@@ -459,8 +441,7 @@ describe('useForm()', () => {
         const initialValues = { username: undefined }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
         act(() => {
@@ -478,8 +459,7 @@ describe('useForm()', () => {
 
       const { result } = renderHook(() =>
         useForm({
-          load,
-          onSubmit: () => Promise.resolve(true)
+          load
         }))
 
       await act(async () => {
@@ -487,7 +467,7 @@ describe('useForm()', () => {
       })
 
       expect(result.current.initialized).toBe(true)
-      expect(result.current.initialValues.username).toBe(initialValues.username)
+      expect(result.current.getInitialValue('username')).toBe(initialValues.username)
       expect(result.current.loading).toBe(false)
       expect(result.current.loadError).toBeUndefined()
     })
@@ -501,7 +481,6 @@ describe('useForm()', () => {
     //       const { result } = renderHook(() =>
     //         useForm({
     //           load,
-    //           onSubmit: () => Promise.resolve(true)
     //         }))
     //
     //       await waitFor(async () => {
@@ -519,8 +498,7 @@ describe('useForm()', () => {
       const initialValues = { username: 'jalik' }
       const { result } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
 
@@ -542,8 +520,7 @@ describe('useForm()', () => {
       const initialValues = { username: 'jalik' }
       const { result } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
 
@@ -567,8 +544,7 @@ describe('useForm()', () => {
         }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
 
@@ -593,8 +569,7 @@ describe('useForm()', () => {
       const initialValues = { username: 'jalik' }
       const { result } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
 
@@ -613,8 +588,7 @@ describe('useForm()', () => {
           initialValues: {
             username: undefined,
             password: undefined
-          },
-          onSubmit: () => Promise.resolve(true)
+          }
         })
       })
 
@@ -635,8 +609,7 @@ describe('useForm()', () => {
           initialValues: {
             username: undefined,
             password: undefined
-          },
-          onSubmit: () => Promise.resolve(true)
+          }
         })
       })
 
@@ -659,8 +632,7 @@ describe('useForm()', () => {
             initialValues: {
               username: undefined,
               password: undefined
-            },
-            onSubmit: () => Promise.resolve(true)
+            }
           })
         })
 
@@ -686,8 +658,7 @@ describe('useForm()', () => {
             initialValues: {
               username: 'a',
               password: 'b'
-            },
-            onSubmit: () => Promise.resolve(true)
+            }
           })
         })
 
@@ -708,8 +679,7 @@ describe('useForm()', () => {
         }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
 
@@ -729,8 +699,7 @@ describe('useForm()', () => {
         }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues,
-            onSubmit: () => Promise.resolve(true)
+            initialValues
           })
         })
 
@@ -777,7 +746,6 @@ describe('useForm()', () => {
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
-          onSubmit: () => Promise.resolve(true),
           validate: async () => {
             return { username: new Error('invalid') }
           }
@@ -841,7 +809,6 @@ describe('useForm()', () => {
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
-          onSubmit: () => Promise.resolve(true),
           validateField: async (name, value) => {
             if (name === 'username' && value == null) {
               return new Error('invalid')
@@ -865,7 +832,6 @@ describe('useForm()', () => {
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
-          onSubmit: () => Promise.resolve(true),
           validate
         })
       })
@@ -889,7 +855,6 @@ describe('useForm()', () => {
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
-          onSubmit: () => Promise.resolve(true),
           validate
         })
       })
@@ -909,7 +874,6 @@ describe('useForm()', () => {
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
-          onSubmit: () => Promise.resolve(true),
           validate
         })
       })
@@ -932,7 +896,6 @@ describe('useForm()', () => {
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
-          onSubmit: () => Promise.resolve(true),
           validateField: async (name, value) => {
             if (name === 'username' && value == null) {
               return new Error('invalid')
@@ -953,7 +916,6 @@ describe('useForm()', () => {
         const { result } = renderHook(() => {
           return useForm({
             initialValues,
-            onSubmit: () => Promise.resolve(true),
             validateField: async () => {
               throw new Error('unknown error')
             }

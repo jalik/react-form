@@ -10,8 +10,7 @@ import useForm, { FormMode } from '../../src/useForm'
 function tests (mode: FormMode) {
   it('should set initial values', () => {
     const hook = renderHook(() => useForm({
-      mode,
-      onSubmit: () => Promise.resolve()
+      mode
     }))
     expect(hook.result.current.getInitialValues()).toBe(undefined)
     expect(hook.result.current.getValues()).toStrictEqual({})
@@ -33,8 +32,7 @@ function tests (mode: FormMode) {
 
   it('should replace modified values', () => {
     const hook = renderHook(() => useForm({
-      mode,
-      onSubmit: () => Promise.resolve()
+      mode
     }))
 
     act(() => hook.result.current.setValues({

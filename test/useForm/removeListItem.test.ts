@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   it('should remove items from a list', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialValues: { a: [1, 2, 3, 4] },
-      onSubmit: () => Promise.resolve()
+      initialValues: { a: [1, 2, 3, 4] }
     }))
     expect(hook.result.current.getValue('a')).toStrictEqual([1, 2, 3, 4])
     act(() => hook.result.current.removeListItem('a', 0, 2))
@@ -26,8 +25,7 @@ function tests (mode: FormMode) {
       initialErrors: {
         'a[0]': 'invalid',
         'a[1]': 'invalid'
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.getError('a[0]')).toBe('invalid')
     expect(hook.result.current.getError('a[1]')).toBe('invalid')
@@ -47,8 +45,7 @@ function tests (mode: FormMode) {
       initialModified: {
         'a[0]': true,
         'a[1]': true
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.isModified('a[0]')).toBe(true)
     expect(hook.result.current.isModified('a[1]')).toBe(true)
@@ -68,8 +65,7 @@ function tests (mode: FormMode) {
       initialTouched: {
         'a[0]': true,
         'a[1]': true
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.isTouched('a[0]')).toBe(true)
     expect(hook.result.current.isTouched('a[1]')).toBe(true)

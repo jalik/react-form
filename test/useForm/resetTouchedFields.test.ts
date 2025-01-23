@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   it('should reset touched fields to their initial state', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialTouched: { a: true },
-      onSubmit: () => Promise.resolve()
+      initialTouched: { a: true }
     }))
     expect(hook.result.current.isTouched()).toBe(true)
     act(() => hook.result.current.setTouchedFields({ a: false }))

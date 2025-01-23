@@ -14,8 +14,7 @@ function tests (mode: FormMode) {
       initialTouched: {
         a: true,
         b: false
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.isTouched('a')).toBe(true)
     expect(hook.result.current.isTouched('b')).toBe(false)
@@ -25,8 +24,7 @@ function tests (mode: FormMode) {
   it('should set field as touched when value changes', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialValues: { a: 'test' },
-      onSubmit: () => Promise.resolve()
+      initialValues: { a: 'test' }
     }))
     expect(hook.result.current.isTouched('a')).toBe(false)
     expect(hook.result.current.isTouched()).toBe(false)

@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   describe('with partial = false', () => {
     it('should set all values', () => {
       const hook = renderHook(() => useForm({
-        mode,
-        onSubmit: () => Promise.resolve()
+        mode
       }))
       expect(hook.result.current.getValue('a')).toBe(undefined)
       expect(hook.result.current.getValue('b')).toBe(undefined)
@@ -34,8 +33,7 @@ function tests (mode: FormMode) {
         initialValues: {
           a: 0,
           b: 0
-        },
-        onSubmit: () => Promise.resolve()
+        }
       }))
       expect(hook.result.current.getValue('a')).toBe(0)
       expect(hook.result.current.getValue('b')).toBe(0)

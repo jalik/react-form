@@ -414,7 +414,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * Called when form is submitted.
    * @param values
    */
-  onSubmit (values: Partial<V>): Promise<R>;
+  onSubmit?: (values: Partial<V>) => Promise<R>;
   /**
    * Called when form has been successfully submitted.
    * @param result
@@ -523,11 +523,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateOnSubmit = true,
     validateOnTouch = false
   } = options
-
-  // Checks options.
-  if (typeof onSubmit !== 'function') {
-    throw new Error('onSubmit must be a function')
-  }
 
   useEffect(() => {
     if (mode === 'experimental_uncontrolled') {
@@ -920,6 +915,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Submits form.
    */
   const submit = useCallback((): Promise<void | R> => {
+    if (onSubmitRef.current == null) {
+      return Promise.reject(new Error('onSubmit not defined'))
+    }
     let values = clone(getValues())
 
     if (trimOnSubmit || nullify) {
@@ -1102,9 +1100,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Handles form submit.
    */
   const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault()
-    event.stopPropagation()
-    validateAndSubmit()
+    if (onSubmitRef.current != null) {
+      event.preventDefault()
+      event.stopPropagation()
+      validateAndSubmit()
+    }
   }, [validateAndSubmit])
 
   /**

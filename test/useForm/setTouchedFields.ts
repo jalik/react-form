@@ -15,8 +15,7 @@ function tests (mode: FormMode) {
         initialTouched: {
           a: false,
           b: true
-        },
-        onSubmit: () => Promise.resolve()
+        }
       }))
       expect(hook.result.current.isTouched()).toBe(true)
       expect(hook.result.current.isTouched('a')).toBe(false)
@@ -39,8 +38,7 @@ function tests (mode: FormMode) {
         initialTouched: {
           a: false,
           b: true
-        },
-        onSubmit: () => Promise.resolve()
+        }
       }))
       expect(hook.result.current.isTouched()).toBe(true)
       expect(hook.result.current.isTouched('a')).toBe(false)

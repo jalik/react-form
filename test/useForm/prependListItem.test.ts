@@ -11,8 +11,7 @@ function tests (mode: FormMode) {
   it('should prepend items to a list', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialValues: { a: [1] },
-      onSubmit: () => Promise.resolve()
+      initialValues: { a: [1] }
     }))
     expect(hook.result.current.getValue('a')).toStrictEqual([1])
     act(() => hook.result.current.prependListItem('a', -1, 0))
@@ -25,8 +24,7 @@ function tests (mode: FormMode) {
       initialValues: { a: [1] },
       initialErrors: {
         'a[0]': 'invalid'
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.getError('a[0]')).toBe('invalid')
     act(() => hook.result.current.prependListItem('a', -1, 0))
@@ -41,8 +39,7 @@ function tests (mode: FormMode) {
       initialValues: { a: [1] },
       initialModified: {
         'a[0]': true
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.isModified('a[0]')).toBe(true)
     act(() => hook.result.current.prependListItem('a', -1, 0))
@@ -57,8 +54,7 @@ function tests (mode: FormMode) {
       initialValues: { a: [1] },
       initialTouched: {
         'a[0]': true
-      },
-      onSubmit: () => Promise.resolve()
+      }
     }))
     expect(hook.result.current.isTouched('a[0]')).toBe(true)
     act(() => hook.result.current.prependListItem('a', -1, 0))

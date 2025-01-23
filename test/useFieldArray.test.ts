@@ -22,8 +22,7 @@ describe('useFieldArray()', () => {
     }
     const { result: form } = renderHook(() => {
       return useForm({
-        initialValues,
-        onSubmit: () => Promise.resolve(true)
+        initialValues
       })
     })
 
@@ -40,8 +39,7 @@ describe('useFieldArray()', () => {
     }
     const { result: form } = renderHook(() => {
       return useForm({
-        initialValues,
-        onSubmit: () => Promise.resolve(true)
+        initialValues
       })
     })
     const { result: array } = renderHook(() => {
@@ -66,8 +64,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -98,8 +95,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -133,8 +129,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -172,8 +167,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -205,8 +199,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -243,8 +236,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -275,8 +267,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -312,8 +303,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
@@ -346,8 +336,7 @@ describe('useFieldArray()', () => {
       }
       const { result: form } = renderHook(() => {
         return useForm({
-          initialValues,
-          onSubmit: () => Promise.resolve(true)
+          initialValues
         })
       })
       const { result: array } = renderHook(() => {
