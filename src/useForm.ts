@@ -1240,12 +1240,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // Convert value to string.
     const { format = String } = opts
-    if (format != null &&
-      finalProps[valueAttribute] != null &&
-      typeof finalProps[valueAttribute] !== 'string' &&
-      !(finalProps[valueAttribute] instanceof Array)
-    ) {
-      finalProps[valueAttribute] = format(finalProps[valueAttribute])
+    if (format != null && typeof finalProps[valueAttribute] !== 'string' &&
+      !(finalProps[valueAttribute] instanceof Array)) {
+      finalProps[valueAttribute] = finalProps[valueAttribute] != null
+        ? format(finalProps[valueAttribute])
+        : ''
     }
 
     return finalProps
