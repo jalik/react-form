@@ -117,7 +117,10 @@ export type UseFormValuesHook<V extends Values> = {
   setValue (
     path: string,
     value: any,
-    options?: { forceUpdate?: boolean }): void;
+    options?: {
+      forceUpdate?: boolean;
+      updateModified?: boolean;
+    }): void;
   /**
    * Sets given values of all values.
    * @param values
@@ -129,6 +132,7 @@ export type UseFormValuesHook<V extends Values> = {
       forceUpdate?: boolean;
       initialize?: boolean;
       partial: boolean;
+      updateModified?: boolean;
     }): void;
   /**
    * The values reference.
@@ -186,7 +190,8 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     const {
       forceUpdate,
       initialize,
-      partial
+      partial,
+      updateModified = true
     } = opts ?? {}
 
     const prevData = valuesRef.current
@@ -209,21 +214,24 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
       }
     }
 
-    // Update modified state.
-    const modified: ModifiedFields = {}
     const mutation = flatten(values, null, true)
-    Object.entries(mutation).forEach(([path, value]) => {
-      const initialValue = getInitialValue(path)
-      // Compare value with initial value.
-      modified[path] = value !== initialValue &&
-        // Ignore when comparing null and undefined.
-        (value != null || initialValue != null) &&
-        // Ignore array and object.
-        // fixme compare arrays and objects
-        (!(value instanceof Array) || !(initialValue instanceof Array)) &&
-        (typeof value !== 'object' || typeof initialValue !== 'object')
-    })
-    setModified(modified, { partial })
+
+    if (updateModified) {
+      // Update modified state.
+      const modified: ModifiedFields = {}
+      Object.entries(mutation).forEach(([path, value]) => {
+        const initialValue = getInitialValue(path)
+        // Compare value with initial value.
+        modified[path] = value !== initialValue &&
+          // Ignore when comparing null and undefined.
+          (value != null || initialValue != null) &&
+          // Ignore array and object.
+          // fixme compare arrays and objects
+          (!(value instanceof Array) || !(initialValue instanceof Array)) &&
+          (typeof value !== 'object' || typeof initialValue !== 'object')
+      })
+      setModified(modified, { partial })
+    }
 
     // Update values.
     if (mode === 'controlled' || forceUpdate) {

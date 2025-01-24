@@ -94,7 +94,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
   const appendListItem = useCallback<UseFormListHook['appendListItem']>(<T> (path: string, ...items: T[]) => {
     if (items.length > 0) {
       const list = [...(getValue<T[]>(path) ?? []), ...items]
-      setValue(path, list, { forceUpdate: true })
+      setValue(path, list, {
+        forceUpdate: true,
+        updateModified: false
+      })
     }
   }, [getValue, setValue])
 
@@ -111,7 +114,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
 
       const list = [...(getValue<unknown[]>(path) ?? [])]
       list.splice(index, 0, ...items)
-      setValue(path, list, { forceUpdate: true })
+      setValue(path, list, {
+        forceUpdate: true,
+        updateModified: false
+      })
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
@@ -130,7 +136,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     const index = Math.min(Math.max(toIndex, 0), list.length)
     const [item] = list.splice(fromIndex, 1)
     list.splice(index, 0, item)
-    setValue(path, list, { forceUpdate: true })
+    setValue(path, list, {
+      forceUpdate: true,
+      updateModified: false
+    })
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
   const prependListItem = useCallback<UseFormListHook['prependListItem']>(<T> (path: string, ...items: T[]) => {
@@ -145,7 +154,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
       setErrors(updatePathIndices(getErrors(), path, 0, items.length))
 
       const list = [...items, ...(getValue<T[]>(path) ?? [])]
-      setValue(path, list, { forceUpdate: true })
+      setValue(path, list, {
+        forceUpdate: true,
+        updateModified: false
+      })
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
@@ -170,7 +182,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
       reversedIndices.forEach((index) => {
         list.splice(index, 1)
       })
-      setValue(path, list, { forceUpdate: true })
+      setValue(path, list, {
+        forceUpdate: true,
+        updateModified: false
+      })
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
@@ -181,7 +196,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
 
     const list = [...(getValue<unknown[]>(path) ?? [])]
     list[index] = item
-    setValue(path, list, { forceUpdate: true })
+    setValue(path, list, {
+      forceUpdate: true,
+      updateModified: false
+    })
   }, [clearErrors, getValue, setModifiedField, setValue])
 
   const swapListItem = useCallback<UseFormListHook['swapListItem']>((path, fromIndex, toIndex) => {
@@ -206,7 +224,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     }
     list.splice(fromIndex, 0, b)
     list.splice(toIndex, 0, a)
-    setValue(path, list, { forceUpdate: true })
+    setValue(path, list, {
+      forceUpdate: true,
+      updateModified: false
+    })
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
   return {
