@@ -40,11 +40,10 @@ import {
   getFieldValue,
   hasDefinedValues,
   randomKey,
-  reconstruct,
-  resolve
+  reconstruct
 } from './utils'
 import useFormKeys, { UseFormKeysHook } from './useFormKeys'
-import useFormWatch, { FieldStatus, UseFormWatchHook } from './useFormWatch'
+import useFormWatch, { UseFormWatchHook } from './useFormWatch'
 import useFormErrors, { UseFormErrorsHook } from './useFormErrors'
 import useFormStatus, { UseFormStatusHook, UseFormStatusOptions } from './useFormStatus'
 import useFormValues, { PathsOrValues, UseFormValuesHook } from './useFormValues'
@@ -339,14 +338,13 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   validateFields (fields?: string[]): Promise<void | Errors<E> | undefined>;
   /**
-   * Executes a callback when the field changed.
-   */
-  watch: UseFormWatchHook<V, E, R>['watch'];
-  /**
    * Form values.
    */
   values: UseFormValuesHook<V>['valuesState'];
-} & Pick<UseFormListHook,
+} & Pick<UseFormWatchHook<V>,
+  'watch' |
+  'watchers'>
+  & Pick<UseFormListHook,
   'appendListItem' |
   'insertListItem' |
   'moveListItem' |
@@ -593,6 +591,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     touchedState
   } = formStatus
 
+  // Handle form watchers.
+  const formWatch = useFormWatch<V>()
+
   // Handle form values.
   const formValues = useFormValues<V>({
     formKeys,
@@ -601,7 +602,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     mode,
     // todo pass onValuesChange from useForm options
     // onValuesChange: replaceKeysFromValues,
-    reinitialize
+    reinitialize,
+    watchers: formWatch.watchers
   })
   const {
     clearValues,
@@ -638,13 +640,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     loading,
     loadError
   } = formLoader
-
-  // Handle form watchers.
-  const formWatch = useFormWatch<V, E, R>({ state })
-  const {
-    notifyWatchers,
-    watch
-  } = formWatch
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc)
@@ -835,28 +830,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       })
     }
 
-    // Notify watchers of field change.
-    Object.entries(mutation).forEach(([name, value]) => {
-      const previousValue = resolve(name, currentValues) ?? null
-
-      if (value !== previousValue) {
-        const status: FieldStatus = {
-          modified: value !== previousValue,
-          name,
-          previousValue,
-          touched: true,
-          value
-        }
-        notifyWatchers(name, status)
-      }
-    })
-
     if (validate) {
       requestValidation(partial
         ? Object.keys(mutation)
         : true)
     }
-  }, [formDisabled, mode, notifyWatchers, nullify, requestValidation, setErrors, setValues, validateOnChange, valuesRef])
+  }, [formDisabled, mode, nullify, requestValidation, setErrors, setValues, validateOnChange, valuesRef])
 
   /**
    * Defines the value of a field.
@@ -1347,7 +1326,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateField: debouncedValidateField,
     validateFields: debouncedValidateFields,
     values: valuesState,
-    watch
+
+    // events
+    watch: formWatch.watch,
+    watchers: formWatch.watchers
   }
 }
 

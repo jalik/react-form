@@ -9,6 +9,8 @@ import { build, clone, flatten, resolve } from './utils'
 import { FormMode } from './useForm'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
+import { FieldStatus, inputChangeEvent } from './useFormWatch'
+import { Observer } from '@jalik/observer'
 
 // todo add autocompletion with keyof for string in Record
 export type PathsOrValues<V extends Values> = Record<string, unknown> | Partial<V>
@@ -39,6 +41,10 @@ export type UseFormValuesOptions<V extends Values> = {
    * Resets values with initial values when they change.
    */
   reinitialize?: boolean;
+  /**
+   * Registered watchers.
+   */
+  watchers: MutableRefObject<Observer<any, string>>;
 }
 
 export type UseFormValuesHook<V extends Values> = {
@@ -141,7 +147,8 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     initialValues,
     mode,
     onValuesChange,
-    reinitialize
+    reinitialize,
+    watchers
   } = options
 
   const initialValuesRef = useRef<Partial<V | undefined>>(initialValues)
@@ -152,7 +159,10 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   const [valuesState, setValuesState] = useState<Partial<V>>(valuesRef.current)
 
   const { replaceKeysFromValues } = formKeys
-  const { setModified } = formStatus
+  const {
+    isTouched,
+    setModified
+  } = formStatus
 
   const getInitialValues = useCallback<UseFormValuesHook<V>['getInitialValues']>(() => {
     return initialValuesRef.current
@@ -211,7 +221,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
         // Ignore array and object.
         // fixme compare arrays and objects
         (!(value instanceof Array) || !(initialValue instanceof Array)) &&
-        (typeof value !== 'object' && typeof initialValue !== 'object')
+        (typeof value !== 'object' || typeof initialValue !== 'object')
     })
     setModified(modified, { partial })
 
@@ -229,6 +239,23 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     if (onValuesChange) {
       onValuesChange(data, prevData)
     }
+
+    // Notify watchers of all field changes.
+    Object.entries(mutation).forEach(([path, value]) => {
+      const previousValue = resolve(path, prevData)
+
+      if (value !== previousValue) {
+        const status: FieldStatus = {
+          modified: value !== previousValue,
+          name: path,
+          previousValue,
+          touched: isTouched(path),
+          value
+        }
+        watchers.current.emit(inputChangeEvent(path), status)
+      }
+    })
+  }, [setModified, mode, onValuesChange, getInitialValue, replaceKeysFromValues, isTouched, watchers])
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
     const currentValue = getValue(path)
