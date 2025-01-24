@@ -586,7 +586,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     modifiedState,
     resetModified,
     resetTouched,
-    setModified,
     setTouchedField,
     setTouched,
     touched,
@@ -597,6 +596,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   // Handle form values.
   const formValues = useFormValues<V>({
     formKeys,
+    formStatus,
     initialValues,
     mode,
     // todo pass onValuesChange from useForm options
@@ -856,21 +856,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         ? Object.keys(mutation)
         : true)
     }
-
-    // Update modified fields.
-    const modifiedFields: ModifiedFields = {}
-    Object.keys(mutation).forEach((path) => {
-      const initialValue = getInitialValue(path)
-      const value = mutation[path]
-      // Compare initial value to detect change,
-      // ignore when comparing null and undefined together.
-      modifiedFields[path] = value !== initialValue && (initialValue != null || value != null)
-    })
-    setModified(modifiedFields)
-
-    // Update touched fields.
-    setTouched(modifiedFields, { partial })
-  }, [formDisabled, getInitialValue, mode, notifyWatchers, nullify, requestValidation, setErrors, setModified, setTouched, setValues, validateOnChange, valuesRef])
+  }, [formDisabled, mode, notifyWatchers, nullify, requestValidation, setErrors, setValues, validateOnChange, valuesRef])
 
   /**
    * Defines the value of a field.

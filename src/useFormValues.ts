@@ -3,11 +3,12 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { Values } from './useFormReducer'
+import { ModifiedFields, Values } from './useFormReducer'
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react'
-import { build, clone, resolve } from './utils'
+import { build, clone, flatten, resolve } from './utils'
 import { FormMode } from './useForm'
 import { UseFormKeysHook } from './useFormKeys'
+import { UseFormStatusHook } from './useFormStatus'
 
 // todo add autocompletion with keyof for string in Record
 export type PathsOrValues<V extends Values> = Record<string, unknown> | Partial<V>
@@ -17,6 +18,10 @@ export type UseFormValuesOptions<V extends Values> = {
    * The form keys hook.
    */
   formKeys: UseFormKeysHook;
+  /**
+   * The form keys hook.
+   */
+  formStatus: UseFormStatusHook;
   /**
    * Contains initial form values.
    */
@@ -132,6 +137,7 @@ export type UseFormValuesHook<V extends Values> = {
 function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): UseFormValuesHook<V> {
   const {
     formKeys,
+    formStatus,
     initialValues,
     mode,
     onValuesChange,
@@ -146,6 +152,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   const [valuesState, setValuesState] = useState<Partial<V>>(valuesRef.current)
 
   const { replaceKeysFromValues } = formKeys
+  const { setModified } = formStatus
 
   const getInitialValues = useCallback<UseFormValuesHook<V>['getInitialValues']>(() => {
     return initialValuesRef.current
@@ -192,6 +199,22 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
       }
     }
 
+    // Update modified state.
+    const modified: ModifiedFields = {}
+    const mutation = flatten(values, null, true)
+    Object.entries(mutation).forEach(([path, value]) => {
+      const initialValue = getInitialValue(path)
+      // Compare value with initial value.
+      modified[path] = value !== initialValue &&
+        // Ignore when comparing null and undefined.
+        (value != null || initialValue != null) &&
+        // Ignore array and object.
+        // fixme compare arrays and objects
+        (!(value instanceof Array) || !(initialValue instanceof Array)) &&
+        (typeof value !== 'object' && typeof initialValue !== 'object')
+    })
+    setModified(modified, { partial })
+
     // Update values.
     if (mode === 'controlled' || forceUpdate) {
       setValuesState(data)
@@ -200,12 +223,12 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
       if (mode === 'experimental_uncontrolled') {
         replaceKeysFromValues(values)
       }
-
-      if (onValuesChange) {
-        onValuesChange(data, prevData)
-      }
     }
-  }, [replaceKeysFromValues, mode, onValuesChange])
+
+    // Notifies of values change.
+    if (onValuesChange) {
+      onValuesChange(data, prevData)
+    }
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
     const currentValue = getValue(path)
