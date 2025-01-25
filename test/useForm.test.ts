@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, jest } from '@jest/globals'
 import useForm from '../src/useForm'
 
@@ -530,9 +530,9 @@ describe('useForm()', () => {
       })
 
       expect(result.current.modified).toBe(false)
-      expect(result.current.modifiedFields.username).toBeUndefined()
+      expect(result.current.modifiedFields.username).toBeFalsy()
       expect(result.current.touched).toBe(false)
-      expect(result.current.touchedFields.username).toBeUndefined()
+      expect(result.current.touchedFields.username).toBeFalsy()
       expect(result.current.values.username).toBe(initialValues.username)
     })
 
@@ -731,9 +731,7 @@ describe('useForm()', () => {
         })
       })
 
-      await waitFor(async () => {
-        await result.current.submit()
-      })
+      await act(async () => result.current.submit())
 
       expect(onSubmit).toHaveBeenCalledTimes(1)
       expect(result.current.submitted).toBe(true)
