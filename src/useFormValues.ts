@@ -155,6 +155,11 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     watchers
   } = options
 
+  const onValuesChangeRef = useRef(onValuesChange)
+  useEffect(() => {
+    onValuesChangeRef.current = onValuesChange
+  }, [onValuesChange])
+
   const initialValuesRef = useRef<Partial<V | undefined>>(initialValues)
   const [initialValuesState, setInitialValuesState] = useState<Partial<V | undefined>>(initialValuesRef.current)
   const initializedRef = useRef<boolean>(initialValuesRef.current != null)
@@ -244,8 +249,8 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     }
 
     // Notifies of values change.
-    if (onValuesChange) {
-      onValuesChange(data, prevData)
+    if (onValuesChangeRef.current) {
+      onValuesChangeRef.current(data, prevData)
     }
 
     // Notify watchers of all field changes.
@@ -263,7 +268,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
         watchers.current.emit(inputChangeEvent(path), status)
       }
     })
-  }, [setModified, mode, onValuesChange, getInitialValue, replaceKeysFromValues, isTouched, watchers])
+  }, [setModified, mode, getInitialValue, replaceKeysFromValues, isTouched, watchers])
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
     const currentValue = getValue(path)

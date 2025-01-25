@@ -421,6 +421,12 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   onSubmitted? (result: R, values: Partial<V>): void;
   /**
+   * Called when form values have changed.
+   * @param values
+   * @param previousValues
+   */
+  onValuesChange? (values: Partial<V>, previousValues: Partial<V>): void;
+  /**
    * Resets form with initial values whenever they change.
    */
   reinitialize?: boolean;
@@ -510,6 +516,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     nullify = false,
     onSubmit,
     onSubmitted,
+    onValuesChange,
     // todo add tests for reinitialize
     reinitialize = false,
     // todo add tests for setInitialValuesOnSuccess
@@ -578,8 +585,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     formStatus,
     initialValues,
     mode,
-    // todo pass onValuesChange from useForm options
-    // onValuesChange: replaceKeysFromValues,
+    onValuesChange,
     reinitialize,
     watchers: formWatch.watchers
   })
@@ -774,9 +780,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     values,
     opts = {}
   ) => {
-    // Ignore action if form disabled
-    if (formDisabled) return
-
     const {
       forceUpdate = false,
       partial = false,
@@ -848,7 +851,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         ? Object.keys(mutation)
         : true)
     }
-  }, [formDisabled, mode, nullify, requestValidation, setErrors, setValues, validateOnChange, valuesRef])
+  }, [mode, nullify, requestValidation, setErrors, setValues, validateOnChange, valuesRef])
 
   /**
    * Defines the value of a field.
