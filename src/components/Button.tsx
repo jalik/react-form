@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import React, { ComponentProps, ElementType, PropsWithChildren } from 'react'
+import { ComponentProps, ElementType, PropsWithChildren, ReactElement } from 'react'
 import useFormContext from '../useFormContext'
 import { GetButtonProps } from '../useForm'
 
@@ -21,7 +21,7 @@ export type ButtonProps<C extends ElementType> =
   type?: GetButtonProps['type'];
 };
 
-function Button<C extends ElementType> (props: ButtonProps<C>): React.ReactElement {
+function Button<C extends ElementType> (props: ButtonProps<C>): ReactElement {
   const {
     children,
     component: Component = 'button',

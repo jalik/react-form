@@ -1,14 +1,14 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { inputValue } from '../utils'
-import React from 'react'
+import { ComponentProps, ReactElement } from 'react'
 
-export type OptionProps = React.ComponentProps<'option'>
+export type OptionProps = ComponentProps<'option'>
 
-function Option (props: OptionProps): React.ReactElement {
+function Option (props: OptionProps): ReactElement {
   const {
     label,
     value,
@@ -20,7 +20,7 @@ function Option (props: OptionProps): React.ReactElement {
       {...others}
       value={inputValue(value)}
     >
-      {label || value}
+      {label ?? value}
     </option>
   )
 }

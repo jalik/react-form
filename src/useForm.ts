@@ -4,6 +4,7 @@
  */
 
 import React, {
+  ComponentProps,
   ElementType,
   useCallback,
   useEffect,
@@ -117,7 +118,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   getFieldProps<Component extends ElementType = any> (
     name: string,
-    props?: React.ComponentProps<Component>,
+    props?: ComponentProps<Component>,
     opts?: {
       mode?: FormMode;
       format?: (value: unknown) => string;
@@ -128,7 +129,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * Returns form props.
    * @param props
    */
-  getFormProps (props?: React.ComponentProps<'form'>): React.ComponentProps<'form'>;
+  getFormProps (props?: ComponentProps<'form'>): ComponentProps<'form'>;
   /**
    * Returns field's initial value.
    * @param name
@@ -403,7 +404,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * @param name
    * @param formState
    */
-  initializeField?<C extends ElementType> (name: string, formState: FormState<V, E, R>): React.ComponentProps<C> | undefined;
+  initializeField?<C extends ElementType> (name: string, formState: FormState<V, E, R>): ComponentProps<C> | undefined;
   /**
    * The loading function.
    */
@@ -1110,7 +1111,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const getFieldProps = useCallback(<Component extends ElementType> (
     name: string,
-    props?: React.ComponentProps<Component>,
+    props?: ComponentProps<Component>,
     opts: {
       mode?: FormMode;
       format?: (value: unknown) => string;
@@ -1218,7 +1219,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   /**
    * Returns form props.
    */
-  const getFormProps = useCallback((props: React.ComponentProps<'form'>): React.ComponentProps<'form'> => {
+  const getFormProps = useCallback((props: ComponentProps<'form'>): ComponentProps<'form'> => {
     return {
       ...props,
       onReset: handleReset,

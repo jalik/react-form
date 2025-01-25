@@ -1,21 +1,21 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { UseFormHook } from '../useForm'
 import { FormContext } from '../useFormContext'
 import { Values } from '../useFormReducer'
-import React from 'react'
+import { ComponentProps, ReactElement } from 'react'
 
-export type FormProps<V extends Values, E, R> = React.ComponentProps<'form'> & {
+export type FormProps<V extends Values, E, R> = ComponentProps<'form'> & {
   /**
    * The form context returned by useForm().
    */
   context: UseFormHook<V, E, R>;
 }
 
-function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V, E, R>): React.ReactElement {
+function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V, E, R>): ReactElement {
   const {
     children,
     context,

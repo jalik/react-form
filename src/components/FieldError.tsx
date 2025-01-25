@@ -1,12 +1,12 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
-import React, { ElementType } from 'react'
+import { ComponentProps, ElementType, ReactElement } from 'react'
 import useFormContext from '../useFormContext'
 
-export type FieldErrorProps<C extends ElementType> = React.ComponentProps<C> & {
+export type FieldErrorProps<C extends ElementType> = ComponentProps<C> & {
   /**
    * The custom component to render.
    */
@@ -17,7 +17,7 @@ export type FieldErrorProps<C extends ElementType> = React.ComponentProps<C> & {
   name: string;
 }
 
-function FieldError<C extends ElementType = 'span'> (props: FieldErrorProps<C>): React.ReactElement | null {
+function FieldError<C extends ElementType = 'span'> (props: FieldErrorProps<C>): ReactElement | null {
   const {
     component: Component = 'span',
     name,

@@ -1,12 +1,15 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
-import React, {
+import {
+  ChangeEvent,
+  ComponentPropsWithoutRef,
   ElementType,
   HTMLInputTypeAttribute,
   OptionHTMLAttributes,
+  ReactElement,
   useCallback,
   useMemo
 } from 'react'
@@ -16,7 +19,7 @@ import { inputValue } from '../utils'
 import Option from './Option'
 
 export type FieldProps<T = string, C extends ElementType = any> =
-  React.ComponentPropsWithoutRef<C>
+  ComponentPropsWithoutRef<C>
   & {
   /**
    * The custom component to render.
@@ -63,7 +66,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
   value?: string | T;
 }
 
-function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): React.ReactElement {
+function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): ReactElement {
   const {
     children,
     component: Component,
@@ -106,7 +109,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
     return ''
   }, [Component, formatter])
 
-  const handleFieldChange = useCallback((event: React.ChangeEvent<FieldElement>) => {
+  const handleFieldChange = useCallback((event: ChangeEvent<FieldElement>) => {
     handleChange(event, { parser })
   }, [handleChange, parser])
 
