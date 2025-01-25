@@ -496,7 +496,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clearAfterSubmit = false,
     debug = false,
     disabled = false,
+    // todo add tests for disableOnSubmit
     disableOnSubmit = true,
+    // todo add tests for disableOnValidate
     disableOnValidate = true,
     initialErrors,
     initialModified,
@@ -508,18 +510,23 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     nullify = false,
     onSubmit,
     onSubmitted,
+    // todo add tests for reinitialize
     reinitialize = false,
+    // todo add tests for setInitialValuesOnSuccess
     setInitialValuesOnSuccess = false,
     submitDelay = 100,
     transform: transformFunc,
+    // todo add tests for trimOnBlur
     trimOnBlur = false,
     trimOnSubmit = false,
     validate: validateFunc,
     validateField: validateFieldFunc,
     validateDelay = 400,
+    // todo add tests for validateOnChange
     validateOnChange = false,
     validateOnInit = false,
     validateOnSubmit = true,
+    // todo add tests for validateOnTouch
     validateOnTouch = false
   } = options
 
@@ -549,6 +556,49 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     initialErrors,
     state
   })
+
+  // Handle form keys.
+  const formKeys = useFormKeys({
+    formKey
+  })
+
+  // Handle form status.
+  const formStatus = useFormStatus({
+    initialModified,
+    initialTouched,
+    mode
+  })
+
+  // Handle form watchers.
+  const formWatch = useFormWatch<V>()
+
+  // Handle form values.
+  const formValues = useFormValues<V>({
+    formKeys,
+    formStatus,
+    initialValues,
+    mode,
+    // todo pass onValuesChange from useForm options
+    // onValuesChange: replaceKeysFromValues,
+    reinitialize,
+    watchers: formWatch.watchers
+  })
+
+  // Handle form lists.
+  const formList = useFormList<V, E>({
+    formErrors,
+    formStatus,
+    formValues
+  })
+
+  // Handle form loading.
+  const formLoader = useFormLoader<V>({
+    loader,
+    onSuccess (result) {
+      setInitialValues(result ?? {}, { forceUpdate: true })
+    }
+  })
+
   const {
     clearErrors,
     errorsState,
@@ -559,20 +609,16 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setErrors
   } = formErrors
 
-  // Handle form keys.
-  const formKeys = useFormKeys({
-    formKey
-  })
   const {
     getKey
   } = formKeys
 
-  // Handle form status.
-  const formStatus = useFormStatus({
-    initialModified,
-    initialTouched,
-    mode
-  })
+  const {
+    load,
+    loading,
+    loadError
+  } = formLoader
+
   const {
     clearModified,
     clearTouched,
@@ -592,20 +638,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     touchedState
   } = formStatus
 
-  // Handle form watchers.
-  const formWatch = useFormWatch<V>()
-
-  // Handle form values.
-  const formValues = useFormValues<V>({
-    formKeys,
-    formStatus,
-    initialValues,
-    mode,
-    // todo pass onValuesChange from useForm options
-    // onValuesChange: replaceKeysFromValues,
-    reinitialize,
-    watchers: formWatch.watchers
-  })
   const {
     clearValues,
     getInitialValues,
@@ -621,26 +653,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     valuesRef,
     valuesState
   } = formValues
-
-  // Handle form lists.
-  const formList = useFormList<V, E>({
-    formErrors,
-    formStatus,
-    formValues
-  })
-
-  // Handle form loading.
-  const formLoader = useFormLoader<V>({
-    loader,
-    onSuccess (result) {
-      setInitialValues(result ?? {}, { forceUpdate: true })
-    }
-  })
-  const {
-    load,
-    loading,
-    loadError
-  } = formLoader
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc)
@@ -1268,6 +1280,20 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   return {
     ...state,
 
+    // errors
+    clearErrors,
+    errors: errorsState,
+    getError,
+    getErrors,
+    hasError,
+    // todo return resetErrors()
+    setError,
+    setErrors,
+
+    // events
+    watch: formWatch.watch,
+    watchers: formWatch.watchers,
+
     // lists
     appendListItem: formList.appendListItem,
     insertListItem: formList.insertListItem,
@@ -1277,60 +1303,58 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     replaceListItem: formList.replaceListItem,
     swapListItem: formList.swapListItem,
 
-    clear,
-    clearErrors,
-    clearTouchedFields: clearTouched,
-    disabled: formDisabled,
-    errors: errorsState,
+    // loading
+    load,
+    loading,
+    loadError,
+
+    // props
     getButtonProps,
-    getError,
-    getErrors,
     getFieldProps,
     getFormProps,
-    getInitialValue,
-    getInitialValues,
+
+    // status
+    clearTouchedFields: clearTouched,
     getModified,
     getTouched,
+    isModified,
+    isTouched,
+    modified,
+    modifiedFields: modifiedState,
+    resetTouched,
+    setTouchedField,
+    setTouchedFields: setTouched,
+    touched,
+    touchedFields: touchedState,
+
+    // values
+    getInitialValue,
+    getInitialValues,
     getValue,
     getValues,
+    initialized: initializedRef.current,
+    initialValues: initialValuesState,
+    removeFields,
+    setInitialValues,
+    setValue: setFormValue,
+    setValues: setFormValues,
+    values: valuesState,
+
+    // global
+    clear,
+    disabled: formDisabled,
     handleBlur,
     handleChange,
     handleReset,
     handleSetValue,
     handleSubmit,
-    hasError,
-    initialized: initializedRef.current,
-    initialValues: initialValuesState,
-    isModified,
-    isTouched,
     key: getKey,
-    load,
-    loading,
-    loadError,
     mode,
-    modified,
-    modifiedFields: modifiedState,
-    removeFields,
     reset,
-    resetTouched,
-    setError,
-    setErrors,
-    setInitialValues,
-    touched,
-    touchedFields: touchedState,
-    setTouchedField,
-    setTouchedFields: setTouched,
-    setValue: setFormValue,
-    setValues: setFormValues,
     submit: debouncedValidateAndSubmit,
     validate: debouncedValidate,
     validateField: debouncedValidateField,
-    validateFields: debouncedValidateFields,
-    values: valuesState,
-
-    // events
-    watch: formWatch.watch,
-    watchers: formWatch.watchers
+    validateFields: debouncedValidateFields
   }
 }
 
