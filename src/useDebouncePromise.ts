@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 
-type DebouncedFunction<T> = (...args: any[]) => Promise<T>;
+export type DebouncedFunction<T> = (...args: any[]) => Promise<T>;
 
 /**
  * Avoids wasting function calls by waiting for the last call.

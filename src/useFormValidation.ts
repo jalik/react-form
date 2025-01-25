@@ -200,7 +200,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
       .catch((error) => {
         setValidating(false)
         setValidateError(error)
-        return error
+        return undefined
       })
   }, [clearErrors, getValues, modifiedRef, setErrors, touchedRef, validateFields])
 

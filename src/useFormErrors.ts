@@ -4,19 +4,15 @@
  */
 
 import { useCallback, useMemo, useState } from 'react'
-import { Errors, FormState, Values } from './useFormReducer'
+import { Errors, Values } from './useFormReducer'
 import { hasDefinedValues } from './utils'
 import { FieldKey } from './useForm'
 
-export type UseFormErrorsOptions<V extends Values, E, R> = {
+export type UseFormErrorsOptions<E> = {
   /**
    * Sets initial errors.
    */
   initialErrors?: Errors<E>;
-  /**
-   * The form status.
-   */
-  state: FormState<V, E, R>; // todo remove
 }
 
 export type UseFormErrorsHook<V extends Values, E> = {
@@ -73,7 +69,7 @@ function filterErrors<E> (errors?: Errors<E>): Errors<E> {
   return result
 }
 
-function useFormErrors<V extends Values, E, R> (options: UseFormErrorsOptions<V, E, R>): UseFormErrorsHook<V, E> {
+function useFormErrors<V extends Values, E> (options: UseFormErrorsOptions<E>): UseFormErrorsHook<V, E> {
   const [errorsState, setErrorsState] = useState(filterErrors(options.initialErrors))
 
   const hasError = useMemo(() => hasDefinedValues(errorsState), [errorsState])
