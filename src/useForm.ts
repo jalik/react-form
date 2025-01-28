@@ -108,7 +108,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = {
     props?: ComponentProps<Component>,
     opts?: {
       mode?: FormMode;
-      format?: (value: unknown) => string;
+      format?: ((value: unknown) => string) | null;
       parser?: (value: string, target?: HTMLElement) => any;
     }
   ): any;
@@ -181,10 +181,6 @@ export type UseFormHook<V extends Values, E = Error, R = any> = {
    */
   hasError: UseFormErrorsHook<V, E>['hasError'];
   /**
-   * Returns the key of a field.
-   */
-  key: UseFormKeysHook['getKey'];
-  /**
    * Tells if the form was initialized.
    */
   initialized: boolean;
@@ -200,6 +196,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = {
    * Tells if the field or form was touched.
    */
   isTouched: UseFormStatusHook['isTouched'];
+  /**
+   * Returns the key of a field.
+   */
+  key: UseFormKeysHook['getKey'];
   /**
    * Loads the form initial values.
    */
@@ -992,7 +992,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     props?: ComponentProps<Component>,
     opts: {
       mode?: FormMode;
-      format?: (value: unknown) => string;
+      format?: ((value: unknown) => string) | null;
       parser?: (value: string, target?: HTMLElement) => any;
     } = {}
   ) => {
