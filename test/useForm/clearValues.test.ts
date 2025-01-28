@@ -8,7 +8,7 @@ import { act, renderHook } from '@testing-library/react'
 import useForm, { FormMode } from '../../src/useForm'
 
 function tests (mode: FormMode) {
-  describe('with empty paths', () => {
+  describe('without arguments', () => {
     it('should clear all values', () => {
       const hook = renderHook(() => useForm({
         mode,
@@ -19,11 +19,8 @@ function tests (mode: FormMode) {
       }))
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
-
       act(() => hook.result.current.clear())
-
-      expect(hook.result.current.getValue('a')).toBe(undefined)
-      expect(hook.result.current.getValue('b')).toBe(undefined)
+      expect(hook.result.current.getValues()).toStrictEqual({})
     })
   })
 
@@ -40,12 +37,10 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
       expect(hook.result.current.getValue('c')).toBe(3)
-
       act(() => hook.result.current.clear(['a', 'c']))
-
-      expect(hook.result.current.getValue('a')).toBe(undefined)
+      expect(hook.result.current.getValue('a')).toBe(null)
       expect(hook.result.current.getValue('b')).toBe(2)
-      expect(hook.result.current.getValue('c')).toBe(undefined)
+      expect(hook.result.current.getValue('c')).toBe(null)
     })
   })
 
@@ -59,9 +54,7 @@ function tests (mode: FormMode) {
     }))
     expect(hook.result.current.getInitialValue('a')).toBe(1)
     expect(hook.result.current.getInitialValue('b')).toBe(2)
-
     act(() => hook.result.current.clear())
-
     expect(hook.result.current.getInitialValue('a')).toBe(1)
     expect(hook.result.current.getInitialValue('b')).toBe(2)
   })

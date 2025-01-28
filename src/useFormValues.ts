@@ -55,7 +55,10 @@ export type UseFormValuesHook<V extends Values> = {
    */
   clearValues (
     paths?: string[],
-    options?: { forceUpdate?: boolean }): void;
+    options?: {
+      forceUpdate?: boolean;
+      initialize?: boolean;
+    }): void;
   /**
    * Returns the initial value of a field.
    */
@@ -156,9 +159,6 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   } = options
 
   const onValuesChangeRef = useRef(onValuesChange)
-  useEffect(() => {
-    onValuesChangeRef.current = onValuesChange
-  }, [onValuesChange])
 
   const initialValuesRef = useRef<Partial<V | undefined>>(initialValues)
   const [initialValuesState, setInitialValuesState] = useState<Partial<V | undefined>>(initialValuesRef.current)
@@ -282,18 +282,23 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   }, [getValue, setValues])
 
   const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
-    let data: Partial<V> = {}
-
     if (paths) {
+      let data = clone(valuesRef.current)
       paths.forEach((path) => {
-        data = build(path, undefined, data)
+        data = build(path, null, data)
+      })
+      setValues(data, {
+        forceUpdate: true,
+        ...opts,
+        partial: true
+      })
+    } else {
+      setValues({}, {
+        forceUpdate: true,
+        ...opts,
+        partial: false
       })
     }
-    setValues(data, {
-      forceUpdate: true,
-      ...opts,
-      partial: paths != null && paths.length > 0
-    })
   }, [setValues])
 
   const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
@@ -306,26 +311,11 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   }, [setValues])
 
   const removeValues = useCallback<UseFormValuesHook<V>['removeValues']>((paths, opts) => {
-    let initialData: Partial<V> = initialValuesRef.current ?? {}
-    let data: Partial<V> = valuesRef.current
-
-    if (paths) {
-      // Remove from values and initial values.
-      paths.forEach((path) => {
-        if (typeof resolve(path, initialValuesRef) !== 'undefined') {
-          initialData = build(path, undefined, initialData)
-        }
-        if (typeof resolve(path, data) !== 'undefined') {
-          data = build(path, undefined, data)
-        }
-      })
-    }
-    setValues(data, {
-      forceUpdate: true,
+    clearValues(paths, {
       ...opts,
-      partial: false
+      initialize: true
     })
-  }, [setValues])
+  }, [clearValues])
 
   const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
     const initialData: Partial<V> = initialValuesRef.current ?? {}
@@ -346,6 +336,10 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   }, [setValues])
 
   useEffect(() => {
+    onValuesChangeRef.current = onValuesChange
+  }, [onValuesChange])
+
+  useEffect(() => {
     // Set values using initial values when they are provided or if they changed.
     if (initialValues && (!initializedRef.current || reinitialize)) {
       initialize(initialValues, { forceUpdate: true })
@@ -363,6 +357,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     initialValuesState,
     removeValues,
     resetValues,
+    // todo v6: setInitialValues() and initialize() should be separated
     setInitialValues: initialize,
     setValue,
     setValues,
