@@ -43,7 +43,7 @@ export type UseFormErrorsHook<V extends Values, E> = {
    * @param path
    * @param error
    */
-  setError (path: FieldKey<V>, error: E): void;
+  setError (path: FieldKey<V>, error: E | undefined): void;
   /**
    * Sets errors for given paths or all errors.
    * @param errors
