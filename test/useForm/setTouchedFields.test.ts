@@ -20,11 +20,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isTouched()).toBe(true)
       expect(hook.result.current.isTouched('a')).toBe(false)
       expect(hook.result.current.isTouched('b')).toBe(true)
-
-      act(() => hook.result.current.setTouchedFields({
-        a: true
-      }, { partial: false }))
-
+      act(() => hook.result.current.setTouchedFields({ a: true }, { partial: false }))
       expect(hook.result.current.isTouched()).toBe(true)
       expect(hook.result.current.isTouched('a')).toBe(true)
       expect(hook.result.current.isTouched('b')).toBe(false)
@@ -43,11 +39,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isTouched()).toBe(true)
       expect(hook.result.current.isTouched('a')).toBe(false)
       expect(hook.result.current.isTouched('b')).toBe(true)
-
-      act(() => hook.result.current.setTouchedFields({
-        a: true
-      }, { partial: true }))
-
+      act(() => hook.result.current.setTouchedFields({ a: true }, { partial: true }))
       expect(hook.result.current.isTouched()).toBe(true)
       expect(hook.result.current.isTouched('a')).toBe(true)
       expect(hook.result.current.isTouched('b')).toBe(true)

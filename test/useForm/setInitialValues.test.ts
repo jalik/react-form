@@ -12,45 +12,38 @@ function tests (mode: FormMode) {
     const hook = renderHook(() => useForm({
       mode
     }))
+    const initialValues = {
+      a: 1,
+      b: 2
+    }
     expect(hook.result.current.getInitialValues()).toBe(undefined)
     expect(hook.result.current.getValues()).toStrictEqual({})
-
-    act(() => hook.result.current.setInitialValues({
-      a: 1,
-      b: 2
-    }))
-    expect(hook.result.current.getInitialValues()).toStrictEqual({
-      a: 1,
-      b: 2
-    })
-    expect(hook.result.current.getValues()).toStrictEqual({
-      a: 1,
-      b: 2
-    })
+    expect(hook.result.current.initialized).toBe(false)
+    act(() => hook.result.current.setInitialValues(initialValues))
+    expect(hook.result.current.getInitialValues()).toStrictEqual(initialValues)
+    expect(hook.result.current.getValues()).toStrictEqual(initialValues)
     expect(hook.result.current.initialized).toBe(true)
   })
 
   it('should replace modified values', () => {
-    const hook = renderHook(() => useForm({
-      mode
-    }))
-
-    act(() => hook.result.current.setValues({
+    const initialValues = {
       a: 1,
       b: 2
+    }
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues
     }))
-    act(() => hook.result.current.setInitialValues({
+    const values = {
       a: 3,
       b: 4
-    }))
-    expect(hook.result.current.getInitialValues()).toStrictEqual({
-      a: 3,
-      b: 4
-    })
-    expect(hook.result.current.getValues()).toStrictEqual({
-      a: 3,
-      b: 4
-    })
+    }
+    expect(hook.result.current.getInitialValues()).toStrictEqual(initialValues)
+    expect(hook.result.current.getValues()).toStrictEqual(initialValues)
+    act(() => hook.result.current.setInitialValues(values))
+    expect(hook.result.current.getInitialValues()).toStrictEqual(values)
+    expect(hook.result.current.getValues()).toStrictEqual(values)
+    expect(hook.result.current.initialized).toBe(true)
   })
 }
 

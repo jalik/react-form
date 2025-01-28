@@ -8,16 +8,45 @@ import { act, renderHook } from '@testing-library/react'
 import useForm, { FormMode } from '../../src/useForm'
 
 function tests (mode: FormMode) {
-  it('should clear all values', () => {
-    const hook = renderHook(() => useForm({
-      mode,
-      initialModified: { a: true }
-    }))
-    expect(hook.result.current.isModified()).toBe(true)
-
-    act(() => hook.result.current.clear())
-    expect(hook.result.current.isModified()).toBe(false)
+  describe('without arguments', () => {
+    it('should clear all values', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues: {
+          a: 1,
+          b: 2
+        }
+      }))
+      expect(hook.result.current.getValue('a')).toBe(1)
+      expect(hook.result.current.getValue('b')).toBe(2)
+      act(() => hook.result.current.clear())
+      expect(hook.result.current.getValues()).toStrictEqual({})
+    })
   })
+
+  describe('with paths', () => {
+    it('should clear values of given paths', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues: {
+          a: 1,
+          b: 2,
+          c: 3
+        }
+      }))
+      expect(hook.result.current.getValue('a')).toBe(1)
+      expect(hook.result.current.getValue('b')).toBe(2)
+      expect(hook.result.current.getValue('c')).toBe(3)
+      act(() => hook.result.current.clear(['a', 'c']))
+      expect(hook.result.current.getValue('a')).toBe(null)
+      expect(hook.result.current.getValue('b')).toBe(2)
+      expect(hook.result.current.getValue('c')).toBe(null)
+    })
+  })
+
+  // todo check that errors are cleared
+  // todo check that modified states are cleared
+  // todo check that touched states are cleared
 }
 
 describe('useForm({ mode: "controlled" }).clear()', () => {

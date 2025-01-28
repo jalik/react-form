@@ -8,7 +8,7 @@ import { act, renderHook } from '@testing-library/react'
 import useForm, { FormMode } from '../../src/useForm'
 
 function tests (mode: FormMode) {
-  describe('with empty paths', () => {
+  describe('without arguments', () => {
     it('should reset all values', () => {
       const hook = renderHook(() => useForm({
         mode,
@@ -21,13 +21,8 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
       expect(hook.result.current.getValue('c')).toBe(3)
-
-      act(() => hook.result.current.setValues({
-        a: 0,
-        b: 0
-      }, { partial: true }))
+      act(() => hook.result.current.setValues({ b: 0 }))
       act(() => hook.result.current.reset())
-
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
       expect(hook.result.current.getValue('c')).toBe(3)
@@ -47,13 +42,8 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(2)
       expect(hook.result.current.getValue('c')).toBe(3)
-
-      act(() => hook.result.current.setValues({
-        a: 0,
-        b: 0
-      }, { partial: true }))
+      act(() => hook.result.current.setValues({ b: 0 }))
       act(() => hook.result.current.reset(['a', 'c']))
-
       expect(hook.result.current.getValue('a')).toBe(1)
       expect(hook.result.current.getValue('b')).toBe(0)
       expect(hook.result.current.getValue('c')).toBe(3)
@@ -61,10 +51,10 @@ function tests (mode: FormMode) {
   })
 }
 
-describe('useForm({ mode: "controlled" }).resetValues()', () => {
+describe('useForm({ mode: "controlled" }).reset()', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode: "uncontrolled" }).resetValues()', () => {
+describe('useForm({ mode: "uncontrolled" }).reset()', () => {
   tests('experimental_uncontrolled')
 })

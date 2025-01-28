@@ -22,7 +22,7 @@ async function validate (values: Record<string, unknown>) {
 }
 
 function tests (mode: FormMode) {
-  it('should not set errors if form is valid', async () => {
+  it('should return true if form is valid', async () => {
     const hook = renderHook(() => useForm({
       mode,
       initialValues: {
@@ -31,13 +31,12 @@ function tests (mode: FormMode) {
       },
       validate
     }))
-    expect(hook.result.current.getErrors()).toStrictEqual({})
+    expect(hook.result.current.validated).toBe(false)
     await act(() => hook.result.current.validate())
-    expect(hook.result.current.getError('number')).toBe(undefined)
-    expect(hook.result.current.getError('text')).toBe(undefined)
+    expect(hook.result.current.validated).toBe(true)
   })
 
-  it('should set errors if form is not valid', async () => {
+  it('should return false if form is not valid', async () => {
     const hook = renderHook(() => useForm({
       mode,
       initialValues: {
@@ -46,17 +45,16 @@ function tests (mode: FormMode) {
       },
       validate
     }))
-    expect(hook.result.current.getErrors()).toStrictEqual({})
+    expect(hook.result.current.validated).toBe(false)
     await act(() => hook.result.current.validate())
-    expect(hook.result.current.getError('number')).toBeDefined()
-    expect(hook.result.current.getError('text')).toBeDefined()
+    expect(hook.result.current.validated).toBe(false)
   })
 }
 
-describe('useForm({ mode: "controlled" }).validate()', () => {
+describe('useForm({ mode: "controlled" }).validated', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode: "uncontrolled" }).validate()', () => {
+describe('useForm({ mode: "uncontrolled" }).validated', () => {
   tests('experimental_uncontrolled')
 })

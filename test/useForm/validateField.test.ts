@@ -9,54 +9,55 @@ import { act, renderHook } from '@testing-library/react'
 
 const TYPE_ERROR = 'invalid type'
 
-async function validate (values: Record<string, unknown>) {
-  const errors: Record<string, string> = {}
-
-  if (values.text != null && typeof values.text !== 'string') {
-    errors.text = TYPE_ERROR
+async function validateField (path: string, value: unknown) {
+  if (path === 'text') {
+    if (value != null && typeof value !== 'string') {
+      return TYPE_ERROR
+    }
+  } else if (path === 'number') {
+    if (value != null && typeof value !== 'number') {
+      return TYPE_ERROR
+    }
   }
-  if (values.number != null && typeof values.number !== 'number') {
-    errors.number = TYPE_ERROR
-  }
-  return errors
+  return undefined
 }
 
 function tests (mode: FormMode) {
-  it('should not set errors if form is valid', async () => {
+  it('should not set error if field is valid', async () => {
     const hook = renderHook(() => useForm({
       mode,
       initialValues: {
         number: 123,
         text: '123'
       },
-      validate
+      validateField
     }))
     expect(hook.result.current.getErrors()).toStrictEqual({})
-    await act(() => hook.result.current.validate())
+    await act(() => hook.result.current.validateField('number'))
     expect(hook.result.current.getError('number')).toBe(undefined)
     expect(hook.result.current.getError('text')).toBe(undefined)
   })
 
-  it('should set errors if form is not valid', async () => {
+  it('should set error if field is not valid', async () => {
     const hook = renderHook(() => useForm({
       mode,
       initialValues: {
         number: '123',
         text: 123
       },
-      validate
+      validateField
     }))
     expect(hook.result.current.getErrors()).toStrictEqual({})
-    await act(() => hook.result.current.validate())
+    await act(() => hook.result.current.validateField('number'))
     expect(hook.result.current.getError('number')).toBeDefined()
-    expect(hook.result.current.getError('text')).toBeDefined()
+    expect(hook.result.current.getError('text')).toBe(undefined)
   })
 }
 
-describe('useForm({ mode: "controlled" }).validate()', () => {
+describe('useForm({ mode: "controlled" }).validateField()', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode: "uncontrolled" }).validate()', () => {
+describe('useForm({ mode: "uncontrolled" }).validateField()', () => {
   tests('experimental_uncontrolled')
 })

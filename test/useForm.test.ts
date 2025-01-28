@@ -24,7 +24,7 @@ describe('useForm()', () => {
             await result.current.submit()
           })
 
-          expect(result.current.values.username).toBeUndefined()
+          expect(result.current.values.username).toBe(undefined)
         })
       })
 
@@ -196,7 +196,7 @@ describe('useForm()', () => {
         expect(validate).not.toHaveBeenCalled()
         expect(result.current.submitted).toBe(true)
         expect(result.current.submitting).toBe(false)
-        expect(result.current.submitError).toBeUndefined()
+        expect(result.current.submitError).toBe(undefined)
         expect(result.current.submitResult).toMatchObject(initialValues)
       })
     })
@@ -217,10 +217,10 @@ describe('useForm()', () => {
 
       expect(result.current.initialized).toBe(true)
       expect(result.current.modified).toBe(false)
-      expect(result.current.modifiedFields.username).toBeUndefined()
+      expect(result.current.modifiedFields.username).toBe(undefined)
       expect(result.current.touched).toBe(false)
-      expect(result.current.touchedFields.username).toBeUndefined()
-      expect(result.current.values.username).toBeUndefined()
+      expect(result.current.touchedFields.username).toBe(undefined)
+      expect(result.current.values.username).toBe(undefined)
     })
   })
 
@@ -237,7 +237,7 @@ describe('useForm()', () => {
         result.current.clearErrors()
       })
 
-      expect(result.current.errors.username).toBeUndefined()
+      expect(result.current.errors.username).toBe(undefined)
     })
   })
 
@@ -255,7 +255,7 @@ describe('useForm()', () => {
       })
 
       expect(result.current.touched).toBe(false)
-      expect(result.current.touchedFields.username).toBeUndefined()
+      expect(result.current.touchedFields.username).toBe(undefined)
     })
   })
 
@@ -469,7 +469,7 @@ describe('useForm()', () => {
       expect(result.current.initialized).toBe(true)
       expect(result.current.getInitialValue('username')).toBe(initialValues.username)
       expect(result.current.loading).toBe(false)
-      expect(result.current.loadError).toBeUndefined()
+      expect(result.current.loadError).toBe(undefined)
     })
 
     // todo
@@ -508,10 +508,10 @@ describe('useForm()', () => {
         result.current.removeFields(['username'])
       })
 
-      expect(result.current.values.username).toBeUndefined()
-      expect(result.current.errors.username).toBeUndefined()
-      expect(result.current.modifiedFields.username).toBeUndefined()
-      expect(result.current.touchedFields.username).toBeUndefined()
+      expect(result.current.values.username).toBe(null)
+      expect(result.current.errors.username).toBe(undefined)
+      expect(result.current.modifiedFields.username).toBe(undefined)
+      expect(result.current.touchedFields.username).toBe(undefined)
     })
   })
 
@@ -667,7 +667,7 @@ describe('useForm()', () => {
         })
 
         expect(result.current.values.username).toBe('jalik')
-        expect(result.current.values.password).toBeUndefined()
+        expect(result.current.values.password).toBe(undefined)
       })
     })
 
@@ -736,7 +736,7 @@ describe('useForm()', () => {
       expect(onSubmit).toHaveBeenCalledTimes(1)
       expect(result.current.submitted).toBe(true)
       expect(result.current.submitting).toBe(false)
-      expect(result.current.submitError).toBeUndefined()
+      expect(result.current.submitError).toBe(undefined)
       expect(result.current.submitResult).toBe(true)
     })
 
@@ -778,7 +778,7 @@ describe('useForm()', () => {
           await result.current.submit()
         })
 
-        expect(result.current.submitResult).toBeUndefined()
+        expect(result.current.submitResult).toBe(undefined)
         expect(result.current.submitting).toBe(false)
         expect(result.current.submitted).toBe(false)
         expect(result.current.submitError).toBeDefined()
@@ -842,7 +842,7 @@ describe('useForm()', () => {
       expect(result.current.errors.username).toBeDefined()
       expect(result.current.validating).toBe(false)
       expect(result.current.validated).toBe(false)
-      expect(result.current.validateError).toBeUndefined()
+      expect(result.current.validateError).toBe(undefined)
     })
 
     it('should catch error during validation and set form.validateError', async () => {
@@ -881,10 +881,10 @@ describe('useForm()', () => {
       })
 
       expect(validate).toHaveBeenCalledTimes(1)
-      expect(result.current.errors.username).toBeUndefined()
+      expect(result.current.errors.username).toBe(undefined)
       expect(result.current.validating).toBe(false)
       expect(result.current.validated).toBe(true)
-      expect(result.current.validateError).toBeUndefined()
+      expect(result.current.validateError).toBe(undefined)
     })
   })
 

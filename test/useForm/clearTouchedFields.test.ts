@@ -8,15 +8,35 @@ import { act, renderHook } from '@testing-library/react'
 import useForm, { FormMode } from '../../src/useForm'
 
 function tests (mode: FormMode) {
-  it('should clear touched fields', () => {
-    const hook = renderHook(() => useForm({
-      mode,
-      initialTouched: { a: true }
-    }))
-    expect(hook.result.current.isTouched()).toBe(true)
+  describe('without arguments', () => {
+    it('should clear all touched fields', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialTouched: { a: true }
+      }))
+      expect(hook.result.current.isTouched('a')).toBe(true)
+      act(() => hook.result.current.clearTouchedFields())
+      expect(hook.result.current.isTouched('a')).toBe(false)
+    })
+  })
 
-    act(() => hook.result.current.clearTouchedFields())
-    expect(hook.result.current.isTouched()).toBe(false)
+  describe('with paths', () => {
+    it('should clear touched fields', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialTouched: {
+          a: true,
+          b: true,
+          c: true
+        }
+      }))
+      expect(hook.result.current.isTouched('a')).toBe(true)
+      expect(hook.result.current.isTouched('b')).toBe(true)
+      act(() => hook.result.current.clearTouchedFields(['a', 'c']))
+      expect(hook.result.current.isTouched('a')).toBe(false)
+      expect(hook.result.current.isTouched('b')).toBe(true)
+      expect(hook.result.current.isTouched('c')).toBe(false)
+    })
   })
 }
 

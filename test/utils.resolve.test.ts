@@ -1,6 +1,6 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2024 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { describe, expect, it } from '@jest/globals'
@@ -64,8 +64,7 @@ describe('resolve(path, context)', () => {
 
   describe('resolve("", undefined)', () => {
     it('should return undefined', () => {
-      expect(resolve('', undefined))
-        .toBeUndefined()
+      expect(resolve('', undefined)).toBe(undefined)
     })
   })
 
@@ -77,8 +76,7 @@ describe('resolve(path, context)', () => {
         // @ts-expect-error path must be a string
         null,
         context
-      ))
-        .toThrow()
+      )).toThrow()
     })
   })
 
@@ -88,8 +86,7 @@ describe('resolve(path, context)', () => {
         // @ts-expect-error path must be a string
         undefined,
         context
-      ))
-        .toThrow()
+      )).toThrow()
     })
   })
 
@@ -161,14 +158,14 @@ describe('resolve(path, context)', () => {
   describe('resolve("undefined", context)', () => {
     it('should return undefined', () => {
       expect(resolve('undefined', context))
-        .toBeUndefined()
+        .toBe(undefined)
     })
   })
 
   describe('resolve("undefined.undefined", context)', () => {
     it('should return undefined', () => {
       expect(resolve('undefined.undefined', context))
-        .toBeUndefined()
+        .toBe(undefined)
     })
   })
 

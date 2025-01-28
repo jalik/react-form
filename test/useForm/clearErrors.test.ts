@@ -8,19 +8,34 @@ import { describe, expect, it } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
 
 function test (mode: FormMode) {
-  it('should clear errors', () => {
-    const hook = renderHook(() => useForm({
-      mode,
-      initialErrors: {
-        a: 'invalid',
-        b: 'invalid'
-      },
-      onSubmit () {
-        return Promise.resolve(true)
-      }
-    }))
-    act(() => hook.result.current.clearErrors())
-    expect(hook.result.current.errors).toStrictEqual({})
+  describe('without arguments', () => {
+    it('should clear all errors', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialErrors: {
+          a: 'invalid',
+          b: 'invalid'
+        }
+      }))
+      expect(hook.result.current.getError('a')).toBe('invalid')
+      expect(hook.result.current.getError('b')).toBe('invalid')
+      act(() => hook.result.current.clearErrors())
+      expect(hook.result.current.errors).toStrictEqual({})
+    })
+  })
+
+  describe('with paths', () => {
+    it('should clear given errors', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialErrors: {
+          a: 'invalid',
+          b: 'invalid'
+        }
+      }))
+      act(() => hook.result.current.clearErrors())
+      expect(hook.result.current.errors).toStrictEqual({})
+    })
   })
 }
 

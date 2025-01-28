@@ -11,10 +11,7 @@ function test (mode: FormMode) {
   describe('with partial = false', () => {
     it('should replace all errors', () => {
       const hook = renderHook(() => useForm<any, string>({
-        mode,
-        onSubmit () {
-          return Promise.resolve(true)
-        }
+        mode
       }))
       act(() => hook.result.current.setErrors({
         a: 'required',
@@ -33,9 +30,6 @@ function test (mode: FormMode) {
         mode,
         initialErrors: {
           a: 'invalid'
-        },
-        onSubmit () {
-          return Promise.resolve(true)
         }
       }))
       act(() => hook.result.current.setErrors({
@@ -56,9 +50,6 @@ function test (mode: FormMode) {
           a: 'invalid',
           b: 'invalid',
           c: 'invalid'
-        },
-        onSubmit () {
-          return Promise.resolve(true)
         }
       }))
       act(() => hook.result.current.setErrors({
