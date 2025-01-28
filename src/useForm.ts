@@ -860,10 +860,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * Validates if necessary and submits form.
    */
   const validateAndSubmit = useCallback(async (): Promise<R | undefined> => {
-    if (!validateOnSubmit) {
-      return submit()
-    }
-    if (validated) {
+    if (!validateOnSubmit || validated) {
       return submit()
     }
     const errors = await validate()
@@ -885,11 +882,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     if (listener) {
       listener(event)
     } else if (target.type === 'submit') {
-      submit()
+      validateAndSubmit()
     } else if (target.type === 'reset') {
       reset()
     }
-  }, [reset, submit])
+  }, [reset, validateAndSubmit])
 
   /**
    * Handles leaving of a field.
