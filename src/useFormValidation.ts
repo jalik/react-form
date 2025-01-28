@@ -115,6 +115,9 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
    * Validates one or more fields by passing field names.
    */
   const validateFields = useCallback<UseFormValidationHook<V, E>['validateFields']>((paths) => {
+    if (validateFieldRef.current == null) {
+      return Promise.resolve(undefined)
+    }
     setValidating(true)
     setValidateError(undefined)
     setNeedValidation(false)
@@ -169,7 +172,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
   ), [validateFields])
 
   const validate = useCallback<UseFormValidationHook<V, E>['validate']>(() => {
-    if (typeof validateRef.current !== 'function') {
+    if (validateRef.current == null) {
       // Validate touched and modified fields only,
       // since we don't have a global validation function.
       return validateFields(Object.keys({
