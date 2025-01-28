@@ -120,8 +120,9 @@ export type UseFormHook<V extends Values, E = Error, R = any> = {
   /**
    * Returns field's initial value.
    * @param name
+   * @param defaultValue
    */
-  getInitialValue<T> (name: string): T | undefined;
+  getInitialValue<T> (name: string, defaultValue?: T): T | undefined;
   /**
    * Returns initial values.
    */
