@@ -30,7 +30,7 @@ export type UseFormSubmissionOptions<V extends Values, E, R> = {
   /**
    * The form status.
    */
-  formStatus: UseFormStatusHook;
+  formStatus: UseFormStatusHook<V>;
   /**
    * The form values.
    */

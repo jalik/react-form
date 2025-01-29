@@ -7,8 +7,9 @@ import { Dispatch, SetStateAction, useCallback, useState } from 'react'
 import { flatten } from './utils'
 import { PathsOrValues } from './useFormValues'
 import { Values } from './useFormReducer'
+import { FieldKey } from './useForm'
 
-export type FormKeys = Record<string, number>
+export type FormKeys<V extends Values> = Record<FieldKey<V>, number>
 
 export type UseFormKeysOptions = {
   /**
@@ -17,17 +18,17 @@ export type UseFormKeysOptions = {
   formKey: string;
 }
 
-export type UseFormKeysHook = {
+export type UseFormKeysHook<V extends Values> = {
   /**
    * Returns the key of a path.
    * @param path
    */
-  getKey (path: string): string;
+  getKey (path: FieldKey<V>): string;
   /**
    * Replaces the key of a path.
    * @param paths
    */
-  replaceKeys (paths: string[]): void;
+  replaceKeys (paths: FieldKey<V>[]): void;
   /**
    * Replaces all keys from values.
    * @param values
@@ -36,21 +37,21 @@ export type UseFormKeysHook = {
   /**
    * Sets all keys.
    */
-  setKeys: Dispatch<SetStateAction<FormKeys>>;
+  setKeys: Dispatch<SetStateAction<FormKeys<V>>>;
 }
 
-function useFormKeys (options: UseFormKeysOptions): UseFormKeysHook {
+function useFormKeys<V extends Values> (options: UseFormKeysOptions): UseFormKeysHook<V> {
   const { formKey } = options
 
-  const [keys, setKeys] = useState<FormKeys>({})
+  const [keys, setKeys] = useState<FormKeys<V>>({} as FormKeys<V>)
 
-  const getKey = useCallback<UseFormKeysHook['getKey']>((path) => {
+  const getKey = useCallback<UseFormKeysHook<V>['getKey']>((path) => {
     return `${formKey}-${path}-v${keys[path] ?? 0}`
   }, [formKey, keys])
 
-  const replaceKeys = useCallback<UseFormKeysHook['replaceKeys']>((paths) => {
+  const replaceKeys = useCallback<UseFormKeysHook<V>['replaceKeys']>((paths) => {
     setKeys((s) => {
-      const result: FormKeys = { ...s }
+      const result = { ...s }
       paths.forEach((path) => {
         result[path] = (s[path] ?? 0) + 1
       })
@@ -58,7 +59,7 @@ function useFormKeys (options: UseFormKeysOptions): UseFormKeysHook {
     })
   }, [])
 
-  const replaceKeysFromValues = useCallback<UseFormKeysHook['replaceKeysFromValues']>((values) => {
+  const replaceKeysFromValues = useCallback<UseFormKeysHook<V>['replaceKeysFromValues']>((values) => {
     replaceKeys(Object.keys(flatten(values)))
   }, [replaceKeys])
 

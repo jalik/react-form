@@ -4,8 +4,8 @@
  */
 
 import { MutableRefObject, useCallback, useRef, useState } from 'react'
-import { ModifiedFields, TouchedFields } from './useFormReducer'
-import { FormMode } from './useForm'
+import { ModifiedFields, TouchedFields, Values } from './useFormReducer'
+import { FieldKey, FormMode } from './useForm'
 import { hasTrueValues } from './utils'
 
 export type UseFormStatusOptions = {
@@ -23,14 +23,14 @@ export type UseFormStatusOptions = {
   mode: FormMode;
 }
 
-export type UseFormStatusHook = {
+export type UseFormStatusHook<V extends Values> = {
   /**
    * Clears modified state of given paths or all paths.
    * @param paths
    * @param options
    */
   clearModified (
-    paths?: string[],
+    paths?: FieldKey<V>[],
     options?: {
       forceUpdate?: boolean
     }
@@ -41,7 +41,7 @@ export type UseFormStatusHook = {
    * @param options
    */
   clearTouched (
-    paths?: string[],
+    paths?: FieldKey<V>[],
     options?: {
       forceUpdate?: boolean
     }
@@ -58,12 +58,12 @@ export type UseFormStatusHook = {
    * Tells if the field was modified else the form if no path is passed.
    * @param path
    */
-  isModified (path?: string): boolean;
+  isModified (path?: FieldKey<V>): boolean;
   /**
    * Tells if the field was touched else the form if no path is passed.
    * @param path
    */
-  isTouched (path?: string): boolean;
+  isTouched (path?: FieldKey<V>): boolean;
   /**
    * Tells if the form was modified.
    */
@@ -82,7 +82,7 @@ export type UseFormStatusHook = {
    * @param options
    */
   resetModified (
-    paths?: string[],
+    paths?: FieldKey<V>[],
     options?: {
       forceUpdate?: boolean
     }
@@ -93,7 +93,7 @@ export type UseFormStatusHook = {
    * @param options
    */
   resetTouched (
-    paths?: string[],
+    paths?: FieldKey<V>[],
     options?: {
       forceUpdate?: boolean
     }
@@ -105,7 +105,7 @@ export type UseFormStatusHook = {
    * @param options
    */
   setModifiedField (
-    path: string,
+    path: FieldKey<V>,
     value: boolean,
     options?: {
       forceUpdate?: boolean,
@@ -130,7 +130,7 @@ export type UseFormStatusHook = {
    * @param options
    */
   setTouchedField (
-    path: string,
+    path: FieldKey<V>,
     value: boolean,
     options?: {
       forceUpdate?: boolean,
@@ -162,7 +162,7 @@ export type UseFormStatusHook = {
   touchedState: TouchedFields;
 }
 
-function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
+function useFormStatus<V extends Values> (options: UseFormStatusOptions): UseFormStatusHook<V> {
   const {
     initialModified,
     initialTouched,
@@ -177,7 +177,7 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
 
   // MODIFIED
 
-  const clearModified = useCallback<UseFormStatusHook['clearModified']>((paths, opts) => {
+  const clearModified = useCallback<UseFormStatusHook<V>['clearModified']>((paths, opts) => {
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
@@ -193,22 +193,22 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [mode])
 
-  const getModified = useCallback<UseFormStatusHook['getModified']>(() => {
+  const getModified = useCallback<UseFormStatusHook<V>['getModified']>(() => {
     return modifiedRef.current
   }, [])
 
-  const getTouched = useCallback<UseFormStatusHook['getTouched']>(() => {
+  const getTouched = useCallback<UseFormStatusHook<V>['getTouched']>(() => {
     return touchedRef.current
   }, [])
 
-  const isModified = useCallback<UseFormStatusHook['isModified']>((path) => {
+  const isModified = useCallback<UseFormStatusHook<V>['isModified']>((path) => {
     if (path) {
       return modifiedRef.current[path] ?? false
     }
     return hasTrueValues(modifiedRef.current)
   }, [])
 
-  const resetModified = useCallback<UseFormStatusHook['resetModified']>((paths, opts) => {
+  const resetModified = useCallback<UseFormStatusHook<V>['resetModified']>((paths, opts) => {
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
@@ -224,7 +224,7 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [initialModified, mode])
 
-  const setModified = useCallback<UseFormStatusHook['setModified']>((values, opts) => {
+  const setModified = useCallback<UseFormStatusHook<V>['setModified']>((values, opts) => {
     const {
       partial = false,
       forceUpdate = false
@@ -241,13 +241,13 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [mode])
 
-  const setModifiedField = useCallback<UseFormStatusHook['setModifiedField']>((path, value) => {
+  const setModifiedField = useCallback<UseFormStatusHook<V>['setModifiedField']>((path, value) => {
     setModified({ [path]: value }, { partial: true })
   }, [setModified])
 
   // TOUCHED
 
-  const clearTouched = useCallback<UseFormStatusHook['clearTouched']>((paths, opts) => {
+  const clearTouched = useCallback<UseFormStatusHook<V>['clearTouched']>((paths, opts) => {
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
@@ -263,14 +263,14 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [mode])
 
-  const isTouched = useCallback<UseFormStatusHook['isTouched']>((path) => {
+  const isTouched = useCallback<UseFormStatusHook<V>['isTouched']>((path) => {
     if (path) {
       return touchedRef.current[path] ?? false
     }
     return hasTrueValues(touchedRef.current)
   }, [])
 
-  const resetTouched = useCallback<UseFormStatusHook['resetTouched']>((paths, opts) => {
+  const resetTouched = useCallback<UseFormStatusHook<V>['resetTouched']>((paths, opts) => {
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
@@ -286,7 +286,7 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [initialTouched, mode])
 
-  const setTouched = useCallback<UseFormStatusHook['setTouched']>((values, opts) => {
+  const setTouched = useCallback<UseFormStatusHook<V>['setTouched']>((values, opts) => {
     const {
       partial = false,
       forceUpdate = false
@@ -303,7 +303,7 @@ function useFormStatus (options: UseFormStatusOptions): UseFormStatusHook {
     }
   }, [mode])
 
-  const setTouchedField = useCallback<UseFormStatusHook['setTouchedField']>((path, value) => {
+  const setTouchedField = useCallback<UseFormStatusHook<V>['setTouchedField']>((path, value) => {
     setTouched({ [path]: value }, { partial: true })
   }, [setTouched])
 

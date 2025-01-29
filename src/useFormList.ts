@@ -9,63 +9,64 @@ import { UseFormValuesHook } from './useFormValues'
 import { Values } from './useFormReducer'
 import { useCallback } from 'react'
 import { movePathIndices, swapPathIndices, updatePathIndices } from './utils'
+import { FieldKey } from './useForm'
 
 export type UseFormListOptions<V extends Values, E> = {
   formErrors: UseFormErrorsHook<V, E>;
-  formStatus: UseFormStatusHook;
+  formStatus: UseFormStatusHook<V>;
   formValues: UseFormValuesHook<V>;
 }
 
-export type UseFormListHook = {
+export type UseFormListHook<V extends Values> = {
   /**
    * Appends one or more items to a list.
    * @param path
    * @param items
    */
-  appendListItem<E = unknown> (path: string, ...items: E[]): void;
+  appendListItem<E = unknown> (path: FieldKey<V>, ...items: E[]): void;
   /**
    * Inserts one or more items in a list.
    * @param path
    * @param index
    * @param items
    */
-  insertListItem<E = unknown> (path: string, index: number, ...items: E[]): void;
+  insertListItem<E = unknown> (path: FieldKey<V>, index: number, ...items: E[]): void;
   /**
    * Moves an item in a list.
    * @param path
    * @param fromIndex
    * @param toIndex
    */
-  moveListItem (path: string, fromIndex: number, toIndex: number): void;
+  moveListItem (path: FieldKey<V>, fromIndex: number, toIndex: number): void;
   /**
    * Inserts one or more items to the beginning of a list.
    * @param path
    * @param items
    */
-  prependListItem<E = unknown> (path: string, ...items: E[]): void;
+  prependListItem<E = unknown> (path: FieldKey<V>, ...items: E[]): void;
   /**
    * Removes one or more items from a list using their indices.
    * @param path
    * @param indices
    */
-  removeListItem (path: string, ...indices: number[]): void;
+  removeListItem (path: FieldKey<V>, ...indices: number[]): void;
   /**
    * Replaces an item in a list.
    * @param path
    * @param index
    * @param item
    */
-  replaceListItem<E = unknown> (path: string, index: number, item: E): void;
+  replaceListItem<E = unknown> (path: FieldKey<V>, index: number, item: E): void;
   /**
    * Swaps two items in a list.
    * @param path
    * @param fromIndex
    * @param toIndex
    */
-  swapListItem (path: string, fromIndex: number, toIndex: number): void;
+  swapListItem (path: FieldKey<V>, fromIndex: number, toIndex: number): void;
 }
 
-function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): UseFormListHook {
+function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): UseFormListHook<V> {
   const {
     formErrors,
     formStatus,
@@ -91,7 +92,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     setValue
   } = formValues
 
-  const appendListItem = useCallback<UseFormListHook['appendListItem']>(<T> (path: string, ...items: T[]) => {
+  const appendListItem = useCallback<UseFormListHook<V>['appendListItem']>(<T> (path: FieldKey<V>, ...items: T[]) => {
     if (items.length > 0) {
       const list = [...(getValue<T[]>(path) ?? []), ...items]
       setValue(path, list, {
@@ -101,7 +102,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     }
   }, [getValue, setValue])
 
-  const insertListItem = useCallback<UseFormListHook['insertListItem']>(<T> (path: string, index: number, ...items: T[]) => {
+  const insertListItem = useCallback<UseFormListHook<V>['insertListItem']>(<T> (path: FieldKey<V>, index: number, ...items: T[]) => {
     if (items.length > 0) {
       setModified({
         ...updatePathIndices(getModified(), path, index, items.length),
@@ -121,7 +122,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
-  const moveListItem = useCallback<UseFormListHook['moveListItem']>((path, fromIndex, toIndex) => {
+  const moveListItem = useCallback<UseFormListHook<V>['moveListItem']>((path, fromIndex, toIndex) => {
     const minIndex = Math.min(fromIndex, toIndex)
     const maxIndex = Math.max(fromIndex, toIndex)
     const modified = movePathIndices(getModified(), path, fromIndex, toIndex)
@@ -142,7 +143,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     })
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
-  const prependListItem = useCallback<UseFormListHook['prependListItem']>(<T> (path: string, ...items: T[]) => {
+  const prependListItem = useCallback<UseFormListHook<V>['prependListItem']>(<T> (path: FieldKey<V>, ...items: T[]) => {
     if (items.length > 0) {
       setModified({
         ...updatePathIndices(getModified(), path, 0, items.length),
@@ -161,7 +162,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
-  const removeListItem = useCallback<UseFormListHook['removeListItem']>((path, ...indices) => {
+  const removeListItem = useCallback<UseFormListHook<V>['removeListItem']>((path, ...indices) => {
     if (indices.length > 0) {
       const reversedIndices = [...indices].reverse()
 
@@ -189,7 +190,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
-  const replaceListItem = useCallback<UseFormListHook['replaceListItem']>(<T> (path: string, index: number, item: T) => {
+  const replaceListItem = useCallback<UseFormListHook<V>['replaceListItem']>(<T> (path: FieldKey<V>, index: number, item: T) => {
     const fieldPath = `${path}[${index}]`
     setModifiedField(fieldPath, true)
     clearErrors([fieldPath])
@@ -202,7 +203,7 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     })
   }, [clearErrors, getValue, setModifiedField, setValue])
 
-  const swapListItem = useCallback<UseFormListHook['swapListItem']>((path, fromIndex, toIndex) => {
+  const swapListItem = useCallback<UseFormListHook<V>['swapListItem']>((path, fromIndex, toIndex) => {
     setModified({
       ...swapPathIndices(getModified(), path, fromIndex, toIndex),
       [`${path}[${fromIndex}]`]: true,

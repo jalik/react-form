@@ -6,24 +6,24 @@
 import { ModifiedFields, Values } from './useFormReducer'
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { build, clone, flatten, resolve } from './utils'
-import { FormMode } from './useForm'
+import { FieldKey, FormMode } from './useForm'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
 import { FieldStatus, inputChangeEvent } from './useFormWatch'
 import { Observer } from '@jalik/observer'
 
-// todo add autocompletion with keyof for string in Record
-export type PathsOrValues<V extends Values> = Record<string, unknown> | Partial<V>
+export type FieldPaths<V extends Values> = Record<FieldKey<V>, unknown>
+export type PathsOrValues<V extends Values> = FieldPaths<V> | Partial<V>
 
 export type UseFormValuesOptions<V extends Values> = {
   /**
    * The form keys hook.
    */
-  formKeys: UseFormKeysHook;
+  formKeys: UseFormKeysHook<V>;
   /**
    * The form keys hook.
    */
-  formStatus: UseFormStatusHook;
+  formStatus: UseFormStatusHook<V>;
   /**
    * Contains initial form values.
    */
@@ -54,7 +54,7 @@ export type UseFormValuesHook<V extends Values> = {
    * @param options
    */
   clearValues (
-    paths?: string[],
+    paths?: FieldKey<V>[],
     options?: {
       forceUpdate?: boolean;
       initialize?: boolean;
@@ -62,7 +62,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns the initial value of a field.
    */
-  getInitialValue<T> (path: string, defaultValue?: T): T | undefined;
+  getInitialValue<T> (path: FieldKey<V>, defaultValue?: T): T | undefined;
   /**
    * Returns the initial values.
    */
@@ -70,7 +70,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns a value.
    */
-  getValue<T> (path: string, defaultValue?: T): T | undefined;
+  getValue<T> (path: FieldKey<V>, defaultValue?: T): T | undefined;
   /**
    * Returns values.
    */
@@ -93,7 +93,7 @@ export type UseFormValuesHook<V extends Values> = {
    * @param options
    */
   removeValues (
-    paths: string[],
+    paths: FieldKey<V>[],
     options?: { forceUpdate?: boolean }): void;
   /**
    * Restores initial values of given paths.
@@ -101,7 +101,7 @@ export type UseFormValuesHook<V extends Values> = {
    * @param options
    */
   resetValues (
-    paths?: string[],
+    paths?: FieldKey<V>[],
     options?: { forceUpdate?: boolean }): void;
   /**
    * Sets or replaces initial values.
@@ -118,7 +118,7 @@ export type UseFormValuesHook<V extends Values> = {
    * @param options
    */
   setValue (
-    path: string,
+    path: FieldKey<V>,
     value: any,
     options?: {
       forceUpdate?: boolean;
@@ -177,7 +177,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     return initialValuesRef.current
   }, [])
 
-  const getInitialValue = useCallback<UseFormValuesHook<V>['getInitialValue']>(<T> (path: string, defaultValue?: T) => {
+  const getInitialValue = useCallback<UseFormValuesHook<V>['getInitialValue']>(<T> (path: FieldKey<V>, defaultValue?: T) => {
     const value = resolve<T>(path, getInitialValues())
     return typeof value !== 'undefined' ? value : defaultValue
   }, [getInitialValues])
@@ -186,7 +186,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     return valuesRef.current
   }, [])
 
-  const getValue = useCallback<UseFormValuesHook<V>['getValue']>(<T> (path: string, defaultValue?: T) => {
+  const getValue = useCallback<UseFormValuesHook<V>['getValue']>(<T> (path: FieldKey<V>, defaultValue?: T) => {
     const value = resolve<T>(path, getValues())
     return typeof value !== 'undefined' ? value : defaultValue
   }, [getValues])
@@ -274,7 +274,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
     const currentValue = getValue(path)
 
     if (currentValue !== value) {
-      setValues({ [path]: value }, {
+      setValues({ [path]: value } as FieldPaths<V>, {
         ...opts,
         partial: true
       })

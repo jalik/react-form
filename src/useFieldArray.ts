@@ -4,7 +4,7 @@
  */
 
 import { SyntheticEvent, useCallback, useMemo, useRef } from 'react'
-import { UseFormHook } from './useForm'
+import { FieldKey, UseFormHook } from './useForm'
 import useFormContext from './useFormContext'
 import { Values } from './useFormReducer'
 
@@ -17,7 +17,7 @@ export type ArrayItem<T> = {
 export type UseFieldArrayOptions<T, V extends Values> = {
   context: UseFormHook<V, Error, any>;
   defaultValue: T;
-  name: string;
+  name: FieldKey<V>;
 }
 
 /**
@@ -70,7 +70,6 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const fields = useMemo<ArrayItem<T>[]>(() => {
     if (values != null) {
       const value = getValue<T[]>(name, [])
-      // fixme in controlled mode, when adding item, fields is not updated
       fieldsRef.current = value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
     }
     return fieldsRef.current ?? []

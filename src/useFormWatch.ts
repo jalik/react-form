@@ -37,13 +37,13 @@ export type UseFormWatchHook<V extends Values> = {
    * @param path
    * @param status
    */
-  notifyWatchers<T> (path: string, status: FieldStatus<T>): void;
+  notifyWatchers<T> (path: FieldKey<V>, status: FieldStatus<T>): void;
   /**
    * Adds a watcher that is notified when the field changed.
-   * @param name
+   * @param path
    * @param callback
    */
-  watch<T = unknown> (name: FieldKey<V>, callback: (status: FieldStatus<T>) => void): void;
+  watch<T = unknown> (path: FieldKey<V>, callback: (status: FieldStatus<T>) => void): void;
   /**
    * Registered watchers.
    */

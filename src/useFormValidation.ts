@@ -17,13 +17,14 @@ import { UseFormStatusHook } from './useFormStatus'
 import { UseFormValuesHook } from './useFormValues'
 import { clone, hasDefinedValues } from './utils'
 import { UseFormErrorsHook } from './useFormErrors'
+import { FieldKey } from './useForm'
 
 export type UseFormValidationOptions<V extends Values, E> = {
   formErrors: UseFormErrorsHook<V, E>;
-  formStatus: UseFormStatusHook;
+  formStatus: UseFormStatusHook<V>;
   formValues: UseFormValuesHook<V>;
   validate? (values: Partial<V>, modified: ModifiedFields): Promise<Errors<E> | undefined>;
-  validateField? (path: string, value: unknown, values: Partial<V>): Promise<E | undefined>;
+  validateField? (path: FieldKey<V>, value: unknown, values: Partial<V>): Promise<E | undefined>;
   validateDelay?: number;
 }
 
@@ -31,11 +32,11 @@ export type UseFormValidationHook<V extends Values, E> = {
   /**
    * Tells if the form will trigger a validation or if it will validate some fields.
    */
-  needValidation: boolean | string[];
+  needValidation: boolean | FieldKey<V>[];
   /**
    * Sets validation globally or for given fields.
    */
-  setNeedValidation: Dispatch<SetStateAction<boolean | string[]>>;
+  setNeedValidation: Dispatch<SetStateAction<boolean | FieldKey<V>[]>>;
   /**
    * Sets the validated state of the form.
    */
@@ -59,11 +60,11 @@ export type UseFormValidationHook<V extends Values, E> = {
   /**
    * Validate a single field.
    */
-  validateField: (path: string) => Promise<E | undefined>;
+  validateField: (path: FieldKey<V>) => Promise<E | undefined>;
   /**
    * Validate given fields.
    */
-  validateFields: (paths: string[]) => Promise<Errors<E> | undefined>;
+  validateFields: (paths: FieldKey<V>[]) => Promise<Errors<E> | undefined>;
   /**
    * The ref of the validation function.
    */
@@ -90,7 +91,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
   const validateRef = useRef(validateFunc)
   const validateFieldRef = useRef(validateFieldFunc)
 
-  const [needValidation, setNeedValidation] = useState<boolean | string[]>(false)
+  const [needValidation, setNeedValidation] = useState<boolean | FieldKey<V>[]>(false)
   const [validateError, setValidateError] = useState<Error | undefined>(undefined)
   const [validated, setValidated] = useState<boolean>(false)
   const [validating, setValidating] = useState<boolean>(false)
@@ -126,7 +127,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
     const promises = validate
       ? paths.map((path) => {
         return Promise.resolve(validate(path, getValue(path), getValues()))
-          .then((error): [string, E | undefined] => [path, error])
+          .then((error): [FieldKey<V>, E | undefined] => [path, error])
       })
       : []
 
