@@ -158,7 +158,9 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   if (Component != null) {
     if (children || finalOptions.length > 0) {
       return (
-        <Component {...finalProps}>
+        <Component
+          key={form.key(name)}
+          {...finalProps}>
           {children}
           {finalOptions.map((option) => (
             <Option key={`${option.label}_${option.value}`} {...option} />
@@ -173,6 +175,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   if (type === 'select') {
     return (
       <select
+        key={form.key(name)}
         {...finalProps}
         value={String(finalProps.value)}
       >
@@ -188,6 +191,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   if (type === 'textarea') {
     return (
       <textarea
+        key={form.key(name)}
         {...finalProps}
         value={String(finalProps.value)}
       />
@@ -197,6 +201,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   // By default, renders an input field.
   return (
     <input
+      key={form.key(name)}
       {...finalProps}
       type={type}
       value={String(finalProps.value)}
