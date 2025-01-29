@@ -15,7 +15,6 @@ import {
 } from 'react'
 import { FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
-import { inputValue } from '../utils'
 import Option from './Option'
 
 export type FieldProps<T = string, C extends ElementType = any> =
@@ -25,6 +24,10 @@ export type FieldProps<T = string, C extends ElementType = any> =
    * The custom component to render.
    */
   component?: C;
+  /**
+   * The default value (uncontrolled mode).
+   */
+  defaultValue?: T;
   /**
    * Disables the field.
    */
@@ -37,7 +40,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
    * The format function to call before displaying the value.
    * @param value
    */
-  formatter? (value: T | string): string | undefined;
+  formatter?: ((value: unknown) => string) | null;
   /**
    * The name of the field.
    */
@@ -61,9 +64,9 @@ export type FieldProps<T = string, C extends ElementType = any> =
    */
   type?: HTMLInputTypeAttribute | 'select' | 'textarea';
   /**
-   * The field's value.
+   * The value (controlled mode).
    */
-  value?: string | T;
+  value?: T;
 }
 
 function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): ReactElement {
@@ -82,15 +85,14 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
     parser,
     required,
     type,
-    value,
     ...others
   } = props
 
+  const form = useFormContext()
   const {
     getFieldProps,
-    handleChange,
-    mode
-  } = useFormContext()
+    handleChange
+  } = form
 
   // Check incompatible attributes
   if (onChange && parser) {
@@ -98,45 +100,29 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
     console.warn(`${name}: attributes "parser" and "onChange" cannot be set together`)
   }
 
-  const formatValue = useCallback((val: T | string) => {
-    if (val != null && val !== '') {
-      if (formatter) {
-        return formatter(val)
-      }
-      // Do not stringify value for custom component
-      return Component ? val : String(val)
-    }
-    return ''
-  }, [Component, formatter])
-
   const handleFieldChange = useCallback((event: ChangeEvent<FieldElement>) => {
     handleChange(event, { parser })
   }, [handleChange, parser])
 
   const finalProps = useMemo(() => {
-    const fieldProps = getFieldProps(name,
+    return getFieldProps(name,
       {
         ...others,
         disabled,
         id,
         multiple,
         onBlur,
-        onChange: mode === 'controlled'
-          ? (onChange ?? handleFieldChange)
-          : undefined,
+        onChange: onChange ?? handleFieldChange,
         required,
-        type,
-        value
+        type
       },
       // Pass parser so we can compare form value and field value.
-      { parser }
+      {
+        format: formatter,
+        parser
+      }
     )
-
-    // Allow formatting value.
-    fieldProps.value = inputValue(formatValue(fieldProps.value))
-
-    return fieldProps
-  }, [disabled, formatValue, getFieldProps, handleFieldChange, id, mode, multiple, name, onBlur, onChange, others, parser, required, type, value])
+  }, [disabled, formatter, getFieldProps, handleFieldChange, id, multiple, name, onBlur, onChange, others, parser, required, type])
 
   const finalOptions: OptionHTMLAttributes<HTMLOptionElement>[] = useMemo(() => {
     const list: OptionHTMLAttributes<HTMLOptionElement>[] = options ? [...options] : []
@@ -177,7 +163,6 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
       <select
         key={form.key(name)}
         {...finalProps}
-        value={String(finalProps.value)}
       >
         {children}
         {finalOptions.map((option) => (
@@ -193,7 +178,6 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
       <textarea
         key={form.key(name)}
         {...finalProps}
-        value={String(finalProps.value)}
       />
     )
   }
@@ -204,7 +188,6 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
       key={form.key(name)}
       {...finalProps}
       type={type}
-      value={String(finalProps.value)}
     />
   )
 }
