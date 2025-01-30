@@ -15,7 +15,7 @@ import {
 import { Errors, ModifiedFields, Values } from './useFormReducer'
 import { UseFormStatusHook } from './useFormStatus'
 import { UseFormValuesHook } from './useFormValues'
-import { clone, hasDefinedValues } from './utils'
+import { hasDefinedValues } from './utils'
 import { UseFormErrorsHook } from './useFormErrors'
 import { FieldKey } from './useForm'
 
@@ -136,7 +136,9 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
       .then((results) => {
         let validationErrors: Errors<E> = { ...errorsState }
 
-        results.forEach((result) => {
+        for (let i = 0; i < results.length; i++) {
+          const result = results[i]
+
           if (result) {
             const [name, error] = result
             validationErrors = {
@@ -144,7 +146,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
               [name]: error
             }
           }
-        })
+        }
 
         if (hasDefinedValues(validationErrors)) {
           setValidated(false)
@@ -187,7 +189,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
     setNeedValidation(false)
 
     return Promise.resolve(
-      validateRef.current(clone(getValues()), { ...modifiedRef.current })
+      validateRef.current(getValues(), { ...modifiedRef.current })
     )
       .then((validationErrors) => {
         if (validationErrors && hasDefinedValues(validationErrors)) {

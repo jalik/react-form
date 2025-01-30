@@ -765,42 +765,57 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     const currentValues = clone(valuesRef.current)
 
-    let nextValues: PathsOrValues<V> = typeof values === 'function'
+    let mutationOrValues: PathsOrValues<V> = typeof values === 'function'
       ? { ...values(currentValues as any) }
       : { ...values }
 
-    // Flatten values to make sure mutation only contains field names as keys
-    // and field values as values.
-    let mutation = flatten(nextValues, null, true)
-
-    Object.entries(mutation).forEach(([path, value]) => {
+    // todo move bloc to useFormValues().setValues()
+    const keys = Object.keys(mutationOrValues)
+    for (let i = 0; i < keys.length; i++) {
+      const path = keys[i]
+      const value = mutationOrValues[path]
       let nextValue = value
 
       // Replace empty string with null.
       if (nullify && value === '') {
         nextValue = null
-        mutation[path] = nextValue
       }
-      nextValues = build(path, nextValue, nextValues)
+
+      if (partial) {
+        // fixme type
+        // @ts-ignore
+        mutationOrValues[path] = nextValue
+      } else {
+        mutationOrValues = build(path, nextValue, mutationOrValues)
+      }
 
       // Clear errors when validation is not triggered after.
       if (!validate) {
         fieldErrors[path] = undefined
       }
-    })
-
-    // Apply transformation to values.
-    // todo move to useFormValues().setValues()
-    if (transformRef.current) {
-      mutation = transformRef.current(mutation, reconstruct(deepExtend(currentValues, nextValues)) ?? {})
-
-      // Update next values from mutation.
-      Object.entries(mutation).forEach(([path, value]) => {
-        nextValues = build(path, value, nextValues)
-      })
     }
 
-    setValues(mutation as FieldPaths<V>, {
+    // todo move to useFormValues().setValues()
+    if (transformRef.current) {
+      // Flatten values to make sure mutation only contains field names as keys
+      // and field values as values.
+      // fixme type
+      // @ts-ignore
+      let mut: FieldPaths<V> = partial ? mutationOrValues : flatten(mutationOrValues)
+
+      // Apply transformation to values.
+      const nextValues = deepExtend({}, currentValues, partial
+        ? reconstruct(mutationOrValues)
+        : mutationOrValues)
+      mut = transformRef.current(mut, nextValues)
+
+      // Update next values from mutation.
+      // fixme type
+      // @ts-ignore
+      mutationOrValues = partial ? mut : reconstruct(mut)
+    }
+
+    setValues(mutationOrValues, {
       partial,
       forceUpdate
     })
@@ -809,7 +824,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setSubmitted(false)
 
     if (validate) {
-      setNeedValidation(partial ? Object.keys(mutation) : true)
+      setNeedValidation(partial ? Object.keys(values) : true)
     } else {
       // Clear errors when validation is not triggered after.
       if (hasDefinedValues(fieldErrors)) {
@@ -1016,25 +1031,32 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     // Merge custom props from initializeField() function.
-    // todo pass errors + modified + touched to state
     if (typeof initializeFieldRef.current === 'function') {
-      // todo pass state
+      // todo pass errors + modified + touched to state
       const state = {} as FormState
       const customProps = initializeFieldRef.current(path, state)
-      Object.entries(customProps).forEach(([k, v]) => {
+      const keys = Object.keys(customProps)
+
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i]
+        const v = customProps[k]
         if (typeof v !== 'undefined') {
           finalProps[k] = v
         }
-      })
+      }
     }
 
     // Merge passed props
     if (props) {
-      Object.entries(props).forEach(([k, v]) => {
+      const keys = Object.keys(props)
+
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i]
+        const v = props[k]
         if (typeof v !== 'undefined' && k !== 'parsedValue') {
           finalProps[k] = v
         }
-      })
+      }
     }
 
     // Empty value on radio.

@@ -170,19 +170,21 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
       let modified = { ...getModified() }
       let touched = { ...getTouched() }
 
-      reversedIndices.forEach((index) => {
+      for (let i = 0; i < reversedIndices.length; i++) {
+        const index = reversedIndices[i]
         errors = updatePathIndices(errors, path, index, -1)
         modified = updatePathIndices(modified, path, index, -1)
         touched = updatePathIndices(touched, path, index, -1)
-      })
+      }
       setModified(modified)
       setTouched(touched)
       setErrors(errors)
 
       const list = [...(getValue<unknown[]>(path) ?? [])]
-      reversedIndices.forEach((index) => {
+      for (let i = 0; i < reversedIndices.length; i++) {
+        const index = reversedIndices[i]
         list.splice(index, 1)
-      })
+      }
       setValue(path, list, {
         forceUpdate: true,
         updateModified: false

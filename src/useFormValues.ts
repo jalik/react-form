@@ -5,12 +5,12 @@
 
 import { ModifiedFields, Values } from './useFormReducer'
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react'
-import { build, clone, flatten, resolve } from './utils'
+import { build, clone, resolve } from './utils'
 import { FieldKey, FormMode } from './useForm'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
-import { FieldStatus, inputChangeEvent } from './useFormWatch'
 import { Observer } from '@jalik/observer'
+import { FieldStatus, inputChangeEvent } from './useFormWatch'
 
 export type FieldPaths<V extends Values> = Record<FieldKey<V>, unknown>
 export type PathsOrValues<V extends Values> = FieldPaths<V> | Partial<V>
@@ -199,14 +199,19 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
       updateModified = true
     } = opts ?? {}
 
-    const prevData = valuesRef.current
+    const prevData = clone(valuesRef.current)
+
     let data: Partial<V> = partial
       ? valuesRef.current
       : {} as Partial<V>
 
-    Object.entries(values).forEach(([path, value]) => {
+    const paths = Object.keys(values)
+
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i]
+      const value = values[path]
       data = build(path, value, data)
-    })
+    }
     valuesRef.current = data
 
     // Update initial values.
@@ -219,22 +224,24 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
       }
     }
 
-    const mutation = flatten(values, null, true)
+    const mutation = values
 
     if (updateModified) {
       // Update modified state.
       const modified: ModifiedFields = {}
-      Object.entries(mutation).forEach(([path, value]) => {
+
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
+        const value = mutation[path]
         const initialValue = getInitialValue(path)
-        // Compare value with initial value.
-        modified[path] = value !== initialValue &&
-          // Ignore when comparing null and undefined.
-          (value != null || initialValue != null) &&
-          // Ignore array and object.
-          // fixme compare arrays and objects
-          (!(value instanceof Array) || !(initialValue instanceof Array)) &&
-          (typeof value !== 'object' || typeof initialValue !== 'object')
-      })
+
+        modified[path] =
+          // Set true if new and initial values are different.
+          (value !== initialValue) &&
+          (value != null || initialValue != null)
+        // fixme Set true if array is different.
+        // fixme Set true if object is different.
+      }
       setModified(modified, { partial })
     }
 
@@ -253,8 +260,10 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
       onValuesChangeRef.current(data, prevData)
     }
 
-    // Notify watchers of all field changes.
-    Object.entries(mutation).forEach(([path, value]) => {
+    // Notify watchers of changes.
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i]
+      const value = mutation[path]
       const previousValue = resolve(path, prevData)
 
       if (value !== previousValue) {
@@ -267,7 +276,7 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
         }
         watchers.current.emit(inputChangeEvent(path), status)
       }
-    })
+    }
   }, [setModified, mode, getInitialValue, replaceKeysFromValues, isTouched, watchers])
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
@@ -282,23 +291,19 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
   }, [getValue, setValues])
 
   const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
+    const data = {} as FieldPaths<V>
+
     if (paths) {
-      let data = clone(valuesRef.current)
-      paths.forEach((path) => {
-        data = build(path, null, data)
-      })
-      setValues(data, {
-        forceUpdate: true,
-        ...opts,
-        partial: true
-      })
-    } else {
-      setValues({}, {
-        forceUpdate: true,
-        ...opts,
-        partial: false
-      })
+      for (let i = 0; i < paths.length; i++) {
+        data[paths[i]] = null
+      }
     }
+
+    setValues(data, {
+      forceUpdate: true,
+      ...opts,
+      partial: paths != null
+    })
   }, [setValues])
 
   const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
@@ -323,11 +328,13 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
 
     if (paths) {
       data = valuesRef.current
-      paths.forEach((path) => {
-        const initialValue = resolve(path, initialData)
-        data = build(path, initialValue, data)
-      })
+
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
+        data[path] = resolve(path, initialData)
+      }
     }
+
     setValues(data, {
       forceUpdate: true,
       ...opts,

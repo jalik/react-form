@@ -52,9 +52,11 @@ function useFormKeys<V extends Values> (options: UseFormKeysOptions): UseFormKey
   const replaceKeys = useCallback<UseFormKeysHook<V>['replaceKeys']>((paths) => {
     setKeys((s) => {
       const result = { ...s }
-      paths.forEach((path) => {
+
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
         result[path] = (s[path] ?? 0) + 1
-      })
+      }
       return result
     })
   }, [])

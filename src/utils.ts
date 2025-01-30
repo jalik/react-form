@@ -5,6 +5,7 @@
 
 import deepExtend from '@jalik/deep-extend'
 import { FieldElement } from './useForm'
+import { FieldPaths } from './useFormValues'
 
 /**
  * Returns the copy of an object built from the path with the assigned value.
@@ -23,6 +24,8 @@ export function build<T> (
   const bracketIndex = path.indexOf('[')
   const bracketEnd = path.indexOf(']')
   const dotIndex = path.indexOf('.')
+
+  let ctx = context
 
   // Do not check syntax errors if already done.
   if (!syntaxChecked) {
@@ -50,15 +53,12 @@ export function build<T> (
     if (closingBrackets < openingBrackets) {
       throw new SyntaxError(`missing closing bracket "]" in "${path}"`)
     }
-  }
 
-  let ctx = context
-
-  // Use a copy of the object to not mutate the original.
-  if (context instanceof Array) {
-    ctx = clone(context)
-  } else if (typeof context === 'object' && context !== null) {
-    ctx = clone(context)
+    // Use a copy of the object to not mutate the original.
+    // This is done only once in the first call of the recursive function.
+    if (typeof context === 'object' && context !== null) {
+      ctx = clone(context)
+    }
   }
 
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
@@ -72,7 +72,7 @@ export function build<T> (
     } else if (typeof ctx[field] === 'undefined' || ctx[field] == null) {
       ctx[field] = {}
     }
-    ctx[field] = build(path.substring(dotIndex + 1), value, ctx[field])
+    ctx[field] = build(path.substring(dotIndex + 1), value, ctx[field], true)
   } else if (bracketIndex !== -1 && (dotIndex === -1 || bracketIndex < dotIndex)) {
     // Resolve brackets "[?]" path.
     // ex: "[0].field" => field: "[0]", subPath: "field"
@@ -105,11 +105,11 @@ export function build<T> (
       } else {
         subPath = path.substring(bracketEnd + 1)
       }
-      ctx[key] = build(subPath, value, ctx[key])
+      ctx[key] = build(subPath, value, ctx[key], true)
     } else {
       // ex: "array[0].field" => field: "array", subPath: "[0].field"
       const field = path.substring(0, bracketIndex)
-      ctx[field] = build(path.substring(bracketIndex), value, ctx[field])
+      ctx[field] = build(path.substring(bracketIndex), value, ctx[field], true)
     }
   } else if (typeof value === 'undefined') {
     // Remove attribute, instead of using undefined.
@@ -126,12 +126,15 @@ export function build<T> (
  * Builds an object using paths and values.
  * @param paths
  */
-export function reconstruct<T> (paths: Record<string, unknown>): T | null {
+export function reconstruct<T> (paths: FieldPaths<any>): T | null {
   let result: T | null = null
+  const keys = Object.keys(paths)
 
-  Object.entries(paths).forEach(([path, value]) => {
+  for (let i = 0; i < keys.length; i++) {
+    const path = keys[i]
+    const value = paths[path]
     result = build(path, value, result ?? paths)
-  })
+  }
   return result
 }
 
@@ -156,8 +159,12 @@ export function clone<T> (object: T): T {
 export function flatten (object: Record<string, any>, path?: string | null, preserveKeys = false): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   const isArray = object instanceof Array
+  const keys = Object.keys(object)
 
-  Object.entries(object).forEach(([key, value]) => {
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    const value = object[key]
+
     // Add brackets around key if it includes space or dot.
     const currentKey = isArray || ((key.includes(' ') || key.includes('.')) && !preserveKeys)
       ? `[${key}]`
@@ -172,11 +179,14 @@ export function flatten (object: Record<string, any>, path?: string | null, pres
 
     if (value != null && typeof value === 'object') {
       const branches = flatten(value, currentPath)
-      Object.entries(branches).forEach(([k, v]) => {
-        result[k] = v
-      })
+      const branchesKeys = Object.keys(branches)
+
+      for (let j = 0; j < branchesKeys.length; j++) {
+        const k = branchesKeys[j]
+        result[k] = branches[k]
+      }
     }
-  })
+  }
   return result
 }
 
@@ -188,7 +198,7 @@ export function getCheckedValues (element: HTMLInputElement): string[] {
   const { form } = element
 
   if (form) {
-    for (let i = 0; i < form.length; i += 1) {
+    for (let i = 0; i < form.length; i++) {
       const item = form.elements[i]
       if (item instanceof HTMLInputElement && item.name === element.name && item.checked) {
         values.push(item.value)
@@ -272,7 +282,7 @@ export function getSelectedValues (element: HTMLSelectElement): string[] {
   const values = []
   const { options } = element
 
-  for (let i = 0; i < options.length; i += 1) {
+  for (let i = 0; i < options.length; i++) {
     if (options[i].selected) {
       values.push(options[i].value)
     }
@@ -311,7 +321,7 @@ export function isMultipleFieldElement (element: unknown): boolean {
 
   if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) {
     if (element.form && element.name != null) {
-      for (let i = 0; i < element.form.elements.length; i += 1) {
+      for (let i = 0; i < element.form.elements.length; i++) {
         const elm: any = element.form.elements[i]
 
         if (elm instanceof HTMLSelectElement &&
@@ -324,7 +334,7 @@ export function isMultipleFieldElement (element: unknown): boolean {
           elm.name === element.name &&
           elm.type === element.type &&
           inputTypes.includes(elm.type))) {
-          count += 1
+          count++
 
           if (count > 1) {
             return true
@@ -334,7 +344,7 @@ export function isMultipleFieldElement (element: unknown): boolean {
     }
   } else if (element instanceof RadioNodeList) {
     let name = null
-    for (let i = 0; i < element.length; i += 1) {
+    for (let i = 0; i < element.length; i++) {
       const elm = element[i]
 
       if (elm instanceof HTMLInputElement && inputTypes.includes(elm.type)) {
@@ -342,7 +352,7 @@ export function isMultipleFieldElement (element: unknown): boolean {
           name = elm.name
         }
         if (elm.name === name) {
-          count += 1
+          count++
 
           if (count > 1) {
             return true
@@ -389,7 +399,7 @@ export function parseInputValue (input: HTMLElement): string | number | undefine
 export function randomKey (length = 16): string {
   const dict = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let out = ''
-  for (let i = 0; i < length; i += 1) {
+  for (let i = 0; i < length; i++) {
     const index = Math.random() * (dict.length - 1)
     out += dict.substring(index, index + 1)
   }
@@ -502,8 +512,10 @@ export function movePathIndices<T extends Record<string, unknown>> (record: T, p
   const minIndex = Math.min(fromIndex, toIndex)
   const maxIndex = Math.max(fromIndex, toIndex)
   const result: Record<string, unknown> = {}
+  const keys = Object.keys(record)
 
-  Object.keys(record).forEach((key) => {
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
     result[key] = record[key]
 
     if (key.startsWith(`${path}[`)) {
@@ -513,7 +525,7 @@ export function movePathIndices<T extends Record<string, unknown>> (record: T, p
         result[`${path}[${pathIndex + 1}]`] = record[key]
       }
     }
-  })
+  }
   const fromValue = record[`${path}[${fromIndex}]`]
   const toValue = record[`${path}[${toIndex}]`]
   result[`${path}[${toIndex}]`] = fromValue
@@ -552,8 +564,10 @@ export function updatePathIndices<T extends Record<string, unknown>> (
   change: number
 ): T {
   const result: Record<string, unknown> = {}
+  const keys = Object.keys(record)
 
-  Object.keys(record).forEach((key) => {
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
     result[key] = record[key]
 
     if (key.startsWith(`${path}[`)) {
@@ -570,6 +584,6 @@ export function updatePathIndices<T extends Record<string, unknown>> (
         }
       }
     }
-  })
+  }
   return result as T
 }

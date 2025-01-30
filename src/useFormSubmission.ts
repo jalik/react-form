@@ -13,7 +13,7 @@ import {
   useState
 } from 'react'
 import { Values } from './useFormReducer'
-import { build, clone, flatten } from './utils'
+import { build, flatten } from './utils'
 import { UseFormValuesHook } from './useFormValues'
 import { UseFormErrorsHook } from './useFormErrors'
 import { UseFormStatusHook } from './useFormStatus'
@@ -131,11 +131,16 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
     if (submitRef.current == null) {
       return Promise.reject(new Error('No submit function provided'))
     }
-    let values = clone(getValues())
+    let values = getValues()
 
     if (trimOnSubmit || nullify) {
       const mutation = flatten(values)
-      Object.entries(mutation).forEach(([name, value]) => {
+      const mutationKeys = Object.keys(mutation)
+
+      for (let i = 0; i < mutationKeys.length; i++) {
+        const name = mutationKeys[i]
+        const value = mutation[name]
+
         if (typeof value === 'string') {
           // Remove extra spaces.
           let val: string | null = trimOnSubmit ? value.trim() : value
@@ -146,7 +151,7 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
           }
           values = build(name, val, values)
         }
-      })
+      }
     }
 
     setSubmitError(undefined)

@@ -60,11 +60,14 @@ function filterErrors<E> (errors?: Errors<E>): Errors<E> {
   const result: Errors<E> = {}
 
   if (errors != null && typeof errors === 'object') {
-    Object.keys(errors).forEach((path) => {
+    const paths = Object.keys(errors)
+
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i]
       if (errors[path] != null && errors[path] !== false) {
         result[path] = errors[path]
       }
-    })
+    }
   }
   return result
 }
@@ -78,9 +81,10 @@ function useFormErrors<V extends Values, E> (options: UseFormErrorsOptions<E>): 
     setErrorsState((s) => {
       if (paths) {
         const nextState = { ...s }
-        paths.forEach((path) => {
-          delete nextState[path]
-        })
+
+        for (let i = 0; i < paths.length; i++) {
+          delete nextState[paths[i]]
+        }
         return nextState
       }
       return {}

@@ -181,9 +181,10 @@ function useFormStatus<V extends Values> (options: UseFormStatusOptions): UseFor
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
-      paths.forEach((path) => {
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
         delete modifiedRef.current[path]
-      })
+      }
     } else {
       modifiedRef.current = {}
     }
@@ -212,9 +213,10 @@ function useFormStatus<V extends Values> (options: UseFormStatusOptions): UseFor
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
-      paths.forEach((path) => {
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
         modifiedRef.current[path] = (initialModified ?? {})[path] ?? false
-      })
+      }
     } else {
       modifiedRef.current = { ...initialModified }
     }
@@ -251,9 +253,10 @@ function useFormStatus<V extends Values> (options: UseFormStatusOptions): UseFor
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
-      paths.forEach((path) => {
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
         delete touchedRef.current[path]
-      })
+      }
     } else {
       touchedRef.current = {}
     }
@@ -274,9 +277,10 @@ function useFormStatus<V extends Values> (options: UseFormStatusOptions): UseFor
     const { forceUpdate = false } = opts ?? {}
 
     if (paths) {
-      paths.forEach((path) => {
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
         touchedRef.current[path] = (initialTouched ?? {})[path] ?? false
-      })
+      }
     } else {
       touchedRef.current = { ...initialTouched }
     }
