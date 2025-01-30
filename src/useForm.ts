@@ -459,7 +459,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * @param mutation
    * @param values
    */
-  transform? (mutation: Record<string, unknown>, values: Partial<V>): Record<string, unknown>;
+  transform? (mutation: FieldPaths<V>, values: Partial<V>): FieldPaths<V>;
   /**
    * Enables trimming on blur.
    */
