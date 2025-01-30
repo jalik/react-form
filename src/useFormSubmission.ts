@@ -146,7 +146,7 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
           let val: string | null = trimOnSubmit ? value.trim() : value
 
           // Remplace empty string by null.
-          if (val === '') {
+          if (val === '' && nullify) {
             val = null
           }
           values = build(name, val, values)
