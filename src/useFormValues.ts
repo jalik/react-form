@@ -236,6 +236,8 @@ function useFormValues<V extends Values> (options: UseFormValuesOptions<V>): Use
         const initialValue = getInitialValue(path)
 
         modified[path] =
+          // Always set false when initializing.
+          !initialize &&
           // Set true if new and initial values are different.
           (value !== initialValue) &&
           (value != null || initialValue != null)
