@@ -10,7 +10,7 @@ import { Values } from './useFormReducer'
 
 export type ArrayItem<T> = {
   key: string | number;
-  name: string,
+  name: string;
   value: T;
 }
 
@@ -18,6 +18,7 @@ export type UseFieldArrayOptions<T, V extends Values> = {
   context: UseFormHook<V>;
   defaultValue: (T & boolean) | (T & number) | (T & object) | (T & string) | ((items: T[]) => T);
   name: FieldKey<V>;
+  sort? (a: T, b: T): number;
 }
 
 /**
@@ -47,7 +48,8 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const {
     context,
     defaultValue,
-    name
+    name,
+    sort
   } = options
 
   const form = useFormContext()
@@ -68,12 +70,17 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const fieldsRef = useRef<ArrayItem<T>[]>([])
 
   const fields = useMemo<ArrayItem<T>[]>(() => {
+    // Update this code when values changed.
     if (values != null) {
-      const value = getValue<T[]>(name, [])
-      fieldsRef.current = value ? getFieldsFromArray(key, name, value, fieldsRef.current) : []
+      let array = getValue<T[]>(name) ?? []
+
+      if (typeof sort === 'function') {
+        array = array.sort(sort)
+      }
+      fieldsRef.current = getFieldsFromArray(key, name, array, fieldsRef.current)
     }
     return fieldsRef.current ?? []
-  }, [getValue, key, name, values])
+  }, [getValue, key, name, sort, values])
 
   const append = useCallback((...items: T[]) => {
     appendListItem(name, ...items)
@@ -133,6 +140,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
 
   return {
     append,
+    // todo v6: rename to items
     fields,
     handleAppend,
     handlePrepend,

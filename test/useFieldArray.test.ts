@@ -104,7 +104,7 @@ describe('useFieldArray()', () => {
           name: 'items',
           context: form.current,
           defaultValue: () => {
-            count += 1
+            count++
             return { id: count }
           }
         })
@@ -138,7 +138,7 @@ describe('useFieldArray()', () => {
           name: 'items',
           context: form.current,
           defaultValue: () => {
-            count += 1
+            count++
             return { id: count }
           }
         })
@@ -357,6 +357,23 @@ describe('useFieldArray()', () => {
         { id: 1 },
         { id: 2 }
       ])
+    })
+  })
+
+  describe('with sort option', () => {
+    it('should sort array', () => {
+      const formHook = renderHook(() => useForm({
+        initialValues: { items: [5, 1, 3, 0] }
+      }))
+      const hook = renderHook(() => useFieldArray({
+        name: 'items',
+        context: formHook.result.current,
+        defaultValue: 0,
+        sort (a, b) {
+          return a - b
+        }
+      }))
+      expect(hook.result.current.fields.map((el) => el.value)).toStrictEqual([0, 1, 3, 5])
     })
   })
 })
