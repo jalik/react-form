@@ -15,8 +15,8 @@ export type ArrayItem<T> = {
 }
 
 export type UseFieldArrayOptions<T, V extends Values> = {
-  context: UseFormHook<V, Error, any>;
-  defaultValue: T;
+  context: UseFormHook<V>;
+  defaultValue: (T & boolean) | (T & number) | (T & object) | (T & string) | ((items: T[]) => T);
   name: FieldKey<V>;
 }
 
@@ -108,16 +108,20 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
    */
   const handleAppend = useCallback((event: SyntheticEvent | Event): void => {
     event.preventDefault()
-    append(typeof defaultValue === 'function' ? defaultValue() : defaultValue)
-  }, [append, defaultValue])
+    append(typeof defaultValue === 'function'
+      ? defaultValue(getValue<T[]>(name) ?? [])
+      : defaultValue)
+  }, [append, defaultValue, getValue, name])
 
   /**
    * Handles event that prepends a value.
    */
   const handlePrepend = useCallback((event: SyntheticEvent | Event): void => {
     event.preventDefault()
-    prepend(typeof defaultValue === 'function' ? defaultValue() : defaultValue)
-  }, [prepend, defaultValue])
+    prepend(typeof defaultValue === 'function'
+      ? defaultValue(getValue<T[]>(name) ?? [])
+      : defaultValue)
+  }, [prepend, defaultValue, getValue, name])
 
   /**
    * Handles event that removes a value at a given index.
