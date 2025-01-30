@@ -83,7 +83,6 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     getModified,
     getTouched,
     setModified,
-    setModifiedField,
     setTouched
   } = formStatus
 
@@ -94,13 +93,16 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
 
   const appendListItem = useCallback<UseFormListHook<V>['appendListItem']>(<T> (path: FieldKey<V>, ...items: T[]) => {
     if (items.length > 0) {
+      // mark array as modified
+      setModified({ [path]: true })
+
       const list = [...(getValue<T[]>(path) ?? []), ...items]
       setValue(path, list, {
         forceUpdate: true,
         updateModified: false
       })
     }
-  }, [getValue, setValue])
+  }, [getValue, setModified, setValue])
 
   const insertListItem = useCallback<UseFormListHook<V>['insertListItem']>(<T> (path: FieldKey<V>, index: number, ...items: T[]) => {
     if (items.length > 0) {
@@ -108,7 +110,9 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
         ...updatePathIndices(getModified(), path, index, items.length),
         ...Object.fromEntries(
           items.map((_, i) => ([`${path}[${index + i}]`, true]))
-        )
+        ),
+        // mark array as modified
+        [path]: true
       })
       setTouched(updatePathIndices(getTouched(), path, index, items.length))
       setErrors(updatePathIndices(getErrors(), path, index, items.length))
@@ -126,9 +130,13 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
     const minIndex = Math.min(fromIndex, toIndex)
     const maxIndex = Math.max(fromIndex, toIndex)
     const modified = movePathIndices(getModified(), path, fromIndex, toIndex)
+
     for (let i = minIndex; i < maxIndex; i++) {
       modified[`${path}[${i}]`] = true
     }
+    // mark array as modified
+    modified[path] = true
+
     setModified(modified)
     setTouched(movePathIndices(getTouched(), path, fromIndex, toIndex))
     setErrors(movePathIndices(getErrors(), path, fromIndex, toIndex))
@@ -149,7 +157,9 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
         ...updatePathIndices(getModified(), path, 0, items.length),
         ...Object.fromEntries(
           items.map((_, i) => ([`${path}[${i}]`, true]))
-        )
+        ),
+        // mark array as modified
+        [path]: true
       })
       setTouched(updatePathIndices(getTouched(), path, 0, items.length))
       setErrors(updatePathIndices(getErrors(), path, 0, items.length))
@@ -176,6 +186,10 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
         modified = updatePathIndices(modified, path, index, -1)
         touched = updatePathIndices(touched, path, index, -1)
       }
+
+      // mark array as modified
+      modified[path] = true
+
       setModified(modified)
       setTouched(touched)
       setErrors(errors)
@@ -194,7 +208,13 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
 
   const replaceListItem = useCallback<UseFormListHook<V>['replaceListItem']>(<T> (path: FieldKey<V>, index: number, item: T) => {
     const fieldPath = `${path}[${index}]`
-    setModifiedField(fieldPath, true)
+
+    setModified({
+      [fieldPath]: true,
+      // mark array as modified
+      [path]: true
+    }, { partial: true })
+
     clearErrors([fieldPath])
 
     const list = [...(getValue<unknown[]>(path) ?? [])]
@@ -203,13 +223,15 @@ function useFormList<V extends Values, E> (options: UseFormListOptions<V, E>): U
       forceUpdate: true,
       updateModified: false
     })
-  }, [clearErrors, getValue, setModifiedField, setValue])
+  }, [clearErrors, getValue, setModified, setValue])
 
   const swapListItem = useCallback<UseFormListHook<V>['swapListItem']>((path, fromIndex, toIndex) => {
     setModified({
       ...swapPathIndices(getModified(), path, fromIndex, toIndex),
       [`${path}[${fromIndex}]`]: true,
-      [`${path}[${toIndex}]`]: true
+      [`${path}[${toIndex}]`]: true,
+      // mark array as modified
+      [path]: true
     })
     setTouched(swapPathIndices(getTouched(), path, fromIndex, toIndex))
     setErrors(swapPathIndices(getErrors(), path, fromIndex, toIndex))
