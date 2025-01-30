@@ -20,6 +20,16 @@ function tests (mode: FormMode) {
     act(() => hook.result.current.setValue('a', undefined))
     expect(hook.result.current.getValue('a')).toBe(undefined)
   })
+
+  it('should set value of a nested field', () => {
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues: { a: { b: [1] } }
+    }))
+    expect(hook.result.current.getValue('a.b[0]')).toBe(1)
+    act(() => hook.result.current.setValue('a.b[0]', 2))
+    expect(hook.result.current.getValue('a.b[0]')).toBe(2)
+  })
 }
 
 describe('useForm({ mode: "controlled" }).setValue()', () => {
