@@ -5,7 +5,8 @@
 
 import { describe, expect, it } from '@jest/globals'
 import { renderHook } from '@testing-library/react'
-import useForm, { FormMode } from '../../src/useForm'
+import useForm from '../../src/useForm'
+import { FormMode } from '../../src/useFormState'
 
 function tests (mode: FormMode) {
   it('should return initial values if set', () => {

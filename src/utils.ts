@@ -5,7 +5,8 @@
 
 import deepExtend from '@jalik/deep-extend'
 import { FieldElement } from './useForm'
-import { FieldPaths } from './useFormValues'
+
+import { PathsAndValues } from './useFormState'
 
 /**
  * Returns the copy of an object built from the path with the assigned value.
@@ -126,7 +127,7 @@ export function build<T> (
  * Builds an object using paths and values.
  * @param paths
  */
-export function reconstruct<T> (paths: FieldPaths<any>): T | null {
+export function reconstruct<T> (paths: PathsAndValues<any>): T | null {
   let result: T | null = null
   const keys = Object.keys(paths)
 

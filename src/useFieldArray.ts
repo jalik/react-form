@@ -4,9 +4,9 @@
  */
 
 import { SyntheticEvent, useCallback, useMemo, useRef } from 'react'
-import { FieldKey, UseFormHook } from './useForm'
+import { UseFormHook } from './useForm'
 import useFormContext from './useFormContext'
-import { Values } from './useFormReducer'
+import { FieldPath, Values } from './useFormState'
 
 export type ArrayItem<T> = {
   key: string | number;
@@ -17,7 +17,7 @@ export type ArrayItem<T> = {
 export type UseFieldArrayOptions<T, V extends Values> = {
   context: UseFormHook<V>;
   defaultValue: (T & boolean) | (T & number) | (T & object) | (T & string) | ((items: T[]) => T);
-  name: FieldKey<V>;
+  name: FieldPath<V>;
   sort? (a: T, b: T): number;
 }
 

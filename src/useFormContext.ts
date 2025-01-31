@@ -1,11 +1,11 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2023 Karl STEIN
+ * Copyright (c) 2025 Karl STEIN
  */
 
 import { createContext, useContext } from 'react'
 import { UseFormHook } from './useForm'
-import { Values } from './useFormReducer'
+import { Values } from './useFormState'
 
 /**
  * The default form context.

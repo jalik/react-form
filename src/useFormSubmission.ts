@@ -3,16 +3,8 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import {
-  Dispatch,
-  MutableRefObject,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
-import { Values } from './useFormReducer'
+import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { UseFormStateHook, Values } from './useFormState'
 import { build, flatten } from './utils'
 import { UseFormValuesHook } from './useFormValues'
 import { UseFormErrorsHook } from './useFormErrors'
@@ -24,15 +16,19 @@ export type UseFormSubmissionOptions<V extends Values, E, R> = {
    */
   clearAfterSubmit?: boolean;
   /**
-   * The form errors.
+   * The form errors hook.
    */
   formErrors: UseFormErrorsHook<V, E>;
   /**
-   * The form status.
+   * The form state hook.
+   */
+  formState: UseFormStateHook<V, E, R>
+  /**
+   * The form status hook.
    */
   formStatus: UseFormStatusHook<V>;
   /**
-   * The form values.
+   * The form values hook.
    */
   formValues: UseFormValuesHook<V>;
   /**
@@ -61,42 +57,21 @@ export type UseFormSubmissionOptions<V extends Values, E, R> = {
 }
 
 export type UseFormSubmissionHook<V extends Values, E, R> = {
-  setSubmitCount: Dispatch<SetStateAction<number>>;
-  setSubmitError: Dispatch<SetStateAction<E | undefined>>;
-  setSubmitResult: Dispatch<SetStateAction<R | undefined>>;
-  setSubmitted: Dispatch<SetStateAction<boolean>>;
-  setSubmitting: Dispatch<SetStateAction<boolean>>;
+  /**
+   * Submits form values.
+   */
   submit: () => Promise<R | undefined>;
-  /**
-   * The number of times the form was submitted (count is reset on success).
-   */
-  submitCount: number;
-  /**
-   * The submit error.
-   */
-  submitError: E | undefined;
   /**
    * The ref of the submit function.
    */
   submitRef: MutableRefObject<UseFormSubmissionOptions<V, E, R>['submit']>
-  /**
-   * The submit result returned by onSubmit promise.
-   */
-  submitResult: R | undefined;
-  /**
-   * Tells if the form was submitted successfully.
-   */
-  submitted: boolean;
-  /**
-   * Tells if the form is submitting.
-   */
-  submitting: boolean;
 }
 
 function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOptions<V, E, R>): UseFormSubmissionHook<V, E, R> {
   const {
     clearAfterSubmit,
     formErrors,
+    formState,
     formStatus,
     formValues,
     nullify,
@@ -106,15 +81,12 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
     trimOnSubmit
   } = options
 
-  const submitRef = useRef(submitFunc)
-
-  const [submitCount, setSubmitCount] = useState<number>(0)
-  const [submitError, setSubmitError] = useState<E | undefined>(undefined)
-  const [submitResult, setSubmitResult] = useState<R | undefined>(undefined)
-  const [submitted, setSubmitted] = useState<boolean>(false)
-  const [submitting, setSubmitting] = useState<boolean>(false)
-
+  const {
+    setState
+  } = formState
   const { clearErrors } = formErrors
+
+  const submitRef = useRef(submitFunc)
 
   const {
     clearModified,
@@ -154,17 +126,25 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
       }
     }
 
-    setSubmitError(undefined)
-    setSubmitted(false)
-    setSubmitting(true)
-    setSubmitCount((count) => count + 1)
+    setState((s) => ({
+      ...s,
+      submitCount: s.submitCount + 1,
+      submitError: undefined,
+      submitResult: undefined,
+      submitted: false,
+      submitting: true
+    }))
 
     return Promise.resolve(submitRef.current(values))
       .then((result): R => {
-        setSubmitted(true)
-        setSubmitting(false)
-        setSubmitCount(0)
-        setSubmitResult(result)
+        setState((s) => ({
+          ...s,
+          submitCount: 0,
+          submitError: undefined,
+          submitResult: result,
+          submitted: true,
+          submitting: false
+        }))
 
         if (setInitialValuesOnSuccess) {
           setInitialValues(values)
@@ -181,29 +161,23 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         return result
       })
       .catch((error) => {
-        setSubmitError(error)
-        setSubmitting(false)
+        setState((s) => ({
+          ...s,
+          submitError: error,
+          submitted: false,
+          submitting: false
+        }))
         return undefined
       })
-  }, [clearAfterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onSuccess, setInitialValues, setInitialValuesOnSuccess, trimOnSubmit])
+  }, [clearAfterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onSuccess, setInitialValues, setInitialValuesOnSuccess, setState, trimOnSubmit])
 
   useEffect(() => {
     submitRef.current = submitFunc
   }, [submitFunc])
 
   return {
-    setSubmitCount,
-    setSubmitError,
-    setSubmitResult,
-    setSubmitted,
-    setSubmitting,
     submit,
-    submitCount,
-    submitError,
-    submitResult,
-    submitRef,
-    submitted,
-    submitting
+    submitRef
   }
 }
 

@@ -3,9 +3,10 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import useForm, { FormMode } from '../../src/useForm'
+import useForm from '../../src/useForm'
 import { describe, expect, it } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
+import { FormMode } from '../../src'
 
 const TYPE_ERROR = 'invalid type'
 

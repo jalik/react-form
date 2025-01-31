@@ -3,16 +3,15 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { useCallback, useMemo, useState } from 'react'
-import { Errors, Values } from './useFormReducer'
-import { hasDefinedValues } from './utils'
-import { FieldKey } from './useForm'
+import { useCallback } from 'react'
+import { Errors, FieldPath, UseFormStateHook, Values } from './useFormState'
+import { clone } from './utils'
 
-export type UseFormErrorsOptions<E> = {
+export type UseFormErrorsOptions<V extends Values, E, R> = {
   /**
-   * Sets initial errors.
+   * The form state hook.
    */
-  initialErrors?: Errors<E>;
+  formState: UseFormStateHook<V, E, R>;
 }
 
 export type UseFormErrorsHook<V extends Values, E> = {
@@ -20,30 +19,22 @@ export type UseFormErrorsHook<V extends Values, E> = {
    * Clears errors for given paths or all errors.
    * @param paths
    */
-  clearErrors (paths?: FieldKey<V>[]): void;
-  /**
-   * The errors state.
-   */
-  errorsState: Errors<E>;
+  clearErrors (paths?: FieldPath<V>[]): void;
   /**
    * Returns the error of a path.
    * @param path
    */
-  getError (path: FieldKey<V>): Errors<E>[FieldKey<V>];
+  getError (path: FieldPath<V>): Errors<E>[FieldPath<V>];
   /**
    * Returns all errors.
    */
   getErrors (): Errors<E>;
   /**
-   * Tells if there are any error.
-   */
-  hasError: boolean;
-  /**
    * Sets the error of a path.
    * @param path
    * @param error
    */
-  setError (path: FieldKey<V>, error: E | undefined): void;
+  setError (path: FieldPath<V>, error: E | undefined): void;
   /**
    * Sets errors for given paths or all errors.
    * @param errors
@@ -56,7 +47,7 @@ export type UseFormErrorsHook<V extends Values, E> = {
  * Returns errors that are not null, undefined or false.
  * @param errors
  */
-function filterErrors<E> (errors?: Errors<E>): Errors<E> {
+export function filterErrors<E> (errors?: Errors<E>): Errors<E> {
   const result: Errors<E> = {}
 
   if (errors != null && typeof errors === 'object') {
@@ -72,42 +63,51 @@ function filterErrors<E> (errors?: Errors<E>): Errors<E> {
   return result
 }
 
-function useFormErrors<V extends Values, E> (options: UseFormErrorsOptions<E>): UseFormErrorsHook<V, E> {
-  const [errorsState, setErrorsState] = useState(filterErrors(options.initialErrors))
-
-  const hasError = useMemo(() => hasDefinedValues(errorsState), [errorsState])
+function useFormErrors<V extends Values, E, R> (options: UseFormErrorsOptions<V, E, R>): UseFormErrorsHook<V, E> {
+  const {
+    errorsRef,
+    setState
+  } = options.formState
 
   const clearErrors = useCallback<UseFormErrorsHook<V, E>['clearErrors']>((paths) => {
-    setErrorsState((s) => {
+    setState((s) => {
+      const nextState = { ...s }
+
       if (paths) {
-        const nextState = { ...s }
+        nextState.errors = clone(s.errors)
 
         for (let i = 0; i < paths.length; i++) {
-          delete nextState[paths[i]]
+          delete nextState.errors[paths[i]]
         }
-        return nextState
+      } else {
+        nextState.errors = {}
       }
-      return {}
+      errorsRef.current = nextState.errors
+      return nextState
     })
-  }, [])
-
-  const getErrors = useCallback<UseFormErrorsHook<V, E>['getErrors']>(() => (
-    errorsState
-  ), [errorsState])
+  }, [errorsRef, setState])
 
   const getError = useCallback<UseFormErrorsHook<V, E>['getError']>((path) => (
-    errorsState[path]
-  ), [errorsState])
+    errorsRef.current[path]
+  ), [errorsRef])
+
+  const getErrors = useCallback<UseFormErrorsHook<V, E>['getErrors']>(() => (
+    errorsRef.current
+  ), [errorsRef])
 
   const setErrors = useCallback<UseFormErrorsHook<V, E>['setErrors']>((
     errors,
     opts?
   ) => {
-    setErrorsState((s) => {
-      const baseErrors: Errors<E> = opts?.partial ? { ...s } : {}
-      return filterErrors({ ...baseErrors, ...errors })
+    const { partial } = opts ?? {}
+    setState((s) => {
+      const baseErrors: Errors<E> = partial ? { ...s.errors } : {}
+      const nextState = { ...s }
+      nextState.errors = filterErrors({ ...baseErrors, ...errors })
+      errorsRef.current = nextState.errors
+      return nextState
     })
-  }, [])
+  }, [errorsRef, setState])
 
   const setError = useCallback<UseFormErrorsHook<V, E>['setError']>((path, error) => {
     setErrors({ [path]: error }, {
@@ -117,10 +117,8 @@ function useFormErrors<V extends Values, E> (options: UseFormErrorsOptions<E>): 
 
   return {
     clearErrors,
-    errorsState,
     getError,
     getErrors,
-    hasError,
     setError,
     setErrors
   }

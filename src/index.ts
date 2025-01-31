@@ -30,5 +30,5 @@ export { default as Option, OptionProps } from './components/Option'
 
 // export hooks
 export { default as useFieldArray, UseFieldArrayOptions } from './useFieldArray'
-export { default as useForm, UseFormOptions, UseFormHook } from './useForm'
+export { default as useForm, UseFormOptions, UseFormHook, InitializeFieldFunction } from './useForm'
 export { default as useFormContext, FormContext } from './useFormContext'

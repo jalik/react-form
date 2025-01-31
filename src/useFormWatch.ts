@@ -5,8 +5,7 @@
 
 import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import { Observer } from '@jalik/observer'
-import { Values } from './useFormReducer'
-import { FieldKey } from './useForm'
+import { FieldPath, Values } from './useFormState'
 
 export type FieldStatus<T = unknown> = {
   /**
@@ -37,13 +36,13 @@ export type UseFormWatchHook<V extends Values> = {
    * @param path
    * @param status
    */
-  notifyWatchers<T> (path: FieldKey<V>, status: FieldStatus<T>): void;
+  notifyWatchers<T> (path: FieldPath<V>, status: FieldStatus<T>): void;
   /**
    * Adds a watcher that is notified when the field changed.
    * @param path
    * @param callback
    */
-  watch<T = unknown> (path: FieldKey<V>, callback: (status: FieldStatus<T>) => void): void;
+  watch<T = unknown> (path: FieldPath<V>, callback: (status: FieldStatus<T>) => void): void;
   /**
    * Registered watchers.
    */

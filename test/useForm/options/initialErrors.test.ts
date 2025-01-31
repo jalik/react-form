@@ -3,9 +3,10 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import useForm, { FormMode } from '../../../src/useForm'
+import useForm from '../../../src/useForm'
 import { describe, expect, it } from '@jest/globals'
 import { renderHook } from '@testing-library/react'
+import { FormMode } from '../../../src/useFormState'
 
 function test (mode: FormMode) {
   describe('with values', () => {

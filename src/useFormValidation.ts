@@ -3,170 +3,195 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import {
-  Dispatch,
-  MutableRefObject,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
-import { Errors, ModifiedFields, Values } from './useFormReducer'
+import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { Errors, FieldPath, ModifiedFields, UseFormStateHook, Values } from './useFormState'
 import { UseFormStatusHook } from './useFormStatus'
 import { UseFormValuesHook } from './useFormValues'
 import { hasDefinedValues } from './utils'
 import { UseFormErrorsHook } from './useFormErrors'
-import { FieldKey } from './useForm'
 
-export type UseFormValidationOptions<V extends Values, E> = {
+export type UseFormValidationOptions<V extends Values, E, R> = {
+  /**
+   * The form errors hook.
+   */
   formErrors: UseFormErrorsHook<V, E>;
+  /**
+   * The form state hook.
+   */
+  formState: UseFormStateHook<V, E, R>;
+  /**
+   * The form status hook.
+   */
   formStatus: UseFormStatusHook<V>;
+  /**
+   * The form values hook.
+   */
   formValues: UseFormValuesHook<V>;
+  /**
+   * Validates given values.
+   * @param values
+   * @param modified
+   */
   validate? (values: Partial<V>, modified: ModifiedFields): Promise<Errors<E> | undefined>;
-  validateField? (path: FieldKey<V>, value: unknown, values: Partial<V>): Promise<E | undefined>;
+  /**
+   * Validates a single field.
+   * @param path
+   * @param value
+   * @param values
+   */
+  validateField? (path: FieldPath<V>, value: unknown, values: Partial<V>): Promise<E | undefined>;
+  /**
+   * The validation delay.
+   */
   validateDelay?: number;
 }
 
-export type UseFormValidationHook<V extends Values, E> = {
-  /**
-   * Tells if the form will trigger a validation or if it will validate some fields.
-   */
-  needValidation: boolean | FieldKey<V>[];
+export type UseFormValidationHook<V extends Values, E, R> = {
   /**
    * Sets validation globally or for given fields.
    */
-  setNeedValidation: Dispatch<SetStateAction<boolean | FieldKey<V>[]>>;
-  /**
-   * Sets the validated state of the form.
-   */
-  setValidated: Dispatch<SetStateAction<boolean>>;
+  setNeedValidation (validation: boolean | FieldPath<V>[]): void;
   /**
    * Sets the validation error.
    */
-  setValidateError: Dispatch<SetStateAction<Error | undefined>>;
+  setValidateError (error: Error | undefined): void;
+  /**
+   * Sets the validated state of the form.
+   */
+  setValidated (validated: boolean): void;
   /**
    * Sets the validation state.
    */
-  setValidating: Dispatch<SetStateAction<boolean>>;
+  setValidating (validating: boolean): void;
   /**
    * Validate all fields.
    */
-  validate: () => Promise<Errors<E> | undefined>;
-  /**
-   * The validation error.
-   */
-  validateError: Error | undefined;
+  validate (): Promise<Errors<E> | undefined>;
   /**
    * Validate a single field.
    */
-  validateField: (path: FieldKey<V>) => Promise<E | undefined>;
+  validateField (path: FieldPath<V>): Promise<E | undefined>;
   /**
    * Validate given fields.
    */
-  validateFields: (paths: FieldKey<V>[]) => Promise<Errors<E> | undefined>;
+  validateFields (paths: FieldPath<V>[]): Promise<Errors<E> | undefined>;
   /**
    * The ref of the validation function.
    */
-  validateRef: MutableRefObject<UseFormValidationOptions<V, E>['validate']>;
-  /**
-   * Tells if the form was validated.
-   */
-  validated: boolean;
-  /**
-   * Tells if the form is validating.
-   */
-  validating: boolean;
+  validateRef: MutableRefObject<UseFormValidationOptions<V, E, R>['validate']>;
 }
 
-function useFormValidation<V extends Values, E> (options: UseFormValidationOptions<V, E>): UseFormValidationHook<V, E> {
+function useFormValidation<V extends Values, E, R> (options: UseFormValidationOptions<V, E, R>): UseFormValidationHook<V, E, R> {
   const {
-    formErrors,
-    formStatus,
+    formState,
     formValues,
     validate: validateFunc,
     validateField: validateFieldFunc
   } = options
 
+  const {
+    state
+  } = formState
+
+  const {
+    errorsRef,
+    modifiedRef,
+    setState,
+    touchedRef
+  } = formState
+
   const validateRef = useRef(validateFunc)
   const validateFieldRef = useRef(validateFieldFunc)
-
-  const [needValidation, setNeedValidation] = useState<boolean | FieldKey<V>[]>(false)
-  const [validateError, setValidateError] = useState<Error | undefined>(undefined)
-  const [validated, setValidated] = useState<boolean>(false)
-  const [validating, setValidating] = useState<boolean>(false)
-
-  const {
-    clearErrors,
-    errorsState,
-    setErrors
-  } = formErrors
-
-  const {
-    modifiedRef,
-    touchedRef
-  } = formStatus
 
   const {
     getValue,
     getValues
   } = formValues
 
-  /**
-   * Validates one or more fields by passing field names.
-   */
-  const validateFields = useCallback<UseFormValidationHook<V, E>['validateFields']>((paths) => {
+  const setNeedValidation = useCallback<UseFormValidationHook<V, E, R>['setNeedValidation']>((needValidation) => {
+    setState((s) => ({
+      ...s,
+      needValidation
+    }))
+  }, [setState])
+
+  const setValidateError = useCallback<UseFormValidationHook<V, E, R>['setValidateError']>((validateError) => {
+    setState((s) => ({
+      ...s,
+      validateError
+    }))
+  }, [setState])
+
+  const setValidated = useCallback<UseFormValidationHook<V, E, R>['setValidated']>((validated) => {
+    setState((s) => ({
+      ...s,
+      validated
+    }))
+  }, [setState])
+
+  const setValidating = useCallback<UseFormValidationHook<V, E, R>['setValidating']>((validating) => {
+    setState((s) => ({
+      ...s,
+      validating
+    }))
+  }, [setState])
+
+  const validateFields = useCallback<UseFormValidationHook<V, E, R>['validateFields']>((paths) => {
     if (validateFieldRef.current == null) {
       return Promise.resolve(undefined)
     }
-    setValidating(true)
-    setValidateError(undefined)
-    setNeedValidation(false)
+
+    setState((s) => ({
+      ...s,
+      needValidation: false,
+      validateError: undefined,
+      validated: false,
+      validating: true
+    }))
 
     const validate = validateFieldRef.current
     const promises = validate
       ? paths.map((path) => {
         return Promise.resolve(validate(path, getValue(path), getValues()))
-          .then((error): [FieldKey<V>, E | undefined] => [path, error])
+          .then((error): [FieldPath<V>, E | undefined] => [path, error])
       })
       : []
 
     return Promise
       .all(promises)
       .then((results) => {
-        let validationErrors: Errors<E> = { ...errorsState }
+        const errors: Errors<E> = {}
 
         for (let i = 0; i < results.length; i++) {
           const result = results[i]
+          const [name, error] = result
+          errors[name] = error
+        }
 
-          if (result) {
-            const [name, error] = result
-            validationErrors = {
-              ...validationErrors,
-              [name]: error
-            }
+        setState((s) => {
+          const nextErrors: Errors<E> = { ...s.errors, ...errors }
+          errorsRef.current = nextErrors
+          return {
+            ...s,
+            errors: nextErrors,
+            validated: !hasDefinedValues(nextErrors),
+            validating: false
           }
-        }
-
-        if (hasDefinedValues(validationErrors)) {
-          setValidated(false)
-          setValidating(false)
-          setErrors(validationErrors, { partial: false })
-        } else {
-          setValidated(true)
-          setValidating(false)
-          clearErrors()
-        }
-        return validationErrors
+        })
+        return errors
       })
       .catch((error) => {
-        setValidating(false)
-        setValidateError(error)
+        setState((s) => ({
+          ...s,
+          validateError: error,
+          validated: false,
+          validating: false
+        }))
         return error
       })
-  }, [clearErrors, errorsState, getValue, getValues, setErrors])
+  }, [errorsRef, getValue, getValues, setState])
 
-  const validateField = useCallback<UseFormValidationHook<V, E>['validateField']>((path) => (
+  const validateField = useCallback<UseFormValidationHook<V, E, R>['validateField']>((path) => (
     validateFields([path])
       .then((errors) => {
         const err: Errors<E> = { ...errors }
@@ -174,7 +199,7 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
       })
   ), [validateFields])
 
-  const validate = useCallback<UseFormValidationHook<V, E>['validate']>(() => {
+  const validate = useCallback<UseFormValidationHook<V, E, R>['validate']>(() => {
     if (validateRef.current == null) {
       // Validate touched and modified fields only,
       // since we don't have a global validation function.
@@ -184,31 +209,37 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
       }))
     }
 
-    setValidating(true)
-    setValidateError(undefined)
-    setNeedValidation(false)
+    setState((s) => ({
+      ...s,
+      needValidation: false,
+      validateError: undefined,
+      validated: false,
+      validating: true
+    }))
 
     return Promise.resolve(
       validateRef.current(getValues(), { ...modifiedRef.current })
     )
-      .then((validationErrors) => {
-        if (validationErrors && hasDefinedValues(validationErrors)) {
-          setValidated(false)
-          setValidating(false)
-          setErrors(validationErrors, { partial: false })
-        } else {
-          setValidated(true)
-          setValidating(false)
-          clearErrors()
-        }
-        return validationErrors
+      .then((nextErrors = {}) => {
+        errorsRef.current = nextErrors
+        setState((s) => ({
+          ...s,
+          errors: nextErrors,
+          validated: !hasDefinedValues(nextErrors),
+          validating: false
+        }))
+        return nextErrors
       })
       .catch((error) => {
-        setValidating(false)
-        setValidateError(error)
+        setState((s) => ({
+          ...s,
+          validateError: error,
+          validated: false,
+          validating: false
+        }))
         return undefined
       })
-  }, [clearErrors, getValues, modifiedRef, setErrors, touchedRef, validateFields])
+  }, [errorsRef, getValues, modifiedRef, setState, touchedRef, validateFields])
 
   useEffect(() => {
     validateRef.current = validateFunc
@@ -219,26 +250,23 @@ function useFormValidation<V extends Values, E> (options: UseFormValidationOptio
   }, [validateFieldFunc])
 
   useEffect(() => {
-    if (needValidation === true) {
+    // fixme needValidation is running in loop
+    if (state.needValidation === true) {
       validate()
-    } else if (needValidation instanceof Array && needValidation.length > 0) {
-      validateFields(needValidation)
+    } else if (state.needValidation instanceof Array && state.needValidation.length > 0) {
+      validateFields(state.needValidation)
     }
-  }, [validateFields, needValidation, validate])
+  }, [validateFields, validate, state.needValidation])
 
   return {
-    needValidation,
     setNeedValidation,
-    setValidated,
     setValidateError,
+    setValidated,
     setValidating,
     validate,
-    validateError,
     validateField,
     validateFields,
-    validateRef,
-    validated,
-    validating
+    validateRef
   }
 }
 

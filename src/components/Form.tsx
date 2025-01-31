@@ -5,7 +5,7 @@
 
 import { UseFormHook } from '../useForm'
 import { FormContext } from '../useFormContext'
-import { Values } from '../useFormReducer'
+import { Values } from '../useFormState'
 import { ComponentProps, ReactElement } from 'react'
 
 export type FormProps<V extends Values, E, R> = ComponentProps<'form'> & {
