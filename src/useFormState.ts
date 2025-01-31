@@ -25,7 +25,7 @@ export type FormMode = 'controlled' | 'experimental_uncontrolled'
 export type Values = Record<string, any>;
 
 // @ts-ignore
-export type FieldPath<V extends Values> = (keyof V & string) | (string & {})
+export type FieldPath<V extends Values> = (keyof V & string) | string
 /**
  * Contains fields paths and values.
  */
