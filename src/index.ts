@@ -32,3 +32,16 @@ export { default as Option, OptionProps } from './components/Option'
 export { default as useFieldArray, UseFieldArrayOptions } from './useFieldArray'
 export { default as useForm, UseFormOptions, UseFormHook, InitializeFieldFunction } from './useForm'
 export { default as useFormContext, FormContext } from './useFormContext'
+
+// export types
+export {
+  Errors,
+  FieldPath,
+  FormMode,
+  FormState,
+  ModifiedFields,
+  PathsAndValues,
+  PathsOrValues,
+  TouchedFields,
+  Values
+} from './useFormState'
