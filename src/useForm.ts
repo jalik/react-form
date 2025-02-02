@@ -490,7 +490,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateDelay = 400,
     // todo add tests for validateOnChange
     validateOnChange = false,
-    // todo add tests for validateOnInit
     validateOnInit = false,
     // todo add tests for validateOnSubmit
     validateOnSubmit = true,
@@ -990,6 +989,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       setInitialValues(initialValues)
     }
   }, [initialValues, initializedRef, reinitialize, setInitialValues])
+
+  useEffect(() => {
+    if (state.initialized && validateOnInit) {
+      validate()
+    }
+  }, [state.initialized, validate, validateOnInit])
 
   return {
     // errors
