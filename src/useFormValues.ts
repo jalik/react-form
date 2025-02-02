@@ -230,7 +230,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
           nextErrors[path] = undefined
         }
         // Detect field's new modified state.
-        if (updateModified && !modifiedRef.current[path]) {
+        if (updateModified) {
           const initialValue = getInitialValue(path)
           nextModified[path] =
             // Always set false when initializing.
@@ -240,6 +240,11 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
             (value != null || initialValue != null)
           // fixme Set true if array is different.
           // fixme Set true if object is different.
+
+          // No change detected.
+          if (nextModified[path] === modifiedRef.current[path]) {
+            delete nextModified[path]
+          }
         }
       }
     }
