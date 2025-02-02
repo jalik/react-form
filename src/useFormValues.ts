@@ -241,7 +241,8 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       // Pre calculate next values.
       const allValues = deepExtend({}, valuesRef.current, reconstruct(values))
       // Apply transformation.
-      mutation = transformRef.current(flatten(values) as PathsAndValues<V>, allValues)
+      // fixme v6: do not flatten values to avoid bad performance
+      mutation = transformRef.current(flatten(values, undefined, true) as PathsAndValues<V>, allValues)
     }
 
     const paths = Object.keys(mutation)
