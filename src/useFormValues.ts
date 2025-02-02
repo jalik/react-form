@@ -291,7 +291,12 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       hasDefinedValues(nextErrors) ||
       hasDefinedValues(nextModified)) {
       setState((s) => {
-        const nextState = { ...s }
+        const nextState = {
+          ...s,
+          submitError: undefined,
+          submitted: false,
+          values: nextValues
+        }
 
         // Update initial values.
         if (initialize) {
@@ -317,12 +322,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
         if (validate) {
           nextState.needValidation = paths
         }
-        return {
-          ...nextState,
-          submitError: undefined,
-          submitted: false,
-          values: nextValues
-        }
+        return nextState
       })
 
       // Force update by replacing keys.
