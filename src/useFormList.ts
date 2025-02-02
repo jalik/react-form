@@ -113,7 +113,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setValue(path, list, {
         forceUpdate: true,
         updateErrors: false,
-        updateModified: false
+        updateModified: false,
+        updateTouched: false
       })
     }
   }, [getValue, setModified, setValue])
@@ -137,7 +138,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setValue(path, list, {
         forceUpdate: true,
         updateErrors: false,
-        updateModified: false
+        updateModified: false,
+        updateTouched: false
       })
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
@@ -165,7 +167,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     setValue(path, list, {
       forceUpdate: true,
       updateErrors: false,
-      updateModified: false
+      updateModified: false,
+      updateTouched: false
     })
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
@@ -187,7 +190,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setValue(path, list, {
         forceUpdate: true,
         updateErrors: false,
-        updateModified: false
+        updateModified: false,
+        updateTouched: false
       })
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
@@ -223,7 +227,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setValue(path, list, {
         forceUpdate: true,
         updateErrors: false,
-        updateModified: false
+        updateModified: false,
+        updateTouched: false
       })
     }
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
@@ -245,7 +250,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     setValue(path, list, {
       forceUpdate: true,
       updateErrors: false,
-      updateModified: false
+      updateModified: false,
+      updateTouched: false
     })
   }, [clearErrors, getValue, setModified, setValue])
 
@@ -277,7 +283,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     setValue(path, list, {
       forceUpdate: true,
       updateErrors: false,
-      updateModified: false
+      updateModified: false,
+      updateTouched: false
     })
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 

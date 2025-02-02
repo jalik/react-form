@@ -175,7 +175,6 @@ function useFormStatus<V extends Values, E, R> (options: UseFormStatusOptions<V,
     if (mode === 'controlled' || forceUpdate) {
       setState((s) => ({
         ...s,
-        // todo clear error of paths
         modifiedFields: modifiedRef.current
       }))
     }
@@ -207,7 +206,6 @@ function useFormStatus<V extends Values, E, R> (options: UseFormStatusOptions<V,
     if (mode === 'controlled' || forceUpdate) {
       setState((s) => ({
         ...s,
-        // todo clear error of paths
         modifiedFields: modifiedRef.current
       }))
     }
@@ -231,7 +229,6 @@ function useFormStatus<V extends Values, E, R> (options: UseFormStatusOptions<V,
     if (mode === 'controlled' || forceUpdate) {
       setState((s) => ({
         ...s,
-        // todo clear error of paths
         modifiedFields: nextModified
       }))
     }

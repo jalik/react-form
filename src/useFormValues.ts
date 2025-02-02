@@ -89,7 +89,7 @@ export type UseFormValuesHook<V extends Values> = {
     paths: FieldPath<V>[],
     options?: { forceUpdate?: boolean }): void;
   /**
-   * Restores initial values of given paths.
+   * Restores all initial values or for given paths.
    * @param paths
    * @param options
    */
@@ -117,6 +117,8 @@ export type UseFormValuesHook<V extends Values> = {
       forceUpdate?: boolean;
       updateErrors?: boolean;
       updateModified?: boolean;
+      updateTouched?: boolean;
+      validate?: boolean;
     }): void;
   /**
    * Sets given values of all values.
@@ -131,6 +133,7 @@ export type UseFormValuesHook<V extends Values> = {
       partial: boolean;
       updateErrors?: boolean;
       updateModified?: boolean;
+      updateTouched?: boolean;
       validate?: boolean;
     }): void;
 }
@@ -151,13 +154,14 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     errorsRef,
     initializedRef,
     initialValuesRef,
+    modifiedRef,
     setState,
+    touchedRef,
     valuesRef
   } = formState
 
   const {
-    isTouched,
-    setModified
+    isTouched
   } = formStatus
 
   const onValuesChangeRef = useRef(onValuesChange)
@@ -185,18 +189,18 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       forceUpdate,
       initialize,
       partial,
-      updateModified = true,
       updateErrors = true,
+      updateModified = true,
+      updateTouched = true,
       validate
     } = opts ?? {}
 
     const previousValues = clone(valuesRef.current)
-
+    const nextErrors: Errors<E> = {}
+    const nextModified: ModifiedFields = {}
     let nextValues: Partial<V> = partial
       ? valuesRef.current
       : {} as Partial<V>
-
-    const nextErrors: Errors<E> = {}
 
     const paths = Object.keys(values)
 
@@ -205,62 +209,60 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       const value = values[path]
       nextValues = build(path, value, nextValues)
 
-      // Clear error if validation is not needed.
-      if (!validate && errorsRef.current[path] != null) {
-        nextErrors[path] = undefined
+      if (!initialize || partial) {
+        // Clear field error.
+        if (updateErrors && !validate && errorsRef.current[path] != null) {
+          nextErrors[path] = undefined
+        }
+        // Detect field's new modified state.
+        if (updateModified && !modifiedRef.current[path]) {
+          const initialValue = getInitialValue(path)
+          nextModified[path] =
+            // Always set false when initializing.
+            !initialize &&
+            // Set true if new and initial values are different.
+            (value !== initialValue) &&
+            (value != null || initialValue != null)
+          // fixme Set true if array is different.
+          // fixme Set true if object is different.
+        }
       }
     }
+
+    // Update values ref.
     valuesRef.current = nextValues
 
-    // Update initial values.
-    if (!initializedRef.current || initialize) {
-      initialValuesRef.current = clone(nextValues)
-      initializedRef.current = true
-
-      if (mode === 'controlled' || initialize) {
-        // fixme call setState() once in the function
-        setState((s) => ({
-          ...s,
-          initialValues: nextValues
-        }))
-      }
-    }
-
-    const mutation = values
-
-    if (updateModified) {
-      // Update modified state.
-      const modified: ModifiedFields = {}
-
-      for (let i = 0; i < paths.length; i++) {
-        const path = paths[i]
-        const value = mutation[path]
-        const initialValue = getInitialValue(path)
-
-        modified[path] =
-          // Always set false when initializing.
-          !initialize &&
-          // Set true if new and initial values are different.
-          (value !== initialValue) &&
-          (value != null || initialValue != null)
-        // fixme Set true if array is different.
-        // fixme Set true if object is different.
-      }
-      setModified(modified, { partial })
-    }
-
-    // Update values.
-    if (mode === 'controlled' || forceUpdate || initialize || validate) {
+    // Update state.
+    if (mode === 'controlled' || forceUpdate || (initialize || !initializedRef.current) || validate ||
+      hasDefinedValues(nextErrors) ||
+      hasDefinedValues(nextModified)) {
       setState((s) => {
-        const errors = partial ? { ...s.errors, ...nextErrors } : nextErrors
+        const nextState = { ...s }
+
+        // Update initial values.
+        if (initialize) {
+          initialValuesRef.current = clone(nextValues)
+          nextState.initialValues = initialValuesRef.current
+          initializedRef.current = true
+        }
+        // Update errors.
         if (updateErrors) {
-          errorsRef.current = nextErrors
+          errorsRef.current = partial ? { ...errorsRef.current, ...nextErrors } : nextErrors
+          nextState.errors = errorsRef.current
+        }
+        // Update modified.
+        if (updateModified) {
+          modifiedRef.current = partial ? { ...modifiedRef.current, ...nextModified } : nextModified
+          nextState.modifiedFields = modifiedRef.current
+        }
+        // Update touched.
+        if (updateTouched) {
+          touchedRef.current = partial ? { ...touchedRef.current } : {}
+          nextState.touchedFields = touchedRef.current
         }
         return {
-          ...s,
-          errors: updateErrors ? errors : s.errors,
+          ...nextState,
           needValidation: validate ? (Object.keys(values) as FieldPath<V>[]) : s.needValidation,
-          // todo update modified
           submitError: undefined,
           submitted: false,
           values: nextValues
@@ -281,7 +283,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     // Notify watchers of changes.
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i]
-      const value = mutation[path]
+      const value = values[path]
       const previousValue = resolve(path, previousValues)
 
       if (value !== previousValue) {
@@ -295,7 +297,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
         watchers.current.emit(inputChangeEvent(path), status)
       }
     }
-  }, [errorsRef, getInitialValue, initialValuesRef, initializedRef, isTouched, mode, replaceKeys, setModified, setState, valuesRef, watchers])
+  }, [errorsRef, getInitialValue, initialValuesRef, initializedRef, isTouched, mode, modifiedRef, replaceKeys, setState, touchedRef, valuesRef, watchers])
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
     const currentValue = getValue(path)

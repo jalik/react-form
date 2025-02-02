@@ -56,14 +56,26 @@ function tests (mode: FormMode) {
     })
   })
 
+  it('should not field as modified when value changes', () => {
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues: { a: 1 }
+    }))
+    expect(hook.result.current.isModified('a')).toBe(false)
+    expect(hook.result.current.isModified()).toBe(false)
+    act(() => hook.result.current.setValues({ a: 2 }))
+    expect(hook.result.current.isModified('a')).toBe(true)
+    expect(hook.result.current.isModified()).toBe(true)
+  })
+
   it('should not set field as touched when value changes', () => {
     const hook = renderHook(() => useForm({
       mode,
-      initialValues: { a: 'test' }
+      initialValues: { a: 1 }
     }))
     expect(hook.result.current.isTouched('a')).toBe(false)
     expect(hook.result.current.isTouched()).toBe(false)
-    act(() => hook.result.current.setValue('a', 'modified'))
+    act(() => hook.result.current.setValues({ a: 2 }))
     expect(hook.result.current.isTouched('a')).toBe(false)
     expect(hook.result.current.isTouched()).toBe(false)
   })
