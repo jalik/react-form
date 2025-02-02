@@ -23,6 +23,63 @@ function tests (mode: FormMode) {
       act(() => hook.result.current.clear())
       expect(hook.result.current.getValues()).toStrictEqual({})
     })
+
+    it('should clear all errors', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialErrors: {
+          a: 'invalid',
+          b: 'invalid'
+        }
+      }))
+      expect(hook.result.current.getError('a')).toBe('invalid')
+      expect(hook.result.current.getError('b')).toBe('invalid')
+      act(() => hook.result.current.clear())
+      expect(hook.result.current.getErrors()).toStrictEqual({})
+    })
+
+    it('should clear all modified states', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialModified: {
+          a: true,
+          b: true
+        }
+      }))
+      expect(hook.result.current.isModified('a')).toBe(true)
+      expect(hook.result.current.isModified('b')).toBe(true)
+      act(() => hook.result.current.clear())
+      expect(hook.result.current.getModified()).toStrictEqual({})
+    })
+
+    it('should clear all touched states', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialTouched: {
+          a: true,
+          b: true
+        }
+      }))
+      expect(hook.result.current.isTouched('a')).toBe(true)
+      expect(hook.result.current.isTouched('b')).toBe(true)
+      act(() => hook.result.current.clear())
+      expect(hook.result.current.getTouched()).toStrictEqual({})
+    })
+
+    it('should not clear initial values', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues: {
+          a: 1,
+          b: 2
+        }
+      }))
+      expect(hook.result.current.getInitialValue('a')).toBe(1)
+      expect(hook.result.current.getInitialValue('b')).toBe(2)
+      act(() => hook.result.current.clear())
+      expect(hook.result.current.getInitialValue('a')).toBe(1)
+      expect(hook.result.current.getInitialValue('b')).toBe(2)
+    })
   })
 
   describe('with paths', () => {
@@ -39,15 +96,78 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getValue('b')).toBe(2)
       expect(hook.result.current.getValue('c')).toBe(3)
       act(() => hook.result.current.clear(['a', 'c']))
-      expect(hook.result.current.getValue('a')).toBe(null)
+      expect(hook.result.current.getValue('a')).toBe(undefined)
       expect(hook.result.current.getValue('b')).toBe(2)
-      expect(hook.result.current.getValue('c')).toBe(null)
+      expect(hook.result.current.getValue('c')).toBe(undefined)
+    })
+
+    it('should clear errors of given paths', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialErrors: {
+          a: 'invalid',
+          b: 'invalid',
+          c: 'invalid'
+        }
+      }))
+      expect(hook.result.current.getError('a')).toBe('invalid')
+      expect(hook.result.current.getError('b')).toBe('invalid')
+      expect(hook.result.current.getError('c')).toBe('invalid')
+      act(() => hook.result.current.clear(['a', 'c']))
+      expect(hook.result.current.getErrors()).toStrictEqual({ b: 'invalid' })
+    })
+
+    it('should clear modified states of given paths', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialModified: {
+          a: true,
+          b: true,
+          c: true
+        }
+      }))
+      expect(hook.result.current.isModified('a')).toBe(true)
+      expect(hook.result.current.isModified('b')).toBe(true)
+      expect(hook.result.current.isModified('c')).toBe(true)
+      act(() => hook.result.current.clear(['a', 'c']))
+      expect(hook.result.current.isModified('a')).toBe(false)
+      expect(hook.result.current.isModified('b')).toBe(true)
+      expect(hook.result.current.isModified('c')).toBe(false)
+    })
+
+    it('should clear touched states of given paths', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialTouched: {
+          a: true,
+          b: true,
+          c: true
+        }
+      }))
+      expect(hook.result.current.isTouched('a')).toBe(true)
+      expect(hook.result.current.isTouched('b')).toBe(true)
+      expect(hook.result.current.isTouched('c')).toBe(true)
+      act(() => hook.result.current.clear(['a', 'c']))
+      expect(hook.result.current.isTouched('a')).toBe(false)
+      expect(hook.result.current.isTouched('b')).toBe(true)
+      expect(hook.result.current.isTouched('c')).toBe(false)
+    })
+
+    it('should not clear initial values of given paths', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues: {
+          a: 1,
+          b: 2
+        }
+      }))
+      expect(hook.result.current.getInitialValue('a')).toBe(1)
+      expect(hook.result.current.getInitialValue('b')).toBe(2)
+      act(() => hook.result.current.clear(['a', 'b']))
+      expect(hook.result.current.getInitialValue('a')).toBe(1)
+      expect(hook.result.current.getInitialValue('b')).toBe(2)
     })
   })
-
-  // todo check that errors are cleared
-  // todo check that modified states are cleared
-  // todo check that touched states are cleared
 }
 
 describe('useForm({ mode: "controlled" }).clear()', () => {

@@ -508,7 +508,7 @@ describe('useForm()', () => {
         result.current.removeFields(['username'])
       })
 
-      expect(result.current.values.username).toBe(null)
+      expect(result.current.values.username).toBe(undefined)
       expect(result.current.errors.username).toBe(undefined)
       expect(result.current.modifiedFields.username).toBe(undefined)
       expect(result.current.touchedFields.username).toBe(undefined)

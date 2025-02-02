@@ -14,7 +14,7 @@ import {
   Values
 } from './useFormState'
 import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
-import { build, clone, resolve } from './utils'
+import { build, clone, hasDefinedValues, resolve } from './utils'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
 import { Observer } from '@jalik/observer'
@@ -309,15 +309,15 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   }, [getValue, setValues])
 
   const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
-    const data = {} as PathsAndValues<V>
+    const nextValues = {} as PathsAndValues<V>
 
     if (paths) {
       for (let i = 0; i < paths.length; i++) {
-        data[paths[i]] = null
+        nextValues[paths[i]] = undefined
       }
     }
 
-    setValues(data, {
+    setValues(nextValues, {
       forceUpdate: true,
       ...opts,
       partial: paths != null
