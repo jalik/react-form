@@ -23,23 +23,18 @@ import useFormState, {
   PathsOrValues,
   Values
 } from './useFormState'
-import {
-  clone,
-  flatten,
-  getFieldId,
-  getFieldValue,
-  hasDefinedValues,
-  randomKey,
-  reconstruct
-} from './utils'
+import { clone, getFieldId, getFieldValue, hasDefinedValues, randomKey } from './utils'
 import useFormKeys, { UseFormKeysHook } from './useFormKeys'
 import useFormWatch, { UseFormWatchHook } from './useFormWatch'
 import useFormErrors, { UseFormErrorsHook } from './useFormErrors'
 import useFormStatus, { UseFormStatusHook } from './useFormStatus'
-import useFormValues, { SetValuesOptions, UseFormValuesHook } from './useFormValues'
+import useFormValues, {
+  SetValuesOptions,
+  UseFormValuesHook,
+  UseFormValuesOptions
+} from './useFormValues'
 import useFormLoader, { UseFormLoaderHook, UseFormLoaderOptions } from './useFormLoader'
 import useFormList, { UseFormListHook } from './useFormList'
-import deepExtend from '@jalik/deep-extend'
 import useFormValidation from './useFormValidation'
 import useFormSubmission from './useFormSubmission'
 
@@ -396,7 +391,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * @param mutation
    * @param values
    */
-  transform? (mutation: PathsAndValues<V>, values: Partial<V>): PathsAndValues<V>;
+  transform?: UseFormValuesOptions<V, E, R>['transform'];
   /**
    * Enables trimming on blur.
    */
@@ -476,7 +471,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // todo add tests for setInitialValuesOnSuccess
     setInitialValuesOnSuccess = false,
     submitDelay = 100,
-    transform: transformFunc,
+    transform,
     // todo add tests for trimOnBlur
     trimOnBlur = false,
     // todo add tests for trimOnSubmit
@@ -547,6 +542,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     mode,
     onValuesChange,
     reinitialize,
+    transform,
     watchers: formWatch.watchers
   })
 
@@ -635,7 +631,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Defines function references.
   const initializeFieldRef = useRef(initializeFieldFunc)
-  const transformRef = useRef(transformFunc)
 
   // Check if form is disabled regarding various states.
   const formDisabled = useMemo(() => (
@@ -663,29 +658,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     const currentValues = clone(valuesRef.current)
 
-    let mutationOrValues: PathsOrValues<V> = typeof values === 'function'
+    const mutationOrValues: PathsOrValues<V> = typeof values === 'function'
       ? { ...values(currentValues as any) }
       : { ...values }
-
-    // todo move to useFormValues().setValues()
-    if (transformRef.current) {
-      // Flatten values to make sure mutation only contains field names as keys
-      // and field values as values.
-      // fixme ts error
-      // @ts-ignore
-      let mut: PathsAndValues<V> = partial ? mutationOrValues : flatten(mutationOrValues)
-
-      // Apply transformation to values.
-      const nextValues = deepExtend({}, currentValues, partial
-        ? reconstruct(mutationOrValues)
-        : mutationOrValues)
-      mut = transformRef.current(mut, nextValues)
-
-      // Update next values from mutation.
-      // fixme ts error
-      // @ts-ignore
-      mutationOrValues = partial ? mut : reconstruct(mut)
-    }
 
     setValues(mutationOrValues, {
       forceUpdate,
@@ -738,7 +713,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     setTouchedField(name, true)
 
     if (validateOnTouch) {
-      // fixme cause infinite rerender
       setNeedValidation([name])
     }
 
@@ -954,10 +928,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   useEffect((): void => {
     initializeFieldRef.current = initializeFieldFunc
   }, [initializeFieldFunc])
-
-  useEffect((): void => {
-    transformRef.current = transformFunc
-  }, [transformFunc])
 
   useEffect(() => {
     // Set values using initial values when they are provided or if they changed.

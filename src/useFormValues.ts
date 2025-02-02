@@ -14,12 +14,13 @@ import {
   Values
 } from './useFormState'
 import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
-import { build, clone, hasDefinedValues, resolve } from './utils'
+import { build, clone, flatten, hasDefinedValues, reconstruct, resolve } from './utils'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
 import { Observer } from '@jalik/observer'
 import { FieldStatus, inputChangeEvent } from './useFormWatch'
 import { UseFormErrorsHook } from './useFormErrors'
+import deepExtend from '@jalik/deep-extend'
 
 export type UseFormValuesOptions<V extends Values, E, R> = {
   /**
@@ -51,6 +52,12 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
    * Resets values with initial values when they change.
    */
   reinitialize?: boolean;
+  /**
+   * Returns transformed values.
+   * @param mutation
+   * @param values
+   */
+  transform? (mutation: PathsAndValues<V>, values: Partial<V>): PathsAndValues<V>;
   /**
    * Registered watchers.
    */
@@ -156,6 +163,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     formStatus,
     mode,
     onValuesChange,
+    transform,
     watchers
   } = options
 
@@ -185,6 +193,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   } = formStatus
 
   const onValuesChangeRef = useRef(onValuesChange)
+  const transformRef = useRef(transform)
 
   const getInitialValues = useCallback<UseFormValuesHook<V>['getInitialValues']>(() => {
     return initialValuesRef.current
@@ -222,12 +231,20 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     let nextValues: Partial<V> = partial
       ? valuesRef.current
       : {} as Partial<V>
+    let mutation: PathsOrValues<V> = { ...values }
 
-    const paths = Object.keys(values)
+    if (transformRef.current) {
+      // Pre calculate next values.
+      const allValues = deepExtend({}, valuesRef.current, reconstruct(values))
+      // Apply transformation.
+      mutation = transformRef.current(flatten(values) as PathsAndValues<V>, allValues)
+    }
+
+    const paths = Object.keys(mutation)
 
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i]
-      let value = values[path]
+      let value = mutation[path]
 
       // Replace empty string with null.
       if (nullify && value === '') {
@@ -292,9 +309,11 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
           touchedRef.current = partial ? { ...touchedRef.current } : {}
           nextState.touchedFields = touchedRef.current
         }
+        if (validate) {
+          nextState.needValidation = paths
+        }
         return {
           ...nextState,
-          needValidation: validate ? (Object.keys(values) as FieldPath<V>[]) : s.needValidation,
           submitError: undefined,
           submitted: false,
           values: nextValues
@@ -315,7 +334,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     // Notify watchers of changes.
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i]
-      const value = values[path]
+      const value = mutation[path]
       const previousValue = resolve(path, previousValues)
 
       if (value !== previousValue) {
@@ -437,6 +456,10 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   useEffect(() => {
     onValuesChangeRef.current = onValuesChange
   }, [onValuesChange])
+
+  useEffect(() => {
+    transformRef.current = transform
+  }, [transform])
 
   return {
     clearValues,
