@@ -290,7 +290,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       })
 
       // Force update by replacing keys.
-      if (mode === 'experimental_uncontrolled') {
+      if (mode === 'experimental_uncontrolled' && forceUpdate) {
         replaceKeys()
       }
     }
