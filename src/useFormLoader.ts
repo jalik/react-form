@@ -50,10 +50,10 @@ function useFormLoader<V extends Values, E, R> (options: UseFormLoaderOptions<V,
 
   const load = useCallback(() => {
     if (!loaderRef.current) {
-      return Promise.resolve(undefined)
+      return
     }
     if (state.loading) {
-      return Promise.reject(new Error('Form is already loading'))
+      return
     }
     setState((s) => ({
       ...s,
