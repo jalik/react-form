@@ -742,7 +742,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const handleSetValue = useCallback<UseFormHook<V, E, R>['handleSetValue']>((path, opts) => {
     const { parser } = opts ?? {}
     return (value: unknown | undefined): void => {
-      const parsedValue = typeof value === 'string' && parser ? parser(value) : value
+      const parsedValue = value != null && parser ? parser(String(value)) : value
       setValue(path, parsedValue, { validate: validateOnChange })
     }
   }, [setValue, validateOnChange])
