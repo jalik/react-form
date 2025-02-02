@@ -34,7 +34,7 @@ import useFormValues, {
 } from './useFormValues'
 import useFormLoader, { UseFormLoaderHook, UseFormLoaderOptions } from './useFormLoader'
 import useFormList, { UseFormListHook } from './useFormList'
-import useFormValidation from './useFormValidation'
+import useFormValidation, { UseFormValidationHook } from './useFormValidation'
 import useFormSubmission from './useFormSubmission'
 
 export type FieldElement =
@@ -218,10 +218,8 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
   removeFields: UseFormValuesHook<V>['removeValues'];
   /**
    * Resets all or given fields.
-   * @param paths
-   * @param options
    */
-  reset (paths?: FieldPath<V>[], options?: { forceUpdate?: boolean }): void;
+  reset: UseFormValuesHook<V>['resetValues'];
   /**
    * Resets all errors or for given paths.
    */
@@ -252,18 +250,8 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
   setTouchedFields: UseFormStatusHook<V>['setTouched'];
   /**
    * Sets a single field value.
-   * @param path
-   * @param value
-   * @param options
    */
-  setValue (
-    path: FieldPath<V>,
-    value?: unknown,
-    options?: {
-      forceUpdate?: boolean,
-      validate?: boolean
-    }
-  ): void;
+  setValue: UseFormValuesHook<V>['setValue'];
   /**
    * Sets all or partial fields values.
    * @param values
@@ -280,19 +268,16 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
   submit: DebouncedFunction<R | undefined>;
   /**
    * Calls the validate function with form values.
-   * @param opts
    */
-  validate (opts?: { submitAfter: boolean }): Promise<Errors<E> | undefined>;
+  validate: UseFormValidationHook<V, E, R>['validate'];
   /**
    * Calls the validateField function for a single field value.
-   * @param path
    */
-  validateField (path: FieldPath<V>): Promise<E | null | undefined>;
+  validateField: UseFormValidationHook<V, E, R>['validateField'];
   /**
    * Calls the validate or validateField function for all or given fields.
-   * @param paths
    */
-  validateFields (paths?: FieldPath<V>[]): Promise<Errors<E> | undefined>;
+  validateFields: UseFormValidationHook<V, E, R>['validateFields'];
   /**
    * Enables validation on field change.
    */
@@ -1037,11 +1022,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     initialized: state.initialized,
     initialValues: state.initialValues,
     values: state.values,
+    clear: formValues.clearValues,
     getInitialValue,
     getInitialValues,
     getValue,
     getValues,
     removeFields: formValues.removeValues,
+    reset: formValues.resetValues,
     setInitialValues,
     setValue: formValues.setValue,
     setValues: setFormValues,
@@ -1049,7 +1036,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // global
     disabled: formDisabled,
     mode,
-    clear: formValues.clearValues,
     forceUpdate,
     handleBlur,
     handleChange,
@@ -1058,7 +1044,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     handleSetValue,
     handleSubmit,
     key: getKey,
-    reset: formValues.resetValues,
     validateOnChange,
     validateOnInit,
     validateOnSubmit,
