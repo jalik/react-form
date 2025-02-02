@@ -18,10 +18,14 @@ function test (mode: FormMode) {
         a: 'required',
         b: 'required'
       }, { partial: false }))
-      expect(hook.result.current.errors).toStrictEqual({
-        a: 'required',
-        b: 'required'
-      })
+
+      expect(mode === 'controlled'
+        ? hook.result.current.errors
+        : hook.result.current.getErrors())
+        .toStrictEqual({
+          a: 'required',
+          b: 'required'
+        })
     })
   })
 
@@ -37,11 +41,15 @@ function test (mode: FormMode) {
         b: 'required',
         c: 'required'
       }, { partial: true }))
-      expect(hook.result.current.errors).toStrictEqual({
-        a: 'invalid',
-        b: 'required',
-        c: 'required'
-      })
+
+      expect(mode === 'controlled'
+        ? hook.result.current.errors
+        : hook.result.current.getErrors())
+        .toStrictEqual({
+          a: 'invalid',
+          b: 'required',
+          c: 'required'
+        })
     })
 
     it('should delete errors with null or undefined value', () => {
@@ -57,7 +65,10 @@ function test (mode: FormMode) {
         b: null,
         c: undefined
       }, { partial: true }))
-      expect(hook.result.current.errors).toStrictEqual({
+
+      expect(mode === 'controlled'
+        ? hook.result.current.errors
+        : hook.result.current.getErrors()).toStrictEqual({
         a: 'invalid'
       })
     })

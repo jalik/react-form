@@ -169,7 +169,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
         }
 
         setState((s) => {
-          const nextErrors: Errors<E> = { ...s.errors, ...errors }
+          const nextErrors: Errors<E> = { ...errorsRef.current, ...errors }
           errorsRef.current = nextErrors
           return {
             ...s,

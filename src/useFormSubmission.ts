@@ -146,14 +146,15 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
           submitting: false
         }))
 
+        clearErrors(undefined, { forceUpdate: false })
+        clearModified(undefined, { forceUpdate: false })
+        clearTouched(undefined, { forceUpdate: false })
+
         if (setInitialValuesOnSuccess) {
           setInitialValues(values)
         } else if (clearAfterSubmit) {
           clearValues(undefined, { forceUpdate: true })
         }
-        clearErrors()
-        clearModified(undefined, { forceUpdate: true })
-        clearTouched(undefined, { forceUpdate: true })
 
         if (onSuccess) {
           onSuccess(result, values)

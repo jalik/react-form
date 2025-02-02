@@ -31,11 +31,17 @@ function test (mode: FormMode) {
         mode,
         initialErrors: {
           a: 'invalid',
-          b: 'invalid'
+          b: 'invalid',
+          c: 'invalid'
         }
       }))
-      act(() => hook.result.current.clearErrors())
-      expect(hook.result.current.errors).toStrictEqual({})
+      expect(hook.result.current.getError('a')).toBe('invalid')
+      expect(hook.result.current.getError('b')).toBe('invalid')
+      expect(hook.result.current.getError('c')).toBe('invalid')
+      act(() => hook.result.current.clearErrors(['a', 'c']))
+      expect(hook.result.current.getError('a')).toBe(undefined)
+      expect(hook.result.current.getError('b')).toBe('invalid')
+      expect(hook.result.current.getError('c')).toBe(undefined)
     })
   })
 }

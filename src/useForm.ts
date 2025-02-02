@@ -522,7 +522,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Handle form errors.
   const formErrors = useFormErrors<V, E, R>({
-    formState
+    formState,
+    mode
   })
 
   // Handle form keys.
@@ -657,9 +658,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const clear = useCallback<UseFormHook<V, E, R>['clear']>((fields, opts) => {
     const { forceUpdate = true } = opts ?? {}
     // todo optimize to avoid rerender
-    clearErrors(fields)
-    clearModified(fields, { forceUpdate })
-    clearTouched(fields, { forceUpdate })
+    clearErrors(fields, { forceUpdate: false })
+    clearModified(fields, { forceUpdate: false })
+    clearTouched(fields, { forceUpdate: false })
     clearValues(fields, { forceUpdate })
 
     if (fields) {
@@ -677,9 +678,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   const removeFields = useCallback<UseFormHook<V, E, R>['removeFields']>((fields, opts) => {
     const { forceUpdate } = opts ?? {}
-    removeValues(fields, { forceUpdate })
-    clearErrors(fields)
-    clearModified(fields, { forceUpdate })
+    // todo optimize to avoid rerender
+    removeValues(fields, { forceUpdate: false })
+    clearErrors(fields, { forceUpdate: false })
+    clearModified(fields, { forceUpdate: false })
     clearTouched(fields, { forceUpdate })
   }, [clearErrors, clearModified, clearTouched, removeValues])
 
@@ -758,9 +760,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const reset = useCallback<UseFormHook<V, E, R>['reset']>((fields, opts) => {
     const { forceUpdate = true } = opts ?? {}
     // todo optimize to avoid rerender
-    clearErrors(fields)
-    resetModified(fields, { forceUpdate })
-    resetTouched(fields, { forceUpdate })
+    // todo use resetErrors()
+    clearErrors(fields, { forceUpdate: false })
+    resetModified(fields, { forceUpdate: false })
+    resetTouched(fields, { forceUpdate: false })
     resetValues(fields, { forceUpdate })
 
     if (fields) {
