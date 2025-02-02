@@ -29,9 +29,25 @@ export { default as Form, FormProps } from './components/Form'
 export { default as Option, OptionProps } from './components/Option'
 
 // export hooks
-export { default as useFieldArray, UseFieldArrayOptions } from './useFieldArray'
-export { default as useForm, UseFormOptions, UseFormHook, InitializeFieldFunction } from './useForm'
-export { default as useFormContext, FormContext } from './useFormContext'
+export {
+  default as useFieldArray,
+  UseFieldArrayOptions
+} from './useFieldArray'
+
+export {
+  default as useForm,
+  UseFormOptions,
+  UseFormHook,
+  FieldElement,
+  FormatFunction,
+  InitializeFieldFunction,
+  ParseFunction
+} from './useForm'
+
+export {
+  default as useFormContext,
+  FormContext
+} from './useFormContext'
 
 // export types
 export {

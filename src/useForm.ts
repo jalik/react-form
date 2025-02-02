@@ -57,6 +57,16 @@ export type GetButtonPropsReturnType = {
 
 export type InitializeFieldFunction<V extends Values, E, R> = <C extends ElementType> (path: FieldPath<V>, formState: FormState<V, E, R>) => ComponentProps<C> | undefined
 
+/**
+ * A function that converts a value to a string.
+ */
+export type FormatFunction = (value: unknown) => string
+
+/**
+ * A function that converts a string to a value.
+ */
+export type ParseFunction = (value: string, target?: HTMLElement) => any
+
 export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, R> & {
   /**
    * Clears the form (values, errors...).
@@ -99,9 +109,8 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     path: FieldPath<V>,
     props?: ComponentProps<Component>,
     opts?: {
-      mode?: FormMode;
       format?: ((value: unknown) => string) | null;
-      parser?: (value: string, target?: HTMLElement) => any;
+      parser?: ParseFunction;
     }
   ): any;
   /**
@@ -145,15 +154,25 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * Handles field blur event.
    * @param event
    */
-  handleBlur (event: React.FocusEvent): void;
+  handleBlur (event: React.FocusEvent<FieldElement>): void;
   /**
    * Handles field change event.
    * @param event
    * @param options
    */
-  handleChange (event: React.ChangeEvent, options?: {
-    parser? (value: unknown, target?: HTMLElement): any
-  }): void;
+  handleChange (
+    event: React.ChangeEvent<FieldElement>,
+    options?: { parser?: ParseFunction }
+  ): void;
+  /**
+   * Handles field change automatically by detecting if a value or an event is returned.
+   * @param path
+   * @param options
+   */
+  handleFieldChange (
+    path: FieldPath<V>,
+    options?: { parser?: ParseFunction }
+  ): (valueOrEvent: React.ChangeEvent<FieldElement> | unknown) => void;
   /**
    * Handles form reset event.
    * @param event
@@ -164,9 +183,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * @param path
    * @param options
    */
-  handleSetValue (path: FieldPath<V>, options?: {
-    parser?: (value: unknown) => any
-  }): (value: unknown | undefined) => void;
+  handleSetValue (
+    path: FieldPath<V>,
+    options?: { parser?: ParseFunction }
+  ): (value: unknown | undefined) => void;
   /**
    * Handles form submit event.
    * @param event
@@ -700,7 +720,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [resetValues, validateAndSubmit])
 
-  const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
+  const handleBlur = useCallback<UseFormHook<V, E, R>['handleBlur']>((event): void => {
     const target = event.currentTarget ?? event.target
     const { name } = target
 
@@ -721,10 +741,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [setTouchedField, validateOnTouch, trimOnBlur, setNeedValidation, getValue, setValue])
 
-  const handleChange = useCallback((
-    event: React.ChangeEvent<FieldElement>,
-    opts?: { parser? (value: string, target?: HTMLElement): any }
-  ): void => {
+  const handleChange = useCallback<UseFormHook<V, E, R>['handleChange']>((event, opts): void => {
     const target = event.currentTarget ?? event.target
     const { name } = target
     const value = getFieldValue(target, opts)
@@ -737,16 +754,23 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     resetValues(undefined, { forceUpdate: true })
   }, [resetValues])
 
-  const handleSetValue = useCallback((
-    path: FieldPath<V>,
-    opts?: { parser?: (value: string) => any }
-  ) => {
+  const handleSetValue = useCallback<UseFormHook<V, E, R>['handleSetValue']>((path, opts) => {
     const { parser } = opts ?? {}
     return (value: unknown | undefined): void => {
       const parsedValue = typeof value === 'string' && parser ? parser(value) : value
       setValue(path, parsedValue, { validate: validateOnChange })
     }
   }, [setValue, validateOnChange])
+
+  const handleFieldChange = useCallback<UseFormHook<V, E, R>['handleFieldChange']>((path, opts) => {
+    return (valueOrEvent: React.ChangeEvent<FieldElement> | unknown) => {
+      if (typeof valueOrEvent === 'object' && valueOrEvent != null && 'nativeEvent' in valueOrEvent) {
+        handleChange(valueOrEvent as React.ChangeEvent<FieldElement>, opts)
+      } else {
+        handleSetValue(path, opts)(valueOrEvent)
+      }
+    }
+  }, [handleChange, handleSetValue])
 
   /**
    * Handles form submit.
@@ -795,32 +819,34 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * - Initialized props
    * - Passed props
    */
-  const getFieldProps = useCallback(<Component extends ElementType> (
+  const getFieldProps = useCallback<UseFormHook<V, E, R>['getFieldProps']>(<Component extends ElementType> (
     path: FieldPath<V>,
     props?: ComponentProps<Component>,
     opts: {
-      mode?: FormMode;
-      format?: ((value: unknown) => string) | null;
-      parser?: (value: string, target?: HTMLElement) => any;
+      format?: FormatFunction | null;
+      parser?: ParseFunction;
     } = {}
   ) => {
+    const {
+      format = String,
+      parser
+    } = opts ?? {}
+
     const contextValue = getValue(path)
     const inputValue = props?.value
 
-    const checkedAttribute = (opts.mode ?? mode) === 'controlled'
+    const checkedAttribute = mode === 'controlled'
       ? 'checked'
       : 'defaultChecked'
 
-    const valueAttribute = (opts.mode ?? mode) === 'controlled'
+    const valueAttribute = mode === 'controlled'
       ? 'value'
       : 'defaultValue'
 
     // Set default props.
     const finalProps: any = {
       onBlur: handleBlur,
-      onChange: (event: React.ChangeEvent<FieldElement>) => {
-        handleChange(event, opts)
-      },
+      onChange: handleFieldChange(path, { parser }),
       id: getFieldId(path, formKey),
       ...props,
       name: path
@@ -869,8 +895,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
 
       if (type === 'checkbox' || type === 'radio') {
-        const parsedValue = typeof opts.parser !== 'undefined'
-          ? opts.parser(inputValue)
+        const parsedValue = typeof parser !== 'undefined'
+          ? parser(inputValue)
           : inputValue
 
         if (contextValue instanceof Array) {
@@ -893,12 +919,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     finalProps.disabled = formDisabled || props?.disabled
 
     // For controlled components, replace null by empty string.
-    if ((opts.mode ?? mode) === 'controlled' && finalProps.value == null) {
+    if (mode === 'controlled' && finalProps.value == null) {
       finalProps.value = ''
     }
 
     // Convert value to string.
-    const { format = String } = opts
     if (format != null && typeof finalProps[valueAttribute] !== 'string' &&
       !(finalProps[valueAttribute] instanceof Array)) {
       finalProps[valueAttribute] = finalProps[valueAttribute] != null
@@ -907,7 +932,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     return finalProps
-  }, [formDisabled, formKey, getValue, handleBlur, handleChange, mode, state])
+  }, [formDisabled, formKey, getValue, handleBlur, handleFieldChange, mode, state])
 
   /**
    * Returns form props.
@@ -1028,6 +1053,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     forceUpdate,
     handleBlur,
     handleChange,
+    handleFieldChange,
     handleReset,
     handleSetValue,
     handleSubmit,
