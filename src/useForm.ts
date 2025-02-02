@@ -873,13 +873,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // Set default props.
     const finalProps: any = {
-      ...props,
-      id: getFieldId(path, formKey),
-      name: path,
       onBlur: handleBlur,
       onChange: (event: React.ChangeEvent<FieldElement>) => {
         handleChange(event, opts)
-      }
+      },
+      id: getFieldId(path, formKey),
+      ...props,
+      name: path
     }
 
     if (props?.type !== 'checkbox' && props?.type !== 'radio') {
