@@ -56,7 +56,37 @@ function tests (mode: FormMode) {
     })
   })
 
-  it('should not field as modified when value changes', () => {
+  describe('with nullify', () => {
+    const values = {
+      a: '',
+      b: ''
+    }
+    describe('with nullify = true', () => {
+      it('should replace empty string by null', () => {
+        const hook = renderHook(() => useForm({
+          mode,
+          nullify: true
+        }))
+        act(() => hook.result.current.setValues(values))
+        expect(hook.result.current.getValue('a')).toBe(null)
+        expect(hook.result.current.getValue('b')).toBe(null)
+      })
+    })
+
+    describe('with nullify = false', () => {
+      it('should not replace empty string by null', () => {
+        const hook = renderHook(() => useForm({
+          mode,
+          nullify: false
+        }))
+        act(() => hook.result.current.setValues(values))
+        expect(hook.result.current.getValue('a')).toBe('')
+        expect(hook.result.current.getValue('b')).toBe('')
+      })
+    })
+  })
+
+  it('should not set field as modified when value changes', () => {
     const hook = renderHook(() => useForm({
       mode,
       initialValues: { a: 1 }

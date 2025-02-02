@@ -57,6 +57,17 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
   watchers: MutableRefObject<Observer<any, string>>;
 }
 
+export type SetValuesOptions = {
+  forceUpdate?: boolean;
+  initialize?: boolean;
+  nullify?: boolean;
+  partial: boolean;
+  updateErrors?: boolean;
+  updateModified?: boolean;
+  updateTouched?: boolean;
+  validate?: boolean;
+}
+
 export type UseFormValuesHook<V extends Values> = {
   /**
    * Clears all values (set to undefined) or for given paths.
@@ -120,6 +131,7 @@ export type UseFormValuesHook<V extends Values> = {
     value: any,
     options?: {
       forceUpdate?: boolean;
+      nullify?: boolean;
       updateErrors?: boolean;
       updateModified?: boolean;
       updateTouched?: boolean;
@@ -132,15 +144,8 @@ export type UseFormValuesHook<V extends Values> = {
    */
   setValues (
     values: PathsOrValues<V>,
-    options?: {
-      forceUpdate?: boolean;
-      initialize?: boolean;
-      partial: boolean;
-      updateErrors?: boolean;
-      updateModified?: boolean;
-      updateTouched?: boolean;
-      validate?: boolean;
-    }): void;
+    options?: SetValuesOptions
+  ): void;
 }
 
 function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V, E, R>): UseFormValuesHook<V> {
@@ -203,6 +208,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     const {
       forceUpdate,
       initialize,
+      nullify,
       partial,
       updateErrors = true,
       updateModified = true,
@@ -221,7 +227,13 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i]
-      const value = values[path]
+      let value = values[path]
+
+      // Replace empty string with null.
+      if (nullify && value === '') {
+        value = null
+      }
+
       nextValues = build(path, value, nextValues)
 
       if (!initialize || partial) {

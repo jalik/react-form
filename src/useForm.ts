@@ -24,7 +24,6 @@ import useFormState, {
   Values
 } from './useFormState'
 import {
-  build,
   clone,
   flatten,
   getFieldId,
@@ -37,7 +36,7 @@ import useFormKeys, { UseFormKeysHook } from './useFormKeys'
 import useFormWatch, { UseFormWatchHook } from './useFormWatch'
 import useFormErrors, { UseFormErrorsHook } from './useFormErrors'
 import useFormStatus, { UseFormStatusHook } from './useFormStatus'
-import useFormValues, { UseFormValuesHook } from './useFormValues'
+import useFormValues, { SetValuesOptions, UseFormValuesHook } from './useFormValues'
 import useFormLoader, { UseFormLoaderHook, UseFormLoaderOptions } from './useFormLoader'
 import useFormList, { UseFormListHook } from './useFormList'
 import deepExtend from '@jalik/deep-extend'
@@ -255,14 +254,11 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * Sets all or partial fields values.
    * @param values
    * @param options
+   * todo v6: do not accept callback, to get previous values use getValues()
    */
   setValues (
     values: PathsOrValues<V> | ((previous: V) => V),
-    options?: {
-      forceUpdate?: boolean,
-      partial?: boolean,
-      validate?: boolean
-    }
+    options?: SetValuesOptions
   ): void;
   /**
    * Calls the onSubmit function with form values.
@@ -657,7 +653,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   const setFormValues = useCallback<UseFormHook<V, E, R>['setValues']>((
     values,
-    opts = {}
+    opts
   ) => {
     const {
       forceUpdate = false,
@@ -670,27 +666,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     let mutationOrValues: PathsOrValues<V> = typeof values === 'function'
       ? { ...values(currentValues as any) }
       : { ...values }
-
-    // todo move bloc to useFormValues().setValues()
-    const keys = Object.keys(mutationOrValues)
-    for (let i = 0; i < keys.length; i++) {
-      const path = keys[i]
-      const value = mutationOrValues[path]
-      let nextValue = value
-
-      // Replace empty string with null.
-      if (nullify && value === '') {
-        nextValue = null
-      }
-
-      if (partial) {
-        // fixme ts error
-        // @ts-ignore
-        mutationOrValues[path] = nextValue
-      } else {
-        mutationOrValues = build(path, nextValue, mutationOrValues)
-      }
-    }
 
     // todo move to useFormValues().setValues()
     if (transformRef.current) {
@@ -713,17 +688,17 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     setValues(mutationOrValues, {
-      partial,
       forceUpdate,
+      nullify: opts?.nullify ?? nullify,
+      partial,
       validate
     })
   }, [nullify, setValues, valuesRef])
 
   const setFormValue = useCallback<UseFormHook<V, E, R>['setValue']>((name, value, opts): void => {
     setFormValues({ [name]: value } as PathsAndValues<V>, {
-      forceUpdate: opts?.forceUpdate,
-      partial: true,
-      validate: opts?.validate
+      ...opts,
+      partial: true
     })
   }, [setFormValues])
 
