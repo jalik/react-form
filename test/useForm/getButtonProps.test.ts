@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it, jest } from '@jest/globals'
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import useForm from '../../src/useForm'
 import { FormMode } from '../../src'
 
@@ -52,16 +52,16 @@ function tests (mode: FormMode) {
       expect(typeof props.onClick === 'function').toBe(true)
     })
 
-    // fixme this test fails
-    // it('should submit form on click', () => {
-    //   expect(hook.result.current.submitting).toBe(false)
-    //   act(() => {
-    //     // @ts-expect-error onClick may not be defined
-    //     props.onClick()
-    //   })
-    //   expect(callback).toHaveBeenCalledTimes(1)
-    //   expect(hook.result.current.submitting).toBe(true)
-    // })
+    it('should submit form on click', async () => {
+      expect(hook.result.current.submitting).toBe(false)
+      act(() => {
+        // @ts-expect-error onClick may not be defined
+        props.onClick()
+      })
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledTimes(1)
+      })
+    })
   })
 
   describe('with form disabled = true', () => {
