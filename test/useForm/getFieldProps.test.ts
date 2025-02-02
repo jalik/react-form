@@ -93,6 +93,29 @@ function tests (mode: FormMode) {
       })
     })
   })
+
+  describe('with form disabled = true', () => {
+    it('should be disabled', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        disabled: true
+      }))
+      const props = hook.result.current.getFieldProps('test')
+      expect(props.disabled).toBe(true)
+    })
+  })
+
+  describe('with form disabled = false', () => {
+    it('should not be disabled', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues: {},
+        disabled: false
+      }))
+      const props = hook.result.current.getFieldProps('test')
+      expect(props.disabled).toBeFalsy()
+    })
+  })
 }
 
 describe('useForm({ mode: "controlled" }).getFieldProps()', () => {

@@ -63,6 +63,29 @@ function tests (mode: FormMode) {
     //   expect(hook.result.current.submitting).toBe(true)
     // })
   })
+
+  describe('with form disabled = true', () => {
+    it('should be disabled', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        disabled: true
+      }))
+      const props = hook.result.current.getButtonProps()
+      expect(props.disabled).toBe(true)
+    })
+  })
+
+  describe('with form disabled = false', () => {
+    it('should not be disabled', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues: {},
+        disabled: false
+      }))
+      const props = hook.result.current.getButtonProps()
+      expect(props.disabled).toBeFalsy()
+    })
+  })
 }
 
 describe('useForm({ mode: "controlled" }).getButtonProps()', () => {
