@@ -19,7 +19,6 @@ import useFormState, {
   FormMode,
   FormState,
   ModifiedFields,
-  PathsAndValues,
   PathsOrValues,
   Values
 } from './useFormState'
@@ -540,6 +539,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     formState,
     formStatus,
     mode,
+    nullify,
     onValuesChange,
     reinitialize,
     transform,
@@ -626,6 +626,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getValues,
     resetValues,
     setInitialValues,
+    setValue,
     setValues
   } = formValues
 
@@ -669,13 +670,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       validate
     })
   }, [nullify, setValues, valuesRef])
-
-  const setFormValue = useCallback<UseFormHook<V, E, R>['setValue']>((name, value, opts): void => {
-    setFormValues({ [name]: value } as PathsAndValues<V>, {
-      ...opts,
-      partial: true
-    })
-  }, [setFormValues])
 
   const validateAndSubmit = useCallback(async (): Promise<R | undefined> => {
     if (!validateOnSubmit || state.validated) {
@@ -722,10 +716,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       if (typeof value === 'string') {
         // Remove extra spaces.
         value = value.trim()
-        setFormValue(name, value, { validate: validateOnTouch })
+        setValue(name, value, { validate: validateOnTouch })
       }
     }
-  }, [getValue, setFormValue, setTouchedField, setNeedValidation, trimOnBlur, validateOnTouch])
+  }, [setTouchedField, validateOnTouch, trimOnBlur, setNeedValidation, getValue, setValue])
 
   const handleChange = useCallback((
     event: React.ChangeEvent<FieldElement>,
@@ -734,8 +728,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const target = event.currentTarget ?? event.target
     const { name } = target
     const value = getFieldValue(target, opts)
-    setFormValue(name, value, { validate: validateOnChange })
-  }, [setFormValue, validateOnChange])
+    setValue(name, value, { validate: validateOnChange })
+  }, [setValue, validateOnChange])
 
   const handleReset = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -745,13 +739,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   const handleSetValue = useCallback((
     path: FieldPath<V>,
-    opts?: { parser?: (value: unknown) => any }
+    opts?: { parser?: (value: string) => any }
   ) => {
+    const { parser } = opts ?? {}
     return (value: unknown | undefined): void => {
-      const val = opts?.parser ? opts?.parser(value) : value
-      setFormValue(path, val)
+      const parsedValue = typeof value === 'string' && parser ? parser(value) : value
+      setValue(path, parsedValue) // fixme { validate: validateOnChange }
     }
-  }, [setFormValue])
+  }, [setValue])
 
   /**
    * Handles form submit.
@@ -1023,7 +1018,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getValues,
     removeFields: formValues.removeValues,
     setInitialValues,
-    setValue: setFormValue,
+    setValue: formValues.setValue,
     setValues: setFormValues,
 
     // global

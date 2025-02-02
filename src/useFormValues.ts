@@ -44,6 +44,10 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
    */
   mode: FormMode;
   /**
+   * Replaces empty string by null when setting values.
+   */
+  nullify?: boolean;
+  /**
    * Executes a callback when values changed.
    * @param values
    */
@@ -217,7 +221,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     const {
       forceUpdate,
       initialize,
-      nullify,
+      nullify = options.nullify,
       partial,
       updateErrors = true,
       updateModified = true,
@@ -348,7 +352,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
         watchers.current.emit(inputChangeEvent(path), status)
       }
     }
-  }, [errorsRef, getInitialValue, initialValuesRef, initializedRef, isTouched, mode, modifiedRef, replaceKeys, setState, touchedRef, valuesRef, watchers])
+  }, [errorsRef, getInitialValue, initialValuesRef, initializedRef, isTouched, mode, modifiedRef, options.nullify, replaceKeys, setState, touchedRef, valuesRef, watchers])
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
     const currentValue = getValue(path)
