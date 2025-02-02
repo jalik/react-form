@@ -196,14 +196,6 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   load: UseFormLoaderHook['load'];
   /**
-   * The loading error.
-   */
-  loadError?: Error;
-  /**
-   * Tells if the form is loading.
-   */
-  loading: boolean;
-  /**
    * The form mode (controlled/uncontrolled).
    */
   mode: FormMode;
