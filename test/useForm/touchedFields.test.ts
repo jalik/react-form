@@ -6,7 +6,7 @@
 import { describe, expect, it } from '@jest/globals'
 import { renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
-import { FormMode } from '../../src/useFormState'
+import { FormMode } from '../../src'
 
 function test (mode: FormMode) {
   it('should return touched fields if the form was touched', () => {

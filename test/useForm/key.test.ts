@@ -6,7 +6,7 @@
 import { describe, expect, it } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
-import { FormMode } from '../../src/useFormState'
+import { FormMode } from '../../src'
 
 function tests (mode: FormMode) {
   it('should not return null or undefined if the field is not declared', () => {

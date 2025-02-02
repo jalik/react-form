@@ -6,7 +6,7 @@
 import useForm from '../../src/useForm'
 import { describe, expect, it, jest } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
-import { FormMode } from '../../src/useFormState'
+import { FormMode } from '../../src'
 
 async function onSubmit (values: Record<string, unknown>) {
   return {

@@ -6,7 +6,7 @@
 import useForm from '../../src/useForm'
 import { describe, expect, it } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
-import { FormMode } from '../../src/useFormState'
+import { FormMode } from '../../src'
 
 function test (mode: FormMode) {
   describe('without arguments', () => {

@@ -7,7 +7,7 @@ import { describe, expect, it } from '@jest/globals'
 import { renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
 import { ComponentProps } from 'react'
-import { FormMode } from '../../src/useFormState'
+import { FormMode } from '../../src'
 
 function tests (mode: FormMode) {
   describe('without custom props', () => {

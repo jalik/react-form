@@ -6,7 +6,7 @@
 import { describe, expect, it } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
-import { FormMode, Values } from '../../src/useFormState'
+import { FormMode, Values } from '../../src'
 
 function tests (mode: FormMode) {
   it('should set field error', () => {
