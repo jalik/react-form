@@ -39,6 +39,24 @@ export type UseFormErrorsHook<V extends Errors, E> = {
    */
   getErrors (): Errors<E>;
   /**
+   * Returns the initial error of a field.
+   */
+  getInitialError (path: FieldPath<V>): E | undefined;
+  /**
+   * Returns the initial errors.
+   */
+  getInitialErrors (): Errors<E>;
+  /**
+   * Restores all initial errors or only for given paths.
+   * @param paths
+   * @param options
+   */
+  resetErrors (
+    paths?: FieldPath<V>[],
+    options?: {
+      forceUpdate?: boolean
+    }): void;
+  /**
    * Sets the error of a path.
    * @param path
    * @param error
@@ -103,6 +121,14 @@ function useFormErrors<V extends Errors, E, R> (options: UseFormErrorsOptions<V,
     errorsRef.current
   ), [errorsRef])
 
+  const getInitialErrors = useCallback<UseFormErrorsHook<V, E>['getInitialErrors']>(() => {
+    return state.initialErrors
+  }, [state.initialErrors])
+
+  const getInitialError = useCallback<UseFormErrorsHook<V, E>['getInitialError']>((path: FieldPath<V>) => {
+    return resolve(path, getInitialErrors())
+  }, [getInitialErrors])
+
   const setErrors = useCallback<UseFormErrorsHook<V, E>['setErrors']>((
     errors,
     opts?
@@ -148,10 +174,34 @@ function useFormErrors<V extends Errors, E, R> (options: UseFormErrorsOptions<V,
     })
   }, [setErrors])
 
+  const resetErrors = useCallback<UseFormErrorsHook<V, E>['resetErrors']>((paths, opts) => {
+    if (paths) {
+      const nextErrors = {} as Errors<E>
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
+        nextErrors[path] = getInitialError(path)
+      }
+      setErrors(nextErrors, {
+        forceUpdate: true,
+        ...opts,
+        partial: true
+      })
+    } else {
+      setErrors(getInitialErrors() ?? {}, {
+        forceUpdate: true,
+        ...opts,
+        partial: false
+      })
+    }
+  }, [getInitialError, getInitialErrors, setErrors])
+
   return {
     clearErrors,
     getError,
     getErrors,
+    getInitialError,
+    getInitialErrors,
+    resetErrors,
     setError,
     setErrors
   }

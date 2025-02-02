@@ -117,6 +117,14 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   getFormProps (props?: ComponentProps<'form'>): ComponentProps<'form'>;
   /**
+   * Returns field's initial error.
+   */
+  getInitialError: UseFormErrorsHook<V, E>['getInitialError'];
+  /**
+   * Returns initial errors.
+   */
+  getInitialErrors: UseFormErrorsHook<V, E>['getInitialErrors'];
+  /**
    * Returns field's initial value.
    */
   getInitialValue: UseFormValuesHook<V>['getInitialValue'];
@@ -209,6 +217,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * @param options
    */
   reset (paths?: FieldPath<V>[], options?: { forceUpdate?: boolean }): void;
+  /**
+   * Resets all errors or for given paths.
+   */
+  resetErrors: UseFormErrorsHook<V, E>['resetErrors'];
   /**
    * Resets touched state of given fields or all fields.
    */
@@ -515,7 +527,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   })
   const {
     initializedRef,
-    setState,
     state,
     valuesRef
   } = formState
@@ -542,6 +553,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Handle form values.
   const formValues = useFormValues<V, E, R>({
+    formErrors,
     formKeys,
     formState,
     formStatus,
@@ -604,13 +616,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   } = formKeys
 
   const {
-    clearModified,
     clearTouched,
     getModified,
     getTouched,
     isModified,
     isTouched,
-    resetModified,
     resetTouched,
     setTouchedField,
     setTouched
@@ -626,12 +636,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   } = formValidation
 
   const {
-    clearValues,
     getInitialValues,
     getInitialValue,
     getValue,
     getValues,
-    removeValues,
     resetValues,
     setInitialValues,
     setValues
@@ -654,36 +662,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const forceUpdate = useCallback<UseFormHook<V, E, R>['forceUpdate']>(() => {
     replaceKeys()
   }, [replaceKeys])
-
-  const clear = useCallback<UseFormHook<V, E, R>['clear']>((fields, opts) => {
-    const { forceUpdate = true } = opts ?? {}
-    // todo optimize to avoid rerender
-    clearErrors(fields, { forceUpdate: false })
-    clearModified(fields, { forceUpdate: false })
-    clearTouched(fields, { forceUpdate: false })
-    clearValues(fields, { forceUpdate })
-
-    if (fields) {
-      setState((s) => ({
-        ...s,
-        submitCount: 0,
-        submitError: undefined,
-        submitResult: undefined,
-        submitted: false,
-        validateError: undefined,
-        validated: false
-      }))
-    }
-  }, [clearErrors, clearModified, clearTouched, clearValues, setState])
-
-  const removeFields = useCallback<UseFormHook<V, E, R>['removeFields']>((fields, opts) => {
-    const { forceUpdate } = opts ?? {}
-    // todo optimize to avoid rerender
-    removeValues(fields, { forceUpdate: false })
-    clearErrors(fields, { forceUpdate: false })
-    clearModified(fields, { forceUpdate: false })
-    clearTouched(fields, { forceUpdate })
-  }, [clearErrors, clearModified, clearTouched, removeValues])
 
   const setFormValues = useCallback<UseFormHook<V, E, R>['setValues']>((
     values,
@@ -757,26 +735,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     })
   }, [setFormValues])
 
-  const reset = useCallback<UseFormHook<V, E, R>['reset']>((fields, opts) => {
-    const { forceUpdate = true } = opts ?? {}
-    // todo optimize to avoid rerender
-    // todo use resetErrors()
-    clearErrors(fields, { forceUpdate: false })
-    resetModified(fields, { forceUpdate: false })
-    resetTouched(fields, { forceUpdate: false })
-    resetValues(fields, { forceUpdate })
-
-    if (fields) {
-      setState((s) => ({
-        ...s,
-        submitError: undefined,
-        submitted: false,
-        validateError: undefined,
-        validated: false
-      }))
-    }
-  }, [clearErrors, resetModified, resetTouched, resetValues, setState])
-
   const validateAndSubmit = useCallback(async (): Promise<R | undefined> => {
     if (!validateOnSubmit || state.validated) {
       return submit()
@@ -802,9 +760,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     } else if (target.type === 'submit') {
       validateAndSubmit()
     } else if (target.type === 'reset') {
-      reset()
+      resetValues(undefined, { forceUpdate: true })
     }
-  }, [reset, validateAndSubmit])
+  }, [resetValues, validateAndSubmit])
 
   const handleBlur = useCallback((event: React.FocusEvent<FieldElement>): void => {
     const target = event.currentTarget ?? event.target
@@ -841,8 +799,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const handleReset = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
     event.stopPropagation()
-    reset()
-  }, [reset])
+    resetValues(undefined, { forceUpdate: true })
+  }, [resetValues])
 
   const handleSetValue = useCallback((
     path: FieldPath<V>,
@@ -888,11 +846,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
     } else if (type === 'reset') {
       result.onClick = () => {
-        reset()
+        resetValues(undefined, { forceUpdate: true })
       }
     }
     return result
-  }, [formDisabled, state.modified, mode, handleButtonClick, validateAndSubmit, reset])
+  }, [formDisabled, state.modified, mode, handleButtonClick, validateAndSubmit, resetValues])
 
   /**
    * Returns props of a field.
@@ -1049,7 +1007,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     clearErrors,
     getError,
     getErrors,
-    // todo return resetErrors()
+    getInitialError: formErrors.getInitialError,
+    getInitialErrors: formErrors.getInitialErrors,
+    resetErrors: formErrors.resetErrors,
     setError,
     setErrors,
 
@@ -1118,7 +1078,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getInitialValues,
     getValue,
     getValues,
-    removeFields,
+    removeFields: formValues.removeValues,
     setInitialValues,
     setValue: setFormValue,
     setValues: setFormValues,
@@ -1126,7 +1086,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // global
     disabled: formDisabled,
     mode,
-    clear,
+    clear: formValues.clearValues,
     forceUpdate,
     handleBlur,
     handleChange,
@@ -1134,7 +1094,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     handleSetValue,
     handleSubmit,
     key: getKey,
-    reset,
+    reset: formValues.resetValues,
     validateOnChange,
     validateOnInit,
     validateOnSubmit,

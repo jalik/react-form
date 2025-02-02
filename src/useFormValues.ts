@@ -19,12 +19,17 @@ import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
 import { Observer } from '@jalik/observer'
 import { FieldStatus, inputChangeEvent } from './useFormWatch'
+import { UseFormErrorsHook } from './useFormErrors'
 
 export type UseFormValuesOptions<V extends Values, E, R> = {
   /**
    * The form keys hook.
    */
   formKeys: UseFormKeysHook<V>;
+  /**
+   * The form errors hook.
+   */
+  formErrors: UseFormErrorsHook<V, E>;
   /**
    * The form state hook.
    */
@@ -140,6 +145,7 @@ export type UseFormValuesHook<V extends Values> = {
 
 function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V, E, R>): UseFormValuesHook<V> {
   const {
+    formErrors,
     formKeys,
     formState,
     formStatus,
@@ -149,6 +155,11 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   } = options
 
   const { replaceKeys } = formKeys
+
+  const {
+    clearErrors,
+    resetErrors
+  } = formErrors
 
   const {
     errorsRef,
@@ -161,6 +172,10 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   } = formState
 
   const {
+    clearModified,
+    clearTouched,
+    resetModified,
+    resetTouched,
     isTouched
   } = formStatus
 
@@ -311,6 +326,10 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   }, [getValue, setValues])
 
   const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
+    clearErrors(paths, { forceUpdate: false })
+    clearModified(paths, { forceUpdate: false })
+    clearTouched(paths, { forceUpdate: false })
+
     const nextValues = {} as PathsAndValues<V>
 
     if (paths) {
@@ -318,13 +337,25 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
         nextValues[paths[i]] = undefined
       }
     }
-
     setValues(nextValues, {
       forceUpdate: true,
+      updateErrors: false,
+      updateModified: false,
+      updateTouched: false,
       ...opts,
       partial: paths != null
     })
-  }, [setValues])
+    // todo optimize to avoid rerender
+    setState((s) => ({
+      ...s,
+      submitCount: 0,
+      submitError: undefined,
+      submitResult: undefined,
+      submitted: false,
+      validateError: undefined,
+      validated: false
+    }))
+  }, [clearErrors, clearModified, clearTouched, setState, setValues])
 
   const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
     setValues(values, {
@@ -336,32 +367,55 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   }, [setValues])
 
   const removeValues = useCallback<UseFormValuesHook<V>['removeValues']>((paths, opts) => {
-    clearValues(paths, {
-      ...opts,
-      initialize: true
-    })
-  }, [clearValues])
+    let nextInitialValues = clone(initialValuesRef.current)
+
+    if (paths) {
+      for (let i = 0; i < paths.length; i++) {
+        nextInitialValues = build(paths[i], undefined, nextInitialValues)
+      }
+    }
+    initialValuesRef.current = nextInitialValues
+    clearErrors(paths, { forceUpdate: false })
+    clearModified(paths, { forceUpdate: false })
+    clearTouched(paths, { forceUpdate: false })
+    clearValues(paths, { ...opts })
+  }, [clearErrors, clearModified, clearTouched, clearValues, initialValuesRef])
 
   const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
+    resetErrors(paths, { forceUpdate: false })
+    resetModified(paths, { forceUpdate: false })
+    resetTouched(paths, { forceUpdate: false })
+
+    let nextValues: PathsOrValues<V>
+
     if (paths) {
-      const nextValues = {} as PathsAndValues<V>
+      const record = {} as PathsAndValues<V>
       for (let i = 0; i < paths.length; i++) {
         const path = paths[i]
-        nextValues[path] = getInitialValue(path)
+        record[path] = getInitialValue(path)
       }
-      setValues(nextValues, {
-        forceUpdate: true,
-        ...opts,
-        partial: true
-      })
+      nextValues = record
     } else {
-      setValues(getInitialValues() ?? {}, {
-        forceUpdate: true,
-        ...opts,
-        partial: false
-      })
+      nextValues = getInitialValues() ?? {}
     }
-  }, [getInitialValue, getInitialValues, setValues])
+    setValues(nextValues, {
+      forceUpdate: true,
+      updateErrors: false,
+      updateModified: false,
+      updateTouched: false,
+      ...opts,
+      partial: paths != null
+    })
+    // todo optimize to avoid rerender
+    setState((s) => ({
+      ...s,
+      needValidation: false,
+      submitError: undefined,
+      submitted: false,
+      validateError: undefined,
+      validated: false
+    }))
+  }, [getInitialValue, getInitialValues, resetErrors, resetModified, resetTouched, setState, setValues])
 
   useEffect(() => {
     onValuesChangeRef.current = onValuesChange
