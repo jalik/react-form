@@ -623,6 +623,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   } = formSubmission
 
   const {
+    setNeedValidation,
     validate
   } = formValidation
 
@@ -763,7 +764,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     if (validateOnTouch) {
       // fixme cause infinite rerender
-      // setNeedValidation([name])
+      setNeedValidation([name])
     }
 
     if (trimOnBlur) {
@@ -775,7 +776,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         setFormValue(name, value, { validate: validateOnTouch })
       }
     }
-  }, [trimOnBlur, setTouchedField, validateOnTouch, getValue, setFormValue])
+  }, [getValue, setFormValue, setTouchedField, setNeedValidation, trimOnBlur, validateOnTouch])
 
   const handleChange = useCallback((
     event: React.ChangeEvent<FieldElement>,

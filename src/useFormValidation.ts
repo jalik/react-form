@@ -173,6 +173,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
           errorsRef.current = nextErrors
           return {
             ...s,
+            needValidation: false,
             errors: nextErrors,
             validated: !hasDefinedValues(nextErrors),
             validating: false
@@ -183,6 +184,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
       .catch((error) => {
         setState((s) => ({
           ...s,
+          needValidation: false,
           validateError: error,
           validated: false,
           validating: false
@@ -250,7 +252,6 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
   }, [validateFieldFunc])
 
   useEffect(() => {
-    // fixme needValidation is running in loop
     if (state.needValidation === true) {
       validate()
     } else if (state.needValidation instanceof Array && state.needValidation.length > 0) {
