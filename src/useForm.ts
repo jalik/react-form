@@ -744,9 +744,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const { parser } = opts ?? {}
     return (value: unknown | undefined): void => {
       const parsedValue = typeof value === 'string' && parser ? parser(value) : value
-      setValue(path, parsedValue) // fixme { validate: validateOnChange }
+      setValue(path, parsedValue, { validate: validateOnChange })
     }
-  }, [setValue])
+  }, [setValue, validateOnChange])
 
   /**
    * Handles form submit.
