@@ -65,7 +65,7 @@ export type FormatFunction = (value: unknown) => string
 /**
  * A function that converts a string to a value.
  */
-export type ParseFunction = (value: string, target?: HTMLElement) => any
+export type ParseFunction = (value: unknown, target?: HTMLElement) => any
 
 export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, R> & {
   /**
