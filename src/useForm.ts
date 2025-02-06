@@ -111,6 +111,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     opts?: {
       format?: FormatFunction | null;
       parser?: ParseFunction;
+      setValueOptions?: Partial<SetValuesOptions>;
     }
   ): any;
   /**
@@ -162,7 +163,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   handleChange (
     event: React.ChangeEvent<FieldElement>,
-    options?: { parser?: ParseFunction }
+    options?: {
+      parser?: ParseFunction;
+      setValueOptions?: Partial<SetValuesOptions>;
+    }
   ): void;
   /**
    * Handles field change automatically by detecting if a value or an event is returned.
@@ -171,7 +175,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   handleFieldChange (
     path: FieldPath<V>,
-    options?: { parser?: ParseFunction }
+    options?: {
+      parser?: ParseFunction;
+      setValueOptions?: Partial<SetValuesOptions>;
+    }
   ): (valueOrEvent: React.ChangeEvent<FieldElement> | unknown) => void;
   /**
    * Handles form reset event.
@@ -185,7 +192,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   handleSetValue (
     path: FieldPath<V>,
-    options?: { parser?: ParseFunction }
+    options?: {
+      parser?: ParseFunction;
+      setValueOptions?: Partial<SetValuesOptions>;
+    }
   ): (value: unknown | undefined) => void;
   /**
    * Handles form submit event.
@@ -727,10 +737,17 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [setTouchedField, validateOnTouch, trimOnBlur, setNeedValidation, getValue, setValue])
 
   const handleChange = useCallback<UseFormHook<V, E, R>['handleChange']>((event, opts): void => {
+    const { setValueOptions } = opts ?? {}
     const target = event.currentTarget ?? event.target
     const { name } = target
-    const value = getFieldValue(target, opts)
-    setValue(name, value, { validate: validateOnChange })
+
+    // Get parsed value from field.
+    const parsedValue = getFieldValue(target, opts)
+
+    setValue(name, parsedValue, {
+      validate: validateOnChange,
+      ...setValueOptions
+    })
   }, [setValue, validateOnChange])
 
   const handleReset = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
@@ -740,10 +757,17 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [resetValues])
 
   const handleSetValue = useCallback<UseFormHook<V, E, R>['handleSetValue']>((path, opts) => {
-    const { parser } = opts ?? {}
-    return (value: unknown | undefined): void => {
-      const parsedValue = value != null && parser ? parser(String(value)) : value
-      setValue(path, parsedValue, { validate: validateOnChange })
+    const {
+      setValueOptions,
+      parser
+    } = opts ?? {}
+
+    return (value) => {
+      const parsedValue = value != null && parser ? parser(value) : value
+      setValue(path, parsedValue, {
+        validate: validateOnChange,
+        ...setValueOptions
+      })
     }
   }, [setValue, validateOnChange])
 
@@ -810,11 +834,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     opts: {
       format?: FormatFunction | null;
       parser?: ParseFunction;
+      setValueOptions?: Partial<SetValuesOptions>;
     } = {}
   ) => {
     const {
       format = String,
-      parser
+      parser,
+      setValueOptions
     } = opts ?? {}
 
     const contextValue = getValue(path)
@@ -831,7 +857,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // Set default props.
     const finalProps: any = {
       onBlur: handleBlur,
-      onChange: handleFieldChange(path, { parser }),
+      onChange: handleFieldChange(path, {
+        parser,
+        setValueOptions
+      }),
       id: getFieldId(path, formKey),
       ...props,
       name: path
