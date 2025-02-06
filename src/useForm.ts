@@ -509,7 +509,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [mode])
 
   // Generate a unique ID for the form.
-  const [formKey] = useState(randomKey(10))
+  const [formKey] = useState(() => randomKey(10))
 
   const formState = useFormState<V, E, R>({
     debug,
