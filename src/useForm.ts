@@ -909,16 +909,15 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
 
       if (type === 'checkbox' || type === 'radio') {
-        const parsedValue = typeof parser !== 'undefined'
-          ? parser(inputValue)
-          : inputValue
+        const parsedValue = inputValue != null && parser ? parser(inputValue) : inputValue
 
         if (contextValue instanceof Array) {
+          // Set checked state by looking for checkbox value in the array.
           finalProps[checkedAttribute] = contextValue.indexOf(parsedValue) !== -1
           // Remove required attribute on multiple fields.
           finalProps.required = false
         } else {
-          // Get checked state from checkbox without value
+          // Set checked state from checkbox without value
           // or by comparing checkbox value and context value.
           finalProps[checkedAttribute] = type === 'checkbox' &&
           (inputValue == null || inputValue === '') &&
