@@ -109,7 +109,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     path: FieldPath<V>,
     props?: ComponentProps<Component>,
     opts?: {
-      format?: ((value: unknown) => string) | null;
+      format?: FormatFunction | null;
       parser?: ParseFunction;
     }
   ): any;

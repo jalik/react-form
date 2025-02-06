@@ -16,6 +16,7 @@ import {
 import { FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
 import Option from './Option'
+import { FormatFunction } from '../useForm'
 
 export type FieldProps<T = string, C extends ElementType = any> =
   ComponentPropsWithoutRef<C>
@@ -40,7 +41,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
    * The format function to call before displaying the value.
    * @param value
    */
-  formatter?: ((value: unknown) => string) | null;
+  formatter?: FormatFunction | null;
   /**
    * The name of the field.
    */
