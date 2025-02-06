@@ -16,7 +16,7 @@ import {
 import { FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
 import Option from './Option'
-import { FormatFunction } from '../useForm'
+import { FormatFunction, ParseFunction } from '../useForm'
 
 export type FieldProps<T = string, C extends ElementType = any> =
   ComponentPropsWithoutRef<C>
@@ -55,7 +55,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
    * @param value
    * @param target
    */
-  parser? (value: string, target?: HTMLElement): T;
+  parser?: ParseFunction<T>;
   /**
    * Makes the field mandatory.
    */
