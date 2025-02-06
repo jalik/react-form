@@ -4,16 +4,13 @@
  */
 
 import {
-  ChangeEvent,
   ComponentPropsWithoutRef,
   ElementType,
   HTMLInputTypeAttribute,
   OptionHTMLAttributes,
   ReactElement,
-  useCallback,
   useMemo
 } from 'react'
-import { FieldElement } from '../useForm'
 import useFormContext from '../useFormContext'
 import Option from './Option'
 import { FormatFunction, ParseFunction } from '../useForm'
@@ -90,20 +87,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
   } = props
 
   const form = useFormContext()
-  const {
-    getFieldProps,
-    handleChange
-  } = form
-
-  // Check incompatible attributes
-  if (onChange && parser) {
-    // eslint-disable-next-line no-console
-    console.warn(`${name}: attributes "parser" and "onChange" cannot be set together`)
-  }
-
-  const handleFieldChange = useCallback((event: ChangeEvent<FieldElement>) => {
-    handleChange(event, { parser })
-  }, [handleChange, parser])
+  const { getFieldProps } = form
 
   const finalProps = useMemo(() => {
     return getFieldProps(name,
@@ -113,17 +97,16 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
         id,
         multiple,
         onBlur,
-        onChange: onChange ?? handleFieldChange,
+        onChange,
         required,
         type
       },
-      // Pass parser so we can compare form value and field value.
       {
         format: formatter,
         parser
       }
     )
-  }, [disabled, formatter, getFieldProps, handleFieldChange, id, multiple, name, onBlur, onChange, others, parser, required, type])
+  }, [disabled, formatter, getFieldProps, id, multiple, name, onBlur, onChange, others, parser, required, type])
 
   const finalOptions: OptionHTMLAttributes<HTMLOptionElement>[] = useMemo(() => {
     const list: OptionHTMLAttributes<HTMLOptionElement>[] = options ? [...options] : []
