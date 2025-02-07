@@ -931,11 +931,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // Set disabled depending on form state or field state.
     finalProps.disabled = formDisabled || props?.disabled
 
-    // For controlled components, replace null by empty string.
-    if (mode === 'controlled' && finalProps.value == null) {
-      finalProps.value = ''
-    }
-
     // Convert value to string.
     if (format != null && typeof finalProps[valueAttribute] !== 'string' &&
       !(finalProps[valueAttribute] instanceof Array)) {
