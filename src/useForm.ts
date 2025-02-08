@@ -390,6 +390,10 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   onValuesChange? (values: Partial<V>, previousValues: Partial<V>): void;
   /**
+   * Prevents native action when form is submitted.
+   */
+  preventDefaultOnSubmit?: boolean;
+  /**
    * Resets form with initial values whenever they change.
    */
   reinitialize?: boolean;
@@ -481,6 +485,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     onSubmit,
     onSubmitted,
     onValuesChange,
+    preventDefaultOnSubmit = true,
     // todo add tests for reinitialize
     reinitialize = false,
     // todo add tests for setInitialValuesOnSuccess
@@ -787,11 +792,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
     if (submitRef.current != null) {
-      event.preventDefault()
-      event.stopPropagation()
+      if (preventDefaultOnSubmit) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
       validateAndSubmit()
     }
-  }, [submitRef, validateAndSubmit])
+  }, [preventDefaultOnSubmit, submitRef, validateAndSubmit])
 
   /**
    * Returns button props.
