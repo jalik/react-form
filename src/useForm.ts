@@ -809,17 +809,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     if (props.onClick != null) {
       result.onClick = handleButtonClick(props.onClick)
-    } else if (type === 'submit') {
-      result.onClick = () => {
-        validateAndSubmit()
-      }
-    } else if (type === 'reset') {
-      result.onClick = () => {
-        resetValues(undefined, { forceUpdate: true })
-      }
     }
     return result
-  }, [formDisabled, state.modified, mode, handleButtonClick, validateAndSubmit, resetValues])
+  }, [formDisabled, state.modified, mode, handleButtonClick])
 
   /**
    * Returns props of a field.
