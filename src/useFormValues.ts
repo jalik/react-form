@@ -367,10 +367,6 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   }, [getValue, setValues])
 
   const clearValues = useCallback<UseFormValuesHook<V>['clearValues']>((paths, opts) => {
-    clearErrors(paths, { forceUpdate: false })
-    clearModified(paths, { forceUpdate: false })
-    clearTouched(paths, { forceUpdate: false })
-
     const nextValues = {} as PathsAndValues<V>
 
     if (paths) {
@@ -386,6 +382,12 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       ...opts,
       partial: paths != null
     })
+
+    // Clear linked states after values.
+    clearErrors(paths, { forceUpdate: true })
+    clearModified(paths, { forceUpdate: true })
+    clearTouched(paths, { forceUpdate: true })
+
     // todo optimize to avoid rerender
     setState((s) => ({
       ...s,
@@ -423,10 +425,6 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   }, [clearErrors, clearModified, clearTouched, clearValues, initialValuesRef])
 
   const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
-    resetErrors(paths, { forceUpdate: false })
-    resetModified(paths, { forceUpdate: false })
-    resetTouched(paths, { forceUpdate: false })
-
     let nextValues: PathsOrValues<V>
 
     if (paths) {
@@ -447,6 +445,12 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       ...opts,
       partial: paths != null
     })
+
+    // Reset linked states after values.
+    resetErrors(paths, { forceUpdate: true })
+    resetModified(paths, { forceUpdate: true })
+    resetTouched(paths, { forceUpdate: true })
+
     // todo optimize to avoid rerender
     setState((s) => ({
       ...s,

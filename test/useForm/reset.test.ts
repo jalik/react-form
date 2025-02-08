@@ -39,10 +39,13 @@ function tests (mode: FormMode) {
         initialErrors
       }))
       expect(hook.result.current.getErrors()).toStrictEqual(initialErrors)
-      act(() => hook.result.current.setErrors({ b: null }))
+      expect(hook.result.current.errors).toStrictEqual(initialErrors)
+      act(() => hook.result.current.setErrors({ b: null }, { forceUpdate: true }))
       expect(hook.result.current.getErrors()).not.toStrictEqual(initialErrors)
+      expect(hook.result.current.errors).not.toStrictEqual(initialErrors)
       act(() => hook.result.current.reset())
       expect(hook.result.current.getErrors()).toStrictEqual(initialErrors)
+      expect(hook.result.current.errors).toStrictEqual(initialErrors)
     })
 
     it('should reset all modified states', () => {
@@ -56,10 +59,16 @@ function tests (mode: FormMode) {
         initialModified
       }))
       expect(hook.result.current.getModified()).toStrictEqual(initialModified)
-      act(() => hook.result.current.setValues({ b: null }))
+      expect(hook.result.current.modifiedFields).toStrictEqual(initialModified)
+      act(() => hook.result.current.setValues({ b: null }, {
+        forceUpdate: true,
+        partial: false
+      }))
       expect(hook.result.current.getModified()).not.toStrictEqual(initialModified)
+      expect(hook.result.current.modifiedFields).not.toStrictEqual(initialModified)
       act(() => hook.result.current.reset())
       expect(hook.result.current.getModified()).toStrictEqual(initialModified)
+      expect(hook.result.current.modifiedFields).toStrictEqual(initialModified)
     })
 
     it('should reset all touched states', () => {
@@ -73,10 +82,13 @@ function tests (mode: FormMode) {
         initialTouched
       }))
       expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
-      act(() => hook.result.current.setTouchedFields({ b: false }))
+      expect(hook.result.current.touchedFields).toStrictEqual(initialTouched)
+      act(() => hook.result.current.setTouchedFields({ b: false }, { forceUpdate: true }))
       expect(hook.result.current.getTouched()).not.toStrictEqual(initialTouched)
+      expect(hook.result.current.touchedFields).not.toStrictEqual(initialTouched)
       act(() => hook.result.current.reset())
       expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
+      expect(hook.result.current.touchedFields).toStrictEqual(initialTouched)
     })
   })
 
