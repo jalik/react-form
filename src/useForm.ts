@@ -334,6 +334,10 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   disableOnValidate?: boolean;
   /**
+   * Should the form be disabled if not modified.
+   */
+  disableSubmitIfNotModified?: boolean;
+  /**
    * Disables the form (fields and buttons).
    */
   disabled?: boolean;
@@ -474,6 +478,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     disableOnSubmit = true,
     // todo add tests for disableOnValidate
     disableOnValidate = true,
+    disableSubmitIfNotModified = true,
     initialErrors,
     initialModified,
     initialTouched,
@@ -807,11 +812,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const type = props.type ?? 'button'
     const result: GetButtonPropsReturnType = { disabled: false, ...props }
 
-    if (props.disabled ||
-      formDisabled ||
-      // Disable submit or reset button if form is not modified.
-      // todo test without mode === 'controlled'
-      ((!state.modified && mode === 'controlled') && (type === 'submit' || type === 'reset'))) {
+    if (props.disabled || formDisabled || (!state.modified && (
+      // Disable submit button if form is not modified.
+      (type === 'submit' && disableSubmitIfNotModified) ||
+      // Disable reset button if form is not modified.
+      type === 'reset'
+    ))) {
       result.disabled = true
     }
 
@@ -819,7 +825,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       result.onClick = handleButtonClick(props.onClick)
     }
     return result
-  }, [formDisabled, state.modified, mode, handleButtonClick])
+  }, [formDisabled, state.modified, disableSubmitIfNotModified, handleButtonClick])
 
   /**
    * Returns props of a field.
