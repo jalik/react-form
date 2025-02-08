@@ -378,6 +378,7 @@ export type UseFormOptions<V extends Values, E, R> = {
   onSubmit?: (values: Partial<V>) => Promise<R>;
   /**
    * Called when form has been successfully submitted.
+   * todo v6: rename to onSuccess
    * @param result
    * @param values
    */
@@ -822,7 +823,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const getFieldProps = useCallback<UseFormHook<V, E, R>['getFieldProps']>(<Component extends ElementType> (
     path: FieldPath<V>,
-    props?: ComponentProps<Component>,
+    props?: ComponentProps<Component>, // fixme improve type autocompletion
     opts: {
       format?: FormatFunction | null;
       parser?: ParseFunction;
@@ -835,8 +836,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       setValueOptions
     } = opts ?? {}
 
-    const contextValue = getValue(path)
-    const inputValue = props?.value
+    const {
+      value,
+      defaultValue,
+      ...otherProps
+    } = props ?? {} as ComponentProps<Component>
 
     const checkedAttribute = mode === 'controlled'
       ? 'checked'
@@ -846,6 +850,23 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       ? 'value'
       : 'defaultValue'
 
+    // Use any of value or defaultValue as input value,
+    // but always use attribute depending on mode if available.
+    const inputValue = (() => {
+      if (typeof props?.[valueAttribute] !== 'undefined') {
+        return props?.[valueAttribute]
+      }
+      if (typeof value !== 'undefined') {
+        return value
+      }
+      if (typeof defaultValue !== 'undefined') {
+        return defaultValue
+      }
+    })()
+
+    // Get current value from context.
+    const contextValue = getValue(path)
+
     // Set default props.
     const finalProps: any = {
       onBlur: handleBlur,
@@ -854,12 +875,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         setValueOptions
       }),
       id: getFieldId(path, formKey),
-      ...props,
+      // fixme avoid spreading checked and defaultChecked together
+      ...otherProps,
       name: path
-    }
-
-    if (props?.type !== 'checkbox' && props?.type !== 'radio') {
-      finalProps[valueAttribute] = contextValue
     }
 
     // Merge custom props from initializeField() function.
@@ -876,52 +894,51 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
     }
 
-    // Merge passed props
-    if (props) {
-      const keys = Object.keys(props)
+    // Merge passed props.
+    if (otherProps) {
+      const keys = Object.keys(otherProps)
 
       for (let i = 0; i < keys.length; i++) {
         const k = keys[i]
-        const v = props[k]
+        const v = otherProps[k]
         if (typeof v !== 'undefined' && k !== 'parsedValue') {
           finalProps[k] = v
         }
       }
     }
 
-    // Empty value on radio.
+    // Set disabled depending on form state or field state.
+    finalProps.disabled = props?.disabled || finalProps.disabled || formDisabled
+
     const { type } = finalProps
 
-    if (type) {
-      if (inputValue === null || inputValue === '') {
-        if (type === 'radio') {
-          // Convert null value for radio only.
-          finalProps[valueAttribute] = ''
-        }
-      }
-
-      if (type === 'checkbox' || type === 'radio') {
-        const parsedValue = inputValue != null && parser ? parser(inputValue) : (inputValue ?? null)
-
-        if (contextValue instanceof Array) {
-          // Set checked state by looking for checkbox value in the array.
-          finalProps[checkedAttribute] = contextValue.indexOf(parsedValue) !== -1
-          // Remove required attribute on multiple fields.
-          finalProps.required = false
-        } else {
-          // Set checked state from checkbox without value
-          // or by comparing checkbox value and context value.
-          finalProps[checkedAttribute] = type === 'checkbox' &&
-          (parsedValue == null || parsedValue === '') &&
-          typeof contextValue === 'boolean'
-            ? contextValue
-            : contextValue === parsedValue
-        }
-      }
+    if (type === 'checkbox' || type === 'radio') {
+      // Use input value for checkbox and radio.
+      finalProps[valueAttribute] = inputValue
+    } else {
+      // Use form value.
+      finalProps[valueAttribute] = contextValue
     }
 
-    // Set disabled depending on form state or field state.
-    finalProps.disabled = formDisabled || props?.disabled
+    if (type === 'checkbox' || type === 'radio') {
+      const parsedValue = (inputValue != null && parser ? parser(inputValue) : inputValue)
+
+      if (contextValue instanceof Array) {
+        // Set checked state by looking for checkbox value in the array.
+        finalProps[checkedAttribute] = contextValue.includes(parsedValue)
+        // Make sure required attribute is not set on multiple fields.
+        finalProps.required = undefined
+      } else if (type === 'checkbox') {
+        finalProps[checkedAttribute] =
+          (parsedValue === undefined || parsedValue === '')
+            // Input value is not defined and field value is true.
+            ? contextValue === true
+            // Input value matches field value.
+            : contextValue === parsedValue
+      } else {
+        finalProps[checkedAttribute] = contextValue === parsedValue
+      }
+    }
 
     // Convert value to string.
     if (format != null && typeof finalProps[valueAttribute] !== 'string' &&
@@ -930,7 +947,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         ? format(finalProps[valueAttribute])
         : ''
     }
-
     return finalProps
   }, [formDisabled, formKey, getValue, handleBlur, handleFieldChange, mode, state])
 
