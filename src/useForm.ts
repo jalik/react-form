@@ -334,9 +334,13 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   disableOnValidate?: boolean;
   /**
-   * Should the form be disabled if not modified.
+   * Disable submit button if form is not modified.
    */
   disableSubmitIfNotModified?: boolean;
+  /**
+   * Disable submit button if form is not valid.
+   */
+  disableSubmitIfNotValid?: boolean;
   /**
    * Disables the form (fields and buttons).
    */
@@ -478,7 +482,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     disableOnSubmit = true,
     // todo add tests for disableOnValidate
     disableOnValidate = true,
+    // todo v6: change to false by default
     disableSubmitIfNotModified = true,
+    disableSubmitIfNotValid = false,
     initialErrors,
     initialModified,
     initialTouched,
@@ -812,12 +818,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const type = props.type ?? 'button'
     const result: GetButtonPropsReturnType = { disabled: false, ...props }
 
-    if (props.disabled || formDisabled || (!state.modified && (
-      // Disable submit button if form is not modified.
-      (type === 'submit' && disableSubmitIfNotModified) ||
-      // Disable reset button if form is not modified.
-      type === 'reset'
-    ))) {
+    if (props.disabled || formDisabled ||
+      (state.hasError && disableSubmitIfNotValid && type === 'submit') ||
+      (!state.modified && (
+        // Disable submit button if form is not modified.
+        (type === 'submit' && disableSubmitIfNotModified) ||
+        // Disable reset button if form is not modified.
+        type === 'reset'
+      ))) {
       result.disabled = true
     }
 
@@ -825,7 +833,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       result.onClick = handleButtonClick(props.onClick)
     }
     return result
-  }, [formDisabled, state.modified, disableSubmitIfNotModified, handleButtonClick])
+  }, [formDisabled, state.hasError, state.modified, disableSubmitIfNotValid, disableSubmitIfNotModified, handleButtonClick])
 
   /**
    * Returns props of a field.
