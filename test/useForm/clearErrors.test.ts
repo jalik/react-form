@@ -21,7 +21,7 @@ function test (mode: FormMode) {
       expect(hook.result.current.getError('a')).toBe('invalid')
       expect(hook.result.current.getError('b')).toBe('invalid')
       act(() => hook.result.current.clearErrors())
-      expect(hook.result.current.errors).toStrictEqual({})
+      expect(hook.result.current.getErrors()).toStrictEqual({})
     })
   })
 

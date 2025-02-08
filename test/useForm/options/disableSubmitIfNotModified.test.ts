@@ -17,7 +17,8 @@ function tests (mode: FormMode) {
         const hook = renderHook(() => useForm({
           mode,
           initialValues,
-          disableSubmitIfNotModified: true
+          disableSubmitIfNotModified: true,
+          forceUpdateOnStatusChange: true
         }))
         expect(hook.result.current.isModified()).toBe(false)
         expect(hook.result.current.getButtonProps({ type: 'submit' }).disabled).toBe(true)

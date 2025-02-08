@@ -556,8 +556,8 @@ describe('useForm()', () => {
           result.current.reset(['password'])
         })
 
-        expect(result.current.modifiedFields.username).toBe(true)
-        expect(result.current.modifiedFields.password).toBeFalsy()
+        expect(result.current.isModified('username')).toBe(true)
+        expect(result.current.isModified('password')).toBeFalsy()
         expect(result.current.values.username).toBe('test')
         expect(result.current.values.password).toBe(initialValues.password)
       })

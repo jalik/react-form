@@ -344,6 +344,10 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   disabled?: boolean;
   /**
+   * Update the form when it is modified or touched (happens only at the form level).
+   */
+  forceUpdateOnStatusChange?: boolean;
+  /**
    * Sets the initial errors.
    */
   initialErrors?: Errors<E>;
@@ -483,6 +487,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     // todo v6: change to false by default
     disableSubmitIfNotModified = true,
     disableSubmitIfNotValid = false,
+    forceUpdateOnStatusChange = false,
     initialErrors,
     initialModified,
     initialTouched,
@@ -555,6 +560,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Handle form status.
   const formStatus = useFormStatus({
+    forceUpdateOnStatusChange,
     formState,
     mode
   })
@@ -564,6 +570,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Handle form values.
   const formValues = useFormValues<V, E, R>({
+    forceUpdateOnStatusChange,
     formErrors,
     formKeys,
     formState,
@@ -701,7 +708,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const target = event.currentTarget ?? event.target
     const { name } = target
 
-    setTouchedField(name, true)
+    setTouchedField(name, true, {
+      forceUpdate: forceUpdateOnStatusChange
+    })
 
     if (validateOnTouch) {
       setNeedValidation([name])
@@ -716,7 +725,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         setValue(name, value, { validate: validateOnTouch })
       }
     }
-  }, [setTouchedField, validateOnTouch, trimOnBlur, setNeedValidation, getValue, setValue])
+  }, [setTouchedField, forceUpdateOnStatusChange, validateOnTouch, trimOnBlur, setNeedValidation, getValue, setValue])
 
   const handleChange = useCallback<UseFormHook<V, E, R>['handleChange']>((event, opts): void => {
     const { setValueOptions } = opts ?? {}
@@ -785,7 +794,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     if (props.disabled || formDisabled ||
       (state.hasError && disableSubmitIfNotValid && type === 'submit') ||
-      (!state.modified && (
+      (!state.modified && (mode === 'controlled' || forceUpdateOnStatusChange) && (
         // Disable submit button if form is not modified.
         (type === 'submit' && disableSubmitIfNotModified) ||
         // Disable reset button if form is not modified.
@@ -794,7 +803,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       result.disabled = true
     }
     return result
-  }, [formDisabled, state.hasError, state.modified, disableSubmitIfNotValid, disableSubmitIfNotModified, handleButtonClick])
+  }, [formDisabled, state.hasError, state.modified, disableSubmitIfNotValid, mode, forceUpdateOnStatusChange, disableSubmitIfNotModified])
 
   /**
    * Returns props of a field.

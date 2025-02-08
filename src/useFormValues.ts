@@ -24,6 +24,10 @@ import deepExtend from '@jalik/deep-extend'
 
 export type UseFormValuesOptions<V extends Values, E, R> = {
   /**
+   * Update the form when it is modified or touched (happens only at the form level).
+   */
+  forceUpdateOnStatusChange?: boolean;
+  /**
    * The form keys hook.
    */
   formKeys: UseFormKeysHook<V>;
@@ -161,6 +165,7 @@ export type UseFormValuesHook<V extends Values> = {
 
 function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V, E, R>): UseFormValuesHook<V> {
   const {
+    forceUpdateOnStatusChange,
     formErrors,
     formKeys,
     formState,
@@ -286,10 +291,22 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     // Update values ref.
     valuesRef.current = nextValues
 
+    if (initialize) {
+      initialValuesRef.current = clone(nextValues)
+      initializedRef.current = true
+    }
+    if (updateErrors) {
+      errorsRef.current = partial ? { ...errorsRef.current, ...nextErrors } : nextErrors
+    }
+    if (updateModified) {
+      modifiedRef.current = partial ? { ...modifiedRef.current, ...nextModified } : nextModified
+    }
+    if (updateTouched) {
+      touchedRef.current = partial ? { ...touchedRef.current } : {}
+    }
+
     // Update state.
-    if (mode === 'controlled' || forceUpdate || (initialize || !initializedRef.current) || validate ||
-      hasDefinedValues(nextErrors) ||
-      hasDefinedValues(nextModified)) {
+    if (mode === 'controlled' || forceUpdate || validate || (initialize || !initializedRef.current) || (forceUpdateOnStatusChange && hasDefinedValues(nextModified))) {
       setState((s) => {
         const nextState = {
           ...s,
@@ -300,23 +317,18 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
         // Update initial values.
         if (initialize) {
-          initialValuesRef.current = clone(nextValues)
           nextState.initialValues = initialValuesRef.current
-          initializedRef.current = true
         }
         // Update errors.
         if (updateErrors) {
-          errorsRef.current = partial ? { ...errorsRef.current, ...nextErrors } : nextErrors
           nextState.errors = errorsRef.current
         }
         // Update modified.
         if (updateModified) {
-          modifiedRef.current = partial ? { ...modifiedRef.current, ...nextModified } : nextModified
           nextState.modifiedFields = modifiedRef.current
         }
         // Update touched.
         if (updateTouched) {
-          touchedRef.current = partial ? { ...touchedRef.current } : {}
           nextState.touchedFields = touchedRef.current
         }
         if (validate) {
@@ -353,7 +365,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
         watchers.current.emit(inputChangeEvent(path), status)
       }
     }
-  }, [errorsRef, getInitialValue, initialValuesRef, initializedRef, isTouched, mode, modifiedRef, options.nullify, replaceKeys, setState, touchedRef, valuesRef, watchers])
+  }, [errorsRef, forceUpdateOnStatusChange, getInitialValue, initialValuesRef, initializedRef, isTouched, mode, modifiedRef, options.nullify, replaceKeys, setState, touchedRef, valuesRef, watchers])
 
   const setValue = useCallback<UseFormValuesHook<V>['setValue']>((path, value, opts) => {
     const currentValue = getValue(path)
@@ -418,11 +430,8 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       }
     }
     initialValuesRef.current = nextInitialValues
-    clearErrors(paths, { forceUpdate: false })
-    clearModified(paths, { forceUpdate: false })
-    clearTouched(paths, { forceUpdate: false })
     clearValues(paths, { ...opts })
-  }, [clearErrors, clearModified, clearTouched, clearValues, initialValuesRef])
+  }, [clearValues, initialValuesRef])
 
   const resetValues = useCallback<UseFormValuesHook<V>['resetValues']>((paths, opts) => {
     let nextValues: PathsOrValues<V>
