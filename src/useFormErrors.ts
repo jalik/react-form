@@ -134,8 +134,8 @@ function useFormErrors<V extends Errors, E, R> (options: UseFormErrorsOptions<V,
     opts?
   ) => {
     const {
-      forceUpdate,
-      partial
+      forceUpdate = true,
+      partial = false
     } = opts ?? {}
 
     const nextErrors: Errors<E> = filterErrors(partial
@@ -160,6 +160,7 @@ function useFormErrors<V extends Errors, E, R> (options: UseFormErrorsOptions<V,
   }, [setErrors])
 
   const clearErrors = useCallback<UseFormErrorsHook<V, E>['clearErrors']>((paths, opts) => {
+    const { forceUpdate = true } = opts ?? {}
     const nextErrors: Errors<E> = {}
 
     if (paths) {
@@ -168,13 +169,15 @@ function useFormErrors<V extends Errors, E, R> (options: UseFormErrorsOptions<V,
       }
     }
     setErrors(nextErrors, {
-      forceUpdate: true,
+      forceUpdate,
       ...opts,
       partial: paths != null
     })
   }, [setErrors])
 
   const resetErrors = useCallback<UseFormErrorsHook<V, E>['resetErrors']>((paths, opts) => {
+    const { forceUpdate = true } = opts ?? {}
+
     if (paths) {
       const nextErrors = {} as Errors<E>
       for (let i = 0; i < paths.length; i++) {
@@ -182,13 +185,13 @@ function useFormErrors<V extends Errors, E, R> (options: UseFormErrorsOptions<V,
         nextErrors[path] = getInitialError(path)
       }
       setErrors(nextErrors, {
-        forceUpdate: true,
+        forceUpdate,
         ...opts,
         partial: true
       })
     } else {
       setErrors(getInitialErrors() ?? {}, {
-        forceUpdate: true,
+        forceUpdate,
         ...opts,
         partial: false
       })

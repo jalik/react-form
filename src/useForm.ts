@@ -70,10 +70,8 @@ export type ParseFunction<T = any> = (value: unknown, target?: HTMLElement) => T
 export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, R> & {
   /**
    * Clears the form (values, errors...).
-   * @param paths
-   * @param options
    */
-  clear (paths?: FieldPath<V>[], options?: { forceUpdate?: boolean }): void;
+  clear: UseFormValuesHook<V>['clearValues'];
   /**
    * Clears all or given errors.
    */
@@ -618,27 +616,12 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   })
 
   const {
-    clearErrors,
-    getError,
-    getErrors,
-    setError,
-    setErrors
-  } = formErrors
-
-  const {
     getKey,
     replaceKeys
   } = formKeys
 
   const {
-    clearTouched,
-    getModified,
-    getTouched,
-    isModified,
-    isTouched,
-    resetTouched,
-    setTouchedField,
-    setTouched
+    setTouchedField
   } = formStatus
 
   const {
@@ -652,10 +635,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   } = formValidation
 
   const {
-    getInitialValues,
-    getInitialValue,
     getValue,
-    getValues,
     resetValues,
     setInitialValues,
     setValue,
@@ -716,21 +696,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [validateOnSubmit, state.validated, validate, submit])
 
   const debouncedValidateAndSubmit = useDebouncePromise(validateAndSubmit, submitDelay)
-
-  const handleButtonClick = useCallback((listener: (ev: React.MouseEvent<HTMLButtonElement>) => void) => (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const target = event.currentTarget || event.target
-
-    if (listener) {
-      listener(event)
-    } else if (target.type === 'submit') {
-      validateAndSubmit()
-    } else if (target.type === 'reset') {
-      resetValues(undefined, { forceUpdate: true })
-    }
-  }, [resetValues, validateAndSubmit])
 
   const handleBlur = useCallback<UseFormHook<V, E, R>['handleBlur']>((event): void => {
     const target = event.currentTarget ?? event.target
@@ -827,10 +792,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         type === 'reset'
       ))) {
       result.disabled = true
-    }
-
-    if (props.onClick != null) {
-      result.onClick = handleButtonClick(props.onClick)
     }
     return result
   }, [formDisabled, state.hasError, state.modified, disableSubmitIfNotValid, disableSubmitIfNotModified, handleButtonClick])
@@ -989,7 +950,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   useEffect(() => {
     // Set values using initial values when they are provided or if they changed.
     if (initialValues && (!initializedRef.current || reinitialize)) {
-      setInitialValues(initialValues)
+      setInitialValues(initialValues, { forceUpdate: true })
     }
   }, [initialValues, initializedRef, reinitialize, setInitialValues])
 
@@ -1004,14 +965,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     errors: state.errors,
     hasError: state.hasError,
     initialErrors: state.initialErrors,
-    clearErrors,
-    getError,
-    getErrors,
+    clearErrors: formErrors.clearErrors,
+    getError: formErrors.getError,
+    getErrors: formErrors.getErrors,
     getInitialError: formErrors.getInitialError,
     getInitialErrors: formErrors.getInitialErrors,
     resetErrors: formErrors.resetErrors,
-    setError,
-    setErrors,
+    setError: formErrors.setError,
+    setErrors: formErrors.setErrors,
 
     // events
     watch: formWatch.watch,
@@ -1043,15 +1004,15 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     modifiedFields: state.modifiedFields,
     touched: state.touched,
     touchedFields: state.touchedFields,
-    clearTouchedFields: clearTouched,
-    getModified,
-    getTouched,
-    isModified,
-    isTouched,
-    resetTouched,
-    setTouchedField,
+    clearTouchedFields: formStatus.clearTouched,
+    getModified: formStatus.getModified,
+    getTouched: formStatus.getTouched,
+    isModified: formStatus.isModified,
+    isTouched: formStatus.isTouched,
+    resetTouched: formStatus.resetTouched,
+    setTouchedField: formStatus.setTouchedField,
     // todo v6: rename to setTouched()
-    setTouchedFields: setTouched,
+    setTouchedFields: formStatus.setTouched,
 
     // submission
     submitCount: state.submitCount,
@@ -1075,13 +1036,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     initialValues: state.initialValues,
     values: state.values,
     clear: formValues.clearValues,
-    getInitialValue,
-    getInitialValues,
-    getValue,
-    getValues,
+    getInitialValue: formValues.getInitialValue,
+    getInitialValues: formValues.getInitialValues,
+    getValue: formValues.getValue,
+    getValues: formValues.getValues,
     removeFields: formValues.removeValues,
     reset: formValues.resetValues,
-    setInitialValues,
+    setInitialValues: formValues.setInitialValues,
     setValue: formValues.setValue,
     setValues: setFormValues,
 
