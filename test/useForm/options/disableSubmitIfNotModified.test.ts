@@ -72,5 +72,5 @@ describe('useForm({ mode: "controlled", disableSubmitIfNotModified })', () => {
 })
 
 describe('useForm({ mode: "uncontrolled", disableSubmitIfNotModified })', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

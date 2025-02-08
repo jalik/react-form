@@ -70,5 +70,5 @@ describe('useForm({ mode: "controlled" }).prependListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).prependListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

@@ -38,7 +38,7 @@ function tests (mode: FormMode) {
     }))
     const key = hook.result.current.key('a')
     act(() => hook.result.current.setValue('a', 'modified', { forceUpdate: true }))
-    expect(hook.result.current.key('a') !== key).toBe(mode === 'experimental_uncontrolled')
+    expect(hook.result.current.key('a') !== key).toBe(mode === 'uncontrolled')
   })
 }
 
@@ -47,5 +47,5 @@ describe('useForm({ mode: "controlled" }).key()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).key()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

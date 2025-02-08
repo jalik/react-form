@@ -53,5 +53,5 @@ describe('useForm({ mode: "controlled" }).removeValues()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).removeValues()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

@@ -85,5 +85,5 @@ describe('useForm({ mode: "controlled" }).removeListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).removeListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

@@ -94,5 +94,5 @@ describe('useForm({ mode: "controlled" }).moveListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).moveListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

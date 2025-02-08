@@ -93,5 +93,5 @@ describe('useForm({ mode: "controlled" }).getButtonProps()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).getButtonProps()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

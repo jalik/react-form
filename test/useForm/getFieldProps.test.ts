@@ -394,5 +394,5 @@ describe('useForm({ mode: "controlled" }).getFieldProps()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).getFieldProps()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

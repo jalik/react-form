@@ -522,12 +522,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateOnTouch = false
   } = options
 
-  useEffect(() => {
-    if (mode === 'experimental_uncontrolled') {
-      console.warn('WARNING: uncontrolled mode is experimental and may not work as expected')
-    }
-  }, [mode])
-
   // Generate a unique ID for the form.
   const [formKey] = useState(() => randomKey(10))
 

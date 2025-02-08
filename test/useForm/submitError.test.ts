@@ -34,5 +34,5 @@ describe('useForm({ mode: "controlled" }).submitError', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).submitError', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

@@ -51,5 +51,5 @@ describe('useForm({ mode : "controlled" }).clearErrors()', () => {
 })
 
 describe('useForm({ mode : "uncontrolled" }).clearErrors()', () => {
-  test('experimental_uncontrolled')
+  test('uncontrolled')
 })

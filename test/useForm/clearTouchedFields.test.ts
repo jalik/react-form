@@ -46,5 +46,5 @@ describe('useForm({ mode: "controlled" }).clearTouchedFields()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).clearTouchedFields()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

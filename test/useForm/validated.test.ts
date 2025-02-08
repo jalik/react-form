@@ -57,5 +57,5 @@ describe('useForm({ mode: "controlled" }).validated', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).validated', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

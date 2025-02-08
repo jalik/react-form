@@ -77,5 +77,5 @@ describe('useForm({ mode: "controlled" }).replaceListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).replaceListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

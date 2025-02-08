@@ -31,5 +31,5 @@ describe('useForm({ mode : "controlled" }).modifiedFields', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).modifiedFields', () => {
-  test('experimental_uncontrolled')
+  test('uncontrolled')
 })

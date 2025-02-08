@@ -18,7 +18,7 @@ import { hasDefinedValues, hasTrueValues } from './utils'
 /**
  * Tells how the form should read and write values.
  */
-export type FormMode = 'controlled' | 'experimental_uncontrolled'
+export type FormMode = 'controlled' | 'uncontrolled'
 /**
  * Contains the form values.
  */
@@ -251,7 +251,11 @@ function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E
     if (debug) {
       // todo show state in console if debug mode is enabled
     }
-  }, [computedState, debug])
+    if (hasDefinedValues(computedState.errors)) {
+      // console.log(computedState.errors)
+    }
+    // console.info("STATE",computedState)
+  }, [computedState, computedState.errors, debug])
 
   return {
     debug,

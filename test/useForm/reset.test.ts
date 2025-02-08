@@ -196,5 +196,5 @@ describe('useForm({ mode: "controlled" }).reset()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).reset()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

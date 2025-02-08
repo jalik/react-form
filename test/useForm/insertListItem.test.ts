@@ -85,5 +85,5 @@ describe('useForm({ mode: "controlled" }).insertListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).insertListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

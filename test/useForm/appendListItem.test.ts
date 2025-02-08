@@ -25,5 +25,5 @@ describe('useForm({ mode: "controlled" }).appendListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).appendListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })

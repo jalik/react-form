@@ -79,5 +79,5 @@ describe('useForm({ mode: "controlled" }).swapListItem()', () => {
 })
 
 describe('useForm({ mode: "uncontrolled" }).swapListItem()', () => {
-  tests('experimental_uncontrolled')
+  tests('uncontrolled')
 })
