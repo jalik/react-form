@@ -250,8 +250,6 @@ function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E
   useEffect(() => {
     if (debug) {
       console.debug('FORM STATE', computedState)
-    } else if (computedState.hasError) {
-      console.error('FORM ERRORS', computedState.errors)
     }
   }, [computedState, debug])
 
