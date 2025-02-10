@@ -160,9 +160,9 @@ export type UseFormStateOptions<V extends Values, E, R> = {
 
 export type UseFormStateHook<V extends Values, E, R> = {
   /**
-   * Enable or disable debug mode.
+   * Enable debug logging.
    */
-  debug: boolean;
+  debug?: boolean;
   /**
    * The errors ref (uncontrolled mode).
    */
@@ -249,13 +249,11 @@ function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E
 
   useEffect(() => {
     if (debug) {
-      // todo show state in console if debug mode is enabled
+      console.debug('FORM STATE', computedState)
+    } else if (computedState.hasError) {
+      console.error('FORM ERRORS', computedState.errors)
     }
-    if (hasDefinedValues(computedState.errors)) {
-      // console.log(computedState.errors)
-    }
-    // console.info("STATE",computedState)
-  }, [computedState, computedState.errors, debug])
+  }, [computedState, debug])
 
   return {
     debug,
