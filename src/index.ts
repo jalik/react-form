@@ -61,3 +61,7 @@ export {
   TouchedFields,
   Values
 } from './useFormState'
+
+export {
+  ValidateFieldFunction
+} from './useFormValidation'

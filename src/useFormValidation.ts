@@ -11,6 +11,8 @@ import { hasDefinedValues } from './utils'
 import { UseFormErrorsHook } from './useFormErrors'
 import useDebouncePromise from './useDebouncePromise'
 
+export type ValidateFieldFunction<V extends Values, E> = (path: FieldPath<V>, value: unknown, values: Partial<V>) => Promise<E | undefined>
+
 export type UseFormValidationOptions<V extends Values, E, R> = {
   /**
    * The form errors hook.
@@ -40,7 +42,7 @@ export type UseFormValidationOptions<V extends Values, E, R> = {
    * @param value
    * @param values
    */
-  validateField? (path: FieldPath<V>, value: unknown, values: Partial<V>): Promise<E | undefined>;
+  validateField?: ValidateFieldFunction<V, E>;
   /**
    * The validation delay.
    */
