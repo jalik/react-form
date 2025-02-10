@@ -258,7 +258,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       let value = mutation[path]
 
       // Replace empty string with null.
-      if (nullify && value === '') {
+      if (value === '' && nullify) {
         value = null
       }
 
@@ -276,10 +276,9 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
             // Always set false when initializing.
             !initialize &&
             // Set true if new and initial values are different.
+            // fixme use fast-deep-equal to compare value and previous value (for array and object)
             (value !== initialValue) &&
             (value != null || initialValue != null)
-          // fixme Set true if array is different.
-          // fixme Set true if object is different.
 
           // No change detected.
           if (nextModified[path] === modifiedRef.current[path]) {
@@ -357,7 +356,8 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       const value = mutation[path]
       const previousValue = resolve(path, previousValues)
 
-      if (value !== previousValue) {
+      // fixme use fast-deep-equal to compare value and previous value (for array and object)
+      if (initialize || value !== previousValue) {
         const status: FieldStatus = {
           modified: value !== previousValue,
           name: path,
