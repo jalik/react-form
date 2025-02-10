@@ -5,7 +5,7 @@
 
 import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import { UseFormStateHook, Values } from './useFormState'
-import { build, flatten } from './utils'
+import { build, clone } from './utils'
 import { UseFormValuesHook } from './useFormValues'
 import { UseFormErrorsHook } from './useFormErrors'
 import { UseFormStatusHook } from './useFormStatus'
@@ -103,25 +103,26 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
     if (submitRef.current == null) {
       return Promise.reject(new Error('No submit function provided'))
     }
-    let values = getValues()
+    let values = clone(getValues())
 
     if (trimOnSubmit || nullify) {
-      const mutation = flatten(values)
-      const mutationKeys = Object.keys(mutation)
+      const paths = Object.keys(values)
 
-      for (let i = 0; i < mutationKeys.length; i++) {
-        const name = mutationKeys[i]
-        const value = mutation[name]
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i]
+        const value: unknown = values[path]
 
         if (typeof value === 'string') {
           // Remove extra spaces.
-          let val: string | null = trimOnSubmit ? value.trim() : value
+          let nextValue: string | null = trimOnSubmit ? value.trim() : value
 
           // Remplace empty string by null.
-          if (val === '' && nullify) {
-            val = null
+          if (nextValue === '' && nullify) {
+            nextValue = null
           }
-          values = build(name, val, values)
+          if (nextValue !== value) {
+            values = build(path, nextValue, values)
+          }
         }
       }
     }
