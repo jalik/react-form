@@ -14,7 +14,7 @@ import {
   Values
 } from './useFormState'
 import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
-import { build, clone, flatten, hasDefinedValues, reconstruct, resolve } from './utils'
+import { build, clone, hasDefinedValues, reconstruct, resolve } from './utils'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
 import { Observer } from '@jalik/observer'
@@ -73,6 +73,7 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
 }
 
 export type SetValuesOptions = {
+  applyTransform?: boolean;
   forceUpdate?: boolean;
   initialize?: boolean;
   nullify?: boolean;
@@ -224,6 +225,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
   const setValues = useCallback<UseFormValuesHook<V>['setValues']>((values, opts) => {
     const {
+      applyTransform = true,
       forceUpdate,
       initialize,
       nullify = options.nullify,
@@ -242,7 +244,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       : {} as Partial<V>
     let mutation: PathsOrValues<V> = { ...values }
 
-    if (transformRef.current) {
+    if (transformRef.current && applyTransform) {
       // Pre calculate next values.
       const allValues = deepExtend({}, valuesRef.current, reconstruct(values))
       // Apply transformation.
@@ -305,7 +307,9 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     }
 
     // Update state.
-    if (mode === 'controlled' || forceUpdate || validate || (initialize || !initializedRef.current) || (forceUpdateOnStatusChange && hasDefinedValues(nextModified))) {
+    if (mode === 'controlled' || forceUpdate || validate ||
+      (initialize || !initializedRef.current) ||
+      (forceUpdateOnStatusChange && hasDefinedValues(nextModified))) {
       setState((s) => {
         const nextState = {
           ...s,
@@ -386,6 +390,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       }
     }
     setValues(nextValues, {
+      applyTransform: false,
       forceUpdate: true,
       updateErrors: false,
       updateModified: false,
@@ -413,6 +418,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
   const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
     setValues(values, {
+      applyTransform: false,
       ...opts,
       forceUpdate: true,
       initialize: true,
@@ -446,6 +452,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       nextValues = getInitialValues() ?? {}
     }
     setValues(nextValues, {
+      applyTransform: false,
       forceUpdate: true,
       updateErrors: false,
       updateModified: false,
