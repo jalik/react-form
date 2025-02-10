@@ -696,7 +696,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     return Promise.resolve(undefined)
   }, [validateOnSubmit, state.validated, validate, submit])
 
-  const debouncedValidateAndSubmit = useDebouncePromise(validateAndSubmit, submitDelay)
+  const debouncedValidateAndSubmit =
+    useDebouncePromise(validateAndSubmit, submitDelay)
 
   const handleBlur = useCallback<UseFormHook<V, E, R>['handleBlur']>((event): void => {
     const target = event.currentTarget ?? event.target
@@ -775,9 +776,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         event.preventDefault()
         event.stopPropagation()
       }
-      validateAndSubmit()
+      debouncedValidateAndSubmit()
     }
-  }, [preventDefaultOnSubmit, submitRef, validateAndSubmit])
+  }, [debouncedValidateAndSubmit, preventDefaultOnSubmit, submitRef])
 
   /**
    * Returns button props.

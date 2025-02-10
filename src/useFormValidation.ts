@@ -9,6 +9,7 @@ import { UseFormStatusHook } from './useFormStatus'
 import { UseFormValuesHook } from './useFormValues'
 import { hasDefinedValues } from './utils'
 import { UseFormErrorsHook } from './useFormErrors'
+import useDebouncePromise from './useDebouncePromise'
 
 export type UseFormValidationOptions<V extends Values, E, R> = {
   /**
@@ -86,6 +87,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
     formState,
     formValues,
     validate: validateFunc,
+    validateDelay,
     validateField: validateFieldFunc
   } = options
 
@@ -251,13 +253,19 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
     validateFieldRef.current = validateFieldFunc
   }, [validateFieldFunc])
 
+  const debouncedValidateFields =
+    useDebouncePromise(validateFields, validateDelay)
+
+  const debouncedValidate =
+    useDebouncePromise(validate, validateDelay)
+
   useEffect(() => {
     if (state.needValidation === true) {
-      validate()
+      debouncedValidate()
     } else if (state.needValidation instanceof Array && state.needValidation.length > 0) {
-      validateFields(state.needValidation)
+      debouncedValidateFields(state.needValidation)
     }
-  }, [validateFields, validate, state.needValidation])
+  }, [validateFields, validate, state.needValidation, debouncedValidate, debouncedValidateFields])
 
   return {
     setNeedValidation,
