@@ -140,7 +140,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
 
   const validateFields = useCallback<UseFormValidationHook<V, E, R>['validateFields']>((paths) => {
     if (validateFieldRef.current == null) {
-      return Promise.resolve(undefined)
+      return Promise.reject(new Error('validateField function is not provided'))
     }
 
     setState((s) => ({
