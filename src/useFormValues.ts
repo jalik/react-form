@@ -7,7 +7,7 @@ import {
   Errors,
   FieldPath,
   FormMode,
-  ModifiedFields,
+  ModifiedState,
   PathsAndValues,
   PathsOrValues,
   UseFormStateHook,
@@ -238,7 +238,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
     const previousValues = clone(valuesRef.current)
     const nextErrors: Errors<E> = {}
-    const nextModified: ModifiedFields = {}
+    const nextModified: ModifiedState = {}
     let nextValues: Partial<V> = partial
       ? valuesRef.current
       : {} as Partial<V>

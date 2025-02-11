@@ -4,7 +4,7 @@
  */
 
 import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
-import { Errors, FieldPath, ModifiedFields, UseFormStateHook, Values } from './useFormState'
+import { Errors, FieldPath, ModifiedState, UseFormStateHook, Values } from './useFormState'
 import { UseFormStatusHook } from './useFormStatus'
 import { UseFormValuesHook } from './useFormValues'
 import { hasDefinedValues } from './utils'
@@ -35,7 +35,7 @@ export type UseFormValidationOptions<V extends Values, E, R> = {
    * @param values
    * @param modified
    */
-  validate? (values: Partial<V>, modified: ModifiedFields): Promise<Errors<E> | undefined>;
+  validate? (values: Partial<V>, modified: ModifiedState): Promise<Errors<E> | undefined>;
   /**
    * Validates a single field.
    * @param path

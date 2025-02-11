@@ -7,7 +7,7 @@ import { useCallback } from 'react'
 import {
   FieldPath,
   FormMode,
-  ModifiedFields,
+  ModifiedState,
   TouchedState,
   UseFormStateHook,
   Values
@@ -55,7 +55,7 @@ export type UseFormStatusHook<V extends Values> = {
   /**
    * Returns modified fields.
    */
-  getModified (): ModifiedFields;
+  getModified (): ModifiedState;
   /**
    * Returns modified fields.
    */
@@ -111,7 +111,7 @@ export type UseFormStatusHook<V extends Values> = {
    * @param options
    */
   setModified (
-    values: ModifiedFields,
+    values: ModifiedState,
     options?: {
       forceUpdate?: boolean,
       partial?: boolean,

@@ -55,7 +55,7 @@ export {
   FieldPath,
   FormMode,
   FormState,
-  ModifiedFields,
+  ModifiedState,
   PathsAndValues,
   PathsOrValues,
   TouchedState,

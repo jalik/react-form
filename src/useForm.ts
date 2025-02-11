@@ -18,7 +18,7 @@ import useFormState, {
   FieldPath,
   FormMode,
   FormState,
-  ModifiedFields,
+  ModifiedState,
   PathsOrValues,
   Values
 } from './useFormState'
@@ -423,7 +423,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   validate? (
     values: Partial<V>,
-    modifiedFields: ModifiedFields
+    modifiedFields: ModifiedState
   ): Promise<Errors<E> | undefined>;
   /**
    * The delay before starting validation.
