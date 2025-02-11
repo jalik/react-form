@@ -100,16 +100,16 @@ describe('useForm()', () => {
 
     describe('with onSubmitted = function', () => {
       it('should call onSubmitted() after submit', async () => {
-        const onSubmitted = jest.fn()
+        const onSuccess = jest.fn()
         const { result } = renderHook(() => useForm({
           initialValues: { username: undefined },
           onSubmit: (values) => Promise.resolve(values),
-          onSubmitted
+          onSuccess
         }))
 
         await act(async () => {
           await result.current.submit()
-          expect(onSubmitted).toHaveBeenCalledTimes(1)
+          expect(onSuccess).toHaveBeenCalledTimes(1)
         })
       })
     })

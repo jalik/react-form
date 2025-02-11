@@ -376,11 +376,10 @@ export type UseFormOptions<V extends Values, E, R> = {
   onSubmit?: (values: Partial<V>) => Promise<R>;
   /**
    * Called when form has been successfully submitted.
-   * todo v6: rename to onSuccess
    * @param result
    * @param values
    */
-  onSubmitted? (result: R, values: Partial<V>): void;
+  onSuccess? (result: R, values: Partial<V>): void;
   /**
    * Called when form values have changed.
    * @param values
@@ -485,7 +484,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     mode = 'controlled',
     nullify = false,
     onSubmit,
-    onSubmitted,
+    onSuccess,
     onValuesChange,
     preventDefaultOnSubmit = true,
     // todo add tests for reinitialize
@@ -598,7 +597,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     formStatus,
     formValues,
     nullify,
-    onSuccess: onSubmitted,
+    onSuccess,
     setInitialValuesOnSuccess,
     submit: onSubmit,
     trimOnSubmit
