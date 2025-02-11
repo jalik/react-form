@@ -685,7 +685,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   }, [nullify, setValues, valuesRef])
 
   const validateAndSubmit = useCallback(async (): Promise<R | undefined> => {
-    if (!validateOnSubmit || state.validated) {
+    // Submit without validation if:
+    // - validation is disabled
+    // - form is already validated
+    // - there is no validation function
+    if (!validateOnSubmit || state.validated || (validateFunc == null && validateFieldFunc == null)) {
       return submit()
     }
     const errors = await validate()
@@ -694,7 +698,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       return submit()
     }
     return Promise.resolve(undefined)
-  }, [validateOnSubmit, state.validated, validate, submit])
+  }, [state.validated, submit, validate, validateFieldFunc, validateFunc, validateOnSubmit])
 
   const debouncedValidateAndSubmit =
     useDebouncePromise(validateAndSubmit, submitDelay)
@@ -720,7 +724,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         setValue(name, value, { validate: validateOnTouch })
       }
     }
-  }, [setTouchedField, forceUpdateOnStatusChange, validateOnTouch, trimOnBlur, setNeedValidation, getValue, setValue])
+  }, [forceUpdateOnStatusChange, getValue, setNeedValidation, setTouchedField, setValue, trimOnBlur, validateOnTouch])
 
   const handleChange = useCallback<UseFormHook<V, E, R>['handleChange']>((event, opts): void => {
     const { setValueOptions } = opts ?? {}
@@ -798,7 +802,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       result.disabled = true
     }
     return result
-  }, [formDisabled, state.hasError, state.modified, disableSubmitIfNotValid, mode, forceUpdateOnStatusChange, disableSubmitIfNotModified])
+  }, [disableSubmitIfNotModified, disableSubmitIfNotValid, forceUpdateOnStatusChange, formDisabled, mode, state.hasError, state.modified])
 
   /**
    * Returns props of a field.
