@@ -128,7 +128,8 @@ export type UseFormValuesHook<V extends Values> = {
    */
   removeValues (
     paths: FieldPath<V>[],
-    options?: { forceUpdate?: boolean }): void;
+    options?: { forceUpdate?: boolean }
+  ): void;
   /**
    * Restores all initial values or for given paths.
    * @param paths
@@ -136,7 +137,8 @@ export type UseFormValuesHook<V extends Values> = {
    */
   resetValues (
     paths?: FieldPath<V>[],
-    options?: { forceUpdate?: boolean }): void;
+    options?: { forceUpdate?: boolean }
+  ): void;
   /**
    * Sets or replaces initial values.
    * @param values

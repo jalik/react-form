@@ -37,7 +37,6 @@ export type PathsAndValues<V extends Values> = Record<FieldPath<V>, unknown>
 export type PathsOrValues<V extends Values> = PathsAndValues<V> | Partial<V>
 /**
  * Contains the form errors.
- * todo v6: rename to FormErrors
  */
 export type Errors<E = Error> = Record<string, E | undefined | null>;
 /**
