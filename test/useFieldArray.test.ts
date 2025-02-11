@@ -50,11 +50,11 @@ describe('useFieldArray()', () => {
       })
     })
 
-    expect(array.current.fields).toBeInstanceOf(Array)
-    expect(array.current.fields.length).toBe(initialValues.items.length)
-    expect(typeof array.current.fields[0].key).toBe('string')
-    expect(array.current.fields[0].name).toBe('items[0]')
-    expect(array.current.fields[0].value).toStrictEqual(initialValues.items[0])
+    expect(array.current.items).toBeInstanceOf(Array)
+    expect(array.current.items.length).toBe(initialValues.items.length)
+    expect(typeof array.current.items[0].key).toBe('string')
+    expect(array.current.items[0].name).toBe('items[0]')
+    expect(array.current.items[0].value).toStrictEqual(initialValues.items[0])
   })
 
   describe('append(...values)', () => {
@@ -373,7 +373,7 @@ describe('useFieldArray()', () => {
           return a - b
         }
       }))
-      expect(hook.result.current.fields.map((el) => el.value)).toStrictEqual([0, 1, 3, 5])
+      expect(hook.result.current.items.map((el) => el.value)).toStrictEqual([0, 1, 3, 5])
     })
   })
 })

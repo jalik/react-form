@@ -67,9 +67,9 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
     values
   } = context ?? form
 
-  const fieldsRef = useRef<ArrayItem<T>[]>([])
+  const itemsRef = useRef<ArrayItem<T>[]>([])
 
-  const fields = useMemo<ArrayItem<T>[]>(() => {
+  const items = useMemo<ArrayItem<T>[]>(() => {
     // Update this code when values changed.
     if (values != null) {
       let array = getValue<T[]>(name) ?? []
@@ -77,9 +77,9 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
       if (typeof sort === 'function') {
         array = array.sort(sort)
       }
-      fieldsRef.current = getFieldsFromArray(key, name, array, fieldsRef.current)
+      itemsRef.current = getFieldsFromArray(key, name, array, itemsRef.current)
     }
-    return fieldsRef.current ?? []
+    return itemsRef.current ?? []
   }, [getValue, key, name, sort, values])
 
   const append = useCallback((...items: T[]) => {
@@ -140,8 +140,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
 
   return {
     append,
-    // todo v6: rename to items
-    fields,
+    items,
     handleAppend,
     handlePrepend,
     handleRemove,
