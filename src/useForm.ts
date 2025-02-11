@@ -471,8 +471,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     disableOnSubmit = true,
     // todo add tests for disableOnValidate
     disableOnValidate = true,
-    // todo v6: change to false by default
-    disableSubmitIfNotModified = true,
+    disableSubmitIfNotModified = false,
     disableSubmitIfNotValid = false,
     forceUpdateOnStatusChange = false,
     initialErrors,

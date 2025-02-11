@@ -294,7 +294,8 @@ describe('useForm()', () => {
         const initialValues = { username: '' }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues
+            initialValues,
+            disableSubmitIfNotModified: true
           })
         })
         const props = result.current.getButtonProps({ type: 'submit' })
@@ -320,7 +321,8 @@ describe('useForm()', () => {
         const initialValues = { username: '' }
         const { result } = renderHook(() => {
           return useForm({
-            initialValues
+            initialValues,
+            disableSubmitIfNotModified: true
           })
         })
         act(() => {
