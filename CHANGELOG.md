@@ -1,5 +1,57 @@
 # Changelog
 
+## v6.0.0 (2025-02-10)
+
+- **[BREAKING CHANGE]** refactor: delete method `handleChange()` from `useForm()`
+- **[BREAKING CHANGE]** refactor: rename `useFieldArray().fields` to `items`
+- **[BREAKING CHANGE]** refactor: rename option `onSubmitted()` to `onSuccess()` in `useForm()`
+- **[BREAKING CHANGE]** refactor: rename method `setTouchedFields()` to `setTouched()` in
+  `useForm()`
+- **[BREAKING CHANGE]** refactor: forms can be submitted if not modified by default
+- **[BREAKING CHANGE]** refactor: rename type `ModifiedFields` to `ModifiedState`
+- **[BREAKING CHANGE]** rename type `TouchedFields` to `TouchedState`
+- **[BREAKING CHANGE]** refactor: `form.setValues()` does not accept a function anymore
+- **[BREAKING CHANGE]** refactor: add function `initialize()` to `useForm()` and make `setInitialValues()` do what it says
+- feat: add method `key(name)` to `` (uncontrolled mode)
+- feat: add method `getModified()` to `useForm()`
+- feat: add method `getTouched()` to `useForm()`
+- feat: add method `isModified()` to `useForm()`
+- feat: add method `isTouched()` to `useForm()`
+- feat: add method `resetTouched()` to `useForm()`
+- feat: add method `appendListItem()` to `useForm()`
+- feat: add method `insertListItem()` to `useForm()`
+- feat: add method `moveListItem()` to `useForm()`
+- feat: add method `removeListItem()` to `useForm()`
+- feat: add method `replaceListItem()` to `useForm()`
+- feat: add method `swapListItem()` to `useForm()`
+- feat: add method `forceUpdate()` to `useForm()`
+- feat: add method `getInitialError()` to `useForm()`
+- feat: add method `getInitialErrors()` to `useForm()`
+- feat: add method `resetErrors(fields)` to `useForm()`
+- feat: add method `handleFieldChange(name, opts)` to `useForm()`
+- feat: add option `format` to `getFieldProps()` returned by `useForm()`
+- feat: add option `initialErrors` to `useForm()`
+- feat: add option `initialModified` to `useForm()`
+- feat: add option `initialTouched` to `useForm()`
+- feat: add option `onValuesChange(values, mutation)` to `useForm()`
+- feat: add option `preventDefaultOnSubmit` to `useForm()`
+- feat: add option `disableSubmitIfNotModified` to `useForm()`
+- feat: add option `disableSubmitIfNotValid` to `useForm()`
+- feat: add option `forceUpdateOnStatusChange` to `useForm()`
+- feat: add option `sort` to `useFieldArray()`
+- feat: add hook `useWatch(path, callback)`
+- feat: make `onSubmit` optional in `useForm()`
+- feat: pass `values` as second argument of `onSubmitted(result, values)`
+- feat: allow passing `setValueOptions` to `form.getFieldProps()`, `form.handleChange()`, `form.handleFieldChange()` and `form.handleSetValue()`
+- feat: set `key` attribute using `form.key()` in `<Field>` component
+- feat: improve autocompletion of field names in functions arguments
+- feat: pass current items to callback of `handleAppend()` and `handlePrepend()` of `useFieldArray()`
+- refactor: rename mode `experimental_uncontrolled` to `uncontrolled`
+- fix: return `onClick` property in `getButtonProps()` in `useForm()`
+- fix: fix errors state after changing array items (insert, prepend, remove...)
+- fix: fix value returned by `getFieldProps()` to be empty string instead of null when format option is not null
+- fix: export types from index to simplify import declarations
+
 ## v5.6.0 (2025-01-09)
 
 - feat: add submitted `values` as second argument to `onSubmitted()` returned by `useForm()`
@@ -73,7 +125,7 @@
 
 - Added option `parser(value): any` to `handleSetValue(name, options?)` returned by `useForm()`
 - Added `swap(from, to)` to `useFieldArray()`
-- Allow passing several indexes to `remove()` in `useFieldArray()`
+- Allow passing several indices to `remove()` in `useFieldArray()`
 - Fixed functions of `useFieldArray()` to queue updates when called during the same render
 - Fixed `submitted` not being set to `false` when form is modified after submit
 - Upgraded dependencies
