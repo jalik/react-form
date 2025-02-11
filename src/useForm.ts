@@ -155,18 +155,6 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   handleBlur (event: React.FocusEvent<FieldElement>): void;
   /**
-   * Handles field change event.
-   * @param event
-   * @param options
-   */
-  handleChange (
-    event: React.ChangeEvent<FieldElement>,
-    options?: {
-      parser?: ParseFunction;
-      setValueOptions?: Partial<SetValuesOptions>;
-    }
-  ): void;
-  /**
    * Handles field change automatically by detecting if a value or an event is returned.
    * @param path
    * @param options
@@ -726,20 +714,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
   }, [forceUpdateOnStatusChange, getValue, setNeedValidation, setTouchedField, setValue, trimOnBlur, validateOnTouch])
 
-  const handleChange = useCallback<UseFormHook<V, E, R>['handleChange']>((event, opts): void => {
-    const { setValueOptions } = opts ?? {}
-    const target = event.currentTarget ?? event.target
-    const { name } = target
-
-    // Get parsed value from field.
-    const parsedValue = getFieldValue(target, opts)
-
-    setValue(name, parsedValue, {
-      validate: validateOnChange,
-      ...setValueOptions
-    })
-  }, [setValue, validateOnChange])
-
   const handleReset = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
     event.stopPropagation()
@@ -764,12 +738,24 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const handleFieldChange = useCallback<UseFormHook<V, E, R>['handleFieldChange']>((path, opts) => {
     return (valueOrEvent: React.ChangeEvent<FieldElement> | unknown) => {
       if (typeof valueOrEvent === 'object' && valueOrEvent != null && 'nativeEvent' in valueOrEvent) {
-        handleChange(valueOrEvent as React.ChangeEvent<FieldElement>, opts)
+        const target =
+          (valueOrEvent as React.ChangeEvent<FieldElement>).currentTarget ??
+          (valueOrEvent as React.ChangeEvent<FieldElement>).target
+
+        const { name } = target
+
+        // Get parsed value from field.
+        const parsedValue = getFieldValue(target, opts)
+
+        setValue(name, parsedValue, {
+          validate: validateOnChange,
+          ...opts
+        })
       } else {
         handleSetValue(path, opts)(valueOrEvent)
       }
     }
-  }, [handleChange, handleSetValue])
+  }, [handleSetValue, setValue, validateOnChange])
 
   /**
    * Handles form submit.
@@ -1059,7 +1045,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     mode,
     forceUpdate,
     handleBlur,
-    handleChange,
     handleFieldChange,
     handleReset,
     handleSetValue,
