@@ -693,32 +693,6 @@ describe('useForm()', () => {
         expect(result.current.values.username).toBe('a')
       })
     })
-
-    describe('with state function (s) => newState', () => {
-      it('should be called with currentState', () => {
-        const initialValues = {
-          count: 0
-        }
-        const { result } = renderHook(() => {
-          return useForm({
-            initialValues
-          })
-        })
-
-        act(() => {
-          result.current.setValues((s) => ({
-            ...s,
-            count: s.count + 1
-          }))
-          result.current.setValues((s) => ({
-            ...s,
-            count: s.count + 1
-          }))
-        })
-
-        expect(result.current.values.count).toBe(2)
-      })
-    })
   })
 
   describe('submit()', () => {

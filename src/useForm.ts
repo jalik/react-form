@@ -252,10 +252,9 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * Sets all or partial fields values.
    * @param values
    * @param options
-   * todo v6: do not accept callback, to get previous values use getValues()
    */
   setValues (
-    values: PathsOrValues<V> | ((previous: V) => V),
+    values: PathsOrValues<V>,
     options?: SetValuesOptions
   ): void;
   /**
@@ -523,8 +522,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   })
   const {
     initializedRef,
-    state,
-    valuesRef
+    state
   } = formState
 
   // Handle form errors.
@@ -656,19 +654,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       validate = false
     } = opts ?? {}
 
-    const currentValues = clone(valuesRef.current)
-
-    const mutationOrValues: PathsOrValues<V> = typeof values === 'function'
-      ? { ...values(currentValues as any) }
-      : { ...values }
-
-    setValues(mutationOrValues, {
+    setValues(values, {
       forceUpdate,
       nullify: opts?.nullify ?? nullify,
       partial,
       validate
     })
-  }, [nullify, setValues, valuesRef])
+  }, [nullify, setValues])
 
   const validateAndSubmit = useCallback(async (): Promise<R | undefined> => {
     // Submit without validation if:
