@@ -22,7 +22,7 @@ import useFormState, {
   PathsOrValues,
   Values
 } from './useFormState'
-import { clone, getFieldId, getFieldValue, hasDefinedValues, randomKey } from './utils'
+import { getFieldId, getFieldValue, hasDefinedValues, randomKey } from './utils'
 import useFormKeys, { UseFormKeysHook } from './useFormKeys'
 import useFormWatch, { UseFormWatchHook } from './useFormWatch'
 import useFormErrors, { UseFormErrorsHook } from './useFormErrors'
@@ -188,6 +188,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * @param event
    */
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
+  /**
+   * Initializes form with values.
+   */
+  initialize: UseFormValuesHook<V>['initialize'];
   /**
    * Tells if the field or form was modified.
    */
@@ -621,8 +625,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   const {
     getValue,
+    initialize,
     resetValues,
-    setInitialValues,
     setValue,
     setValues
   } = formValues
@@ -934,9 +938,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   useEffect(() => {
     // Set values using initial values when they are provided or if they changed.
     if (initialValues && (!initializedRef.current || reinitialize)) {
-      setInitialValues(initialValues, { forceUpdate: true })
+      initialize(initialValues, { forceUpdate: true })
     }
-  }, [initialValues, initializedRef, reinitialize, setInitialValues])
+  }, [initialValues, initialize, initializedRef, reinitialize])
 
   useEffect(() => {
     if (state.initialized && validateOnInit) {
@@ -1023,6 +1027,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     getInitialValues: formValues.getInitialValues,
     getValue: formValues.getValue,
     getValues: formValues.getValues,
+    initialize: formValues.initialize,
     removeFields: formValues.removeValues,
     reset: formValues.resetValues,
     setInitialValues: formValues.setInitialValues,

@@ -113,6 +113,15 @@ export type UseFormValuesHook<V extends Values> = {
    */
   getValues (): Partial<V>;
   /**
+   * Initialize form with values.
+   * @param values
+   * @param options
+   */
+  initialize (
+    values: Partial<V>,
+    options?: { forceUpdate?: boolean }
+  ): void;
+  /**
    * Removes existing values (set to undefined).
    * @param paths
    * @param options
@@ -135,7 +144,8 @@ export type UseFormValuesHook<V extends Values> = {
    */
   setInitialValues (
     values: PathsOrValues<V>,
-    options?: { forceUpdate?: boolean }): void;
+    options?: { partial?: boolean }
+  ): void;
   /**
    * Sets a single value.
    * @param path
@@ -416,7 +426,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     }))
   }, [clearErrors, clearModified, clearTouched, setState, setValues])
 
-  const initialize = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
+  const initialize = useCallback<UseFormValuesHook<V>['initialize']>((values, opts) => {
     setValues(values, {
       applyTransform: false,
       ...opts,
@@ -425,6 +435,27 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       partial: false
     })
   }, [setValues])
+
+  const setInitialValues = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
+    const { partial } = opts ?? {}
+    const paths = Object.keys(values)
+    let nextValues = (partial ? clone(initialValuesRef.current) ?? {} : {}) as Partial<V>
+
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i]
+      const value = values[path]
+      nextValues = build(path, value, nextValues)
+    }
+
+    initialValuesRef.current = nextValues
+
+    if (mode === 'controlled') {
+      setState((s) => ({
+        ...s,
+        initialValues: nextValues
+      }))
+    }
+  }, [initialValuesRef, mode, setState])
 
   const removeValues = useCallback<UseFormValuesHook<V>['removeValues']>((paths, opts) => {
     let nextInitialValues = clone(initialValuesRef.current)
@@ -491,10 +522,10 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     getInitialValues,
     getValue,
     getValues,
+    initialize,
     removeValues,
     resetValues,
-    // todo v6: setInitialValues() and initialize() should be separated
-    setInitialValues: initialize,
+    setInitialValues,
     setValue,
     setValues
   }

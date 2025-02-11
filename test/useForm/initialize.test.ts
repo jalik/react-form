@@ -22,7 +22,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getInitialValues()).toBe(undefined)
       expect(hook.result.current.getValues()).toStrictEqual({})
       expect(hook.result.current.initialized).toBe(false)
-      act(() => hook.result.current.setInitialValues(initialValues))
+      act(() => hook.result.current.initialize(initialValues))
       expect(hook.result.current.getInitialValues()).toStrictEqual(initialValues)
       expect(hook.result.current.getValues()).toStrictEqual(initialValues)
       expect(hook.result.current.initialized).toBe(true)
@@ -39,7 +39,7 @@ function tests (mode: FormMode) {
       }
       expect(hook.result.current.getInitialValues()).toStrictEqual(initialValues)
       expect(hook.result.current.getValues()).toStrictEqual(initialValues)
-      act(() => hook.result.current.setInitialValues(values))
+      act(() => hook.result.current.initialize(values))
       expect(hook.result.current.getInitialValues()).toStrictEqual(values)
       expect(hook.result.current.getValues()).toStrictEqual(values)
       expect(hook.result.current.initialized).toBe(true)
@@ -59,7 +59,7 @@ function tests (mode: FormMode) {
       }))
       expect(hook.result.current.getError('a')).toBeTruthy()
       expect(hook.result.current.getError('b')).toBeTruthy()
-      act(() => hook.result.current.setInitialValues(initialValues))
+      act(() => hook.result.current.initialize(initialValues))
       expect(hook.result.current.getErrors()).toStrictEqual({})
     })
 
@@ -73,7 +73,7 @@ function tests (mode: FormMode) {
       }))
       expect(hook.result.current.isModified('a')).toBe(true)
       expect(hook.result.current.isModified('b')).toBe(true)
-      act(() => hook.result.current.setInitialValues(initialValues))
+      act(() => hook.result.current.initialize(initialValues))
       expect(hook.result.current.getModified()).toStrictEqual({})
     })
 
@@ -87,16 +87,16 @@ function tests (mode: FormMode) {
       }))
       expect(hook.result.current.isTouched('a')).toBe(true)
       expect(hook.result.current.isTouched('b')).toBe(true)
-      act(() => hook.result.current.setInitialValues(initialValues))
+      act(() => hook.result.current.initialize(initialValues))
       expect(hook.result.current.getTouched()).toStrictEqual({})
     })
   })
 }
 
-describe('useForm({ mode : "controlled" }).setInitialValues()', () => {
+describe('useForm({ mode : "controlled" }).initialize()', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode : "uncontrolled" }).setInitialValues()', () => {
+describe('useForm({ mode : "uncontrolled" }).initialize()', () => {
   tests('uncontrolled')
 })
