@@ -237,13 +237,13 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   setInitialValues: UseFormValuesHook<V>['setInitialValues'];
   /**
+   * Sets all partial or partial touched fields.
+   */
+  setTouched: UseFormStatusHook<V>['setTouched'];
+  /**
    * Sets a single touched field.
    */
   setTouchedField: UseFormStatusHook<V>['setTouchedField'];
-  /**
-   * Sets all partial or partial touched fields.
-   */
-  setTouchedFields: UseFormStatusHook<V>['setTouched'];
   /**
    * Sets a single field value.
    */
@@ -1003,8 +1003,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     isTouched: formStatus.isTouched,
     resetTouched: formStatus.resetTouched,
     setTouchedField: formStatus.setTouchedField,
-    // todo v6: rename to setTouched()
-    setTouchedFields: formStatus.setTouched,
+    setTouched: formStatus.setTouched,
 
     // submission
     submitCount: state.submitCount,

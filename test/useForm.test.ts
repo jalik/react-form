@@ -616,7 +616,7 @@ describe('useForm()', () => {
       })
 
       act(() => {
-        result.current.setTouchedFields({
+        result.current.setTouched({
           username: true,
           password: true
         })
@@ -639,7 +639,7 @@ describe('useForm()', () => {
         })
 
         act(() => {
-          result.current.setTouchedFields({
+          result.current.setTouched({
             username: false,
             password: false
           })

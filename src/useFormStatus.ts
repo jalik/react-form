@@ -93,19 +93,6 @@ export type UseFormStatusHook<V extends Values> = {
     }
   ): void;
   /**
-   * Sets modified state of a path.
-   * @param path
-   * @param value
-   * @param options
-   */
-  setModifiedField (
-    path: FieldPath<V>,
-    value: boolean,
-    options?: {
-      forceUpdate?: boolean,
-    }
-  ): void;
-  /**
    * Sets modified state for given paths or all paths.
    * @param values
    * @param options
@@ -118,12 +105,12 @@ export type UseFormStatusHook<V extends Values> = {
     }
   ): void;
   /**
-   * Sets touched state of a path.
+   * Sets modified state of a path.
    * @param path
    * @param value
    * @param options
    */
-  setTouchedField (
+  setModifiedField (
     path: FieldPath<V>,
     value: boolean,
     options?: {
@@ -140,6 +127,19 @@ export type UseFormStatusHook<V extends Values> = {
     options?: {
       forceUpdate?: boolean,
       partial?: boolean,
+    }
+  ): void;
+  /**
+   * Sets touched state of a path.
+   * @param path
+   * @param value
+   * @param options
+   */
+  setTouchedField (
+    path: FieldPath<V>,
+    value: boolean,
+    options?: {
+      forceUpdate?: boolean,
     }
   ): void;
 }
