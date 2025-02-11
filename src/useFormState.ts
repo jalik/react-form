@@ -47,9 +47,8 @@ export type Errors<E = Error> = Record<string, E | undefined | null>;
 export type ModifiedFields = Record<string, boolean>;
 /**
  * Contains info about touched fields.
- * todo v6: rename to TouchedState
  */
-export type TouchedFields = Record<string, boolean>;
+export type TouchedState = Record<string, boolean>;
 
 export type FormState<V extends Values = Values, E = Error, R = any> = {
   /**
@@ -79,7 +78,7 @@ export type FormState<V extends Values = Values, E = Error, R = any> = {
   /**
    * Sets initial touched fields.
    */
-  initialTouched: TouchedFields;
+  initialTouched: TouchedState;
   /**
    * Contains initial form values.
    */
@@ -131,7 +130,7 @@ export type FormState<V extends Values = Values, E = Error, R = any> = {
   /**
    * Contains the touched fields state (controlled mode).
    */
-  touchedFields: TouchedFields;
+  touchedFields: TouchedState;
   /**
    * The validation error.
    */
@@ -190,7 +189,7 @@ export type UseFormStateHook<V extends Values, E, R> = {
   /**
    * The touched fields ref (uncontrolled mode).
    */
-  touchedRef: MutableRefObject<TouchedFields>;
+  touchedRef: MutableRefObject<TouchedState>;
   /**
    * The values ref (uncontrolled mode).
    */
@@ -235,7 +234,7 @@ function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E
   const initialValuesRef = useRef<Partial<V | undefined>>(state.initialValues)
   const initializedRef = useRef<boolean>(state.initialized)
   const modifiedRef = useRef<ModifiedFields>(state.initialModified ?? {})
-  const touchedRef = useRef<TouchedFields>(state.initialTouched ?? {})
+  const touchedRef = useRef<TouchedState>(state.initialTouched ?? {})
   const valuesRef = useRef<Partial<V>>(state.values ?? {})
 
   // Computed values.

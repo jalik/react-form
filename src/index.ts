@@ -58,7 +58,7 @@ export {
   ModifiedFields,
   PathsAndValues,
   PathsOrValues,
-  TouchedFields,
+  TouchedState,
   Values
 } from './useFormState'
 

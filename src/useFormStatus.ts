@@ -8,7 +8,7 @@ import {
   FieldPath,
   FormMode,
   ModifiedFields,
-  TouchedFields,
+  TouchedState,
   UseFormStateHook,
   Values
 } from './useFormState'
@@ -59,7 +59,7 @@ export type UseFormStatusHook<V extends Values> = {
   /**
    * Returns modified fields.
    */
-  getTouched (): TouchedFields;
+  getTouched (): TouchedState;
   /**
    * Tells if the field was modified else the form if no path is passed.
    * @param path
@@ -136,7 +136,7 @@ export type UseFormStatusHook<V extends Values> = {
    * @param options
    */
   setTouched (
-    values: TouchedFields,
+    values: TouchedState,
     options?: {
       forceUpdate?: boolean,
       partial?: boolean,
