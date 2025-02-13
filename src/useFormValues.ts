@@ -99,7 +99,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns the initial value of a field.
    */
-  getInitialValue<T> (path: FieldPath<V>, defaultValue?: T): T | undefined;
+  getInitialValue<T = unknown> (path: FieldPath<V>, defaultValue?: T): T | undefined;
   /**
    * Returns the initial values.
    */
@@ -107,7 +107,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns a value.
    */
-  getValue<T> (path: FieldPath<V>, defaultValue?: T): T | undefined;
+  getValue<T = unknown> (path: FieldPath<V>, defaultValue?: T): T | undefined;
   /**
    * Returns values.
    */
