@@ -2,17 +2,25 @@
 
 ## v6.0.0 (2025-02-10)
 
-- **[BREAKING CHANGE]** refactor: delete method `handleChange()` from `useForm()`
-- **[BREAKING CHANGE]** refactor: rename `useFieldArray().fields` to `items`
-- **[BREAKING CHANGE]** refactor: rename option `onSubmitted()` to `onSuccess()` in `useForm()`
-- **[BREAKING CHANGE]** refactor: rename method `setTouchedFields()` to `setTouched()` in
+### Breaking changes
+
+- refactor: delete method `handleChange()` from `useForm()`
+- refactor: rename `useFieldArray().fields` to `items`
+- refactor: rename option `onSubmitted()` to `onSuccess()` in `useForm()`
+- refactor: rename method `setTouchedFields()` to `setTouched()` in
   `useForm()`
-- **[BREAKING CHANGE]** refactor: forms can be submitted if not modified by default
-- **[BREAKING CHANGE]** refactor: rename type `ModifiedFields` to `ModifiedState`
-- **[BREAKING CHANGE]** rename type `TouchedFields` to `TouchedState`
-- **[BREAKING CHANGE]** refactor: `form.setValues()` does not accept a function anymore
-- **[BREAKING CHANGE]** refactor: add function `initialize()` to `useForm()` and make `setInitialValues()` do what it says
-- feat: add method `key(name)` to `` (uncontrolled mode)
+- refactor: forms can be submitted if not modified by default (use option `disableSubmitIfNotModified` to change this)
+- refactor: rename type `ModifiedFields` to `ModifiedState`
+- rename type `TouchedFields` to `TouchedState`
+- refactor: `setValues()` does not accept a function anymore in `useForm()`
+- refactor: add function `initialize()` to `useForm()` and make `setInitialValues()` do what it says
+- refactor: remove props `emptyOptionLabel`, `options` and `type` from `Field` component to only handle props initialization
+- refactor: rename mode `experimental_uncontrolled` to `uncontrolled`
+- refactor: rename option `parser` to `parse` in `useForm().getFieldProps()`, `useForm().handleFieldChange()`, `useForm().handleSetValue()` and `getFieldValue()`
+
+### Other changes
+
+- feat: add method `key(name)` to `useForm()` (uncontrolled mode)
 - feat: add method `getModified()` to `useForm()`
 - feat: add method `getTouched()` to `useForm()`
 - feat: add method `isModified()` to `useForm()`
@@ -42,11 +50,10 @@
 - feat: add hook `useWatch(path, callback)`
 - feat: make `onSubmit` optional in `useForm()`
 - feat: pass `values` as second argument of `onSubmitted(result, values)`
-- feat: allow passing `setValueOptions` to `form.getFieldProps()`, `form.handleChange()`, `form.handleFieldChange()` and `form.handleSetValue()`
-- feat: set `key` attribute using `form.key()` in `<Field>` component
+- feat: allow passing `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and `handleSetValue()` in `useForm()`
+- feat: set `key` attribute using `useForm().key()` in `<Field>` component
 - feat: improve autocompletion of field names in functions arguments
 - feat: pass current items to callback of `handleAppend()` and `handlePrepend()` of `useFieldArray()`
-- refactor: rename mode `experimental_uncontrolled` to `uncontrolled`
 - fix: return `onClick` property in `getButtonProps()` in `useForm()`
 - fix: fix errors state after changing array items (insert, prepend, remove...)
 - fix: fix value returned by `getFieldProps()` to be empty string instead of null when format option is not null
@@ -142,26 +149,31 @@
 
 ## 5.0.0 (2023-05-18)
 
-- **[BREAKING]** Renamed component `<SelectOption />` to `<Option />`
-- **[BREAKING]** Renamed option `onChange` to `transform` in `useForm(options)`
-- **[BREAKING]** Renamed option `onLoad` to `load` in `useForm(options)`
-- **[BREAKING]** Renamed option `onInitializeField` to `initializeField` in `useForm(options)`
-- **[BREAKING]** Renamed option `onValidate` to `validate` in `useForm(options)`
-- **[BREAKING]** Renamed option `onValidateField` to `validateField` in `useForm(options)`
-- **[BREAKING]** Renamed function `getAttributes(field: string)` to `getFieldProps(field: name)`
-- **[BREAKING]** Renamed function `remove(field: string)` to `removeFields(fields: string[])` and
-- **[BREAKING]** Renamed function `initValues(values)` to `setInitialValues(values)`
-- **[BREAKING]** Changed `setErrors(errors, options?)` to set all errors at once, use
+### Breaking changes
+
+- Renamed component `<SelectOption />` to `<Option />`
+- Renamed option `onChange` to `transform` in `useForm(options)`
+- Renamed option `onLoad` to `load` in `useForm(options)`
+- Renamed option `onInitializeField` to `initializeField` in `useForm(options)`
+- Renamed option `onValidate` to `validate` in `useForm(options)`
+- Renamed option `onValidateField` to `validateField` in `useForm(options)`
+- Renamed function `getAttributes(field: string)` to `getFieldProps(field: name)`
+- Renamed function `remove(field: string)` to `removeFields(fields: string[])` and
+- Renamed function `initValues(values)` to `setInitialValues(values)`
+- Changed `setErrors(errors, options?)` to set all errors at once, use
   option `partial: true` to apply a partial update
-- **[BREAKING]** Changed `setValues(values, options?)` to set all values at once, use
+- Changed `setValues(values, options?)` to set all values at once, use
   option `partial: true` to apply a partial update
-- **[BREAKING]** Function `validateField(name: string)` returned by `useForm()` does not accept a
+- Function `validateField(name: string)` returned by `useForm()` does not accept a
   value as second argument
-- **[BREAKING]** Do not call `removeField(name)` when `<Field>` is unmounted
-- **[BREAKING]** Increment `submitCount` on `submit()` and not on submit error
-- **[BREAKING]** Removed `loaded` from `useForm()`
-- **[BREAKING]** Removed options `invalidClass`, `modifiedClass` and `validClass` in `useForm()` (
+- Do not call `removeField(name)` when `<Field>` is unmounted
+- Increment `submitCount` on `submit()` and not on submit error
+- Removed `loaded` from `useForm()`
+- Removed options `invalidClass`, `modifiedClass` and `validClass` in `useForm()` (
   the same result can be achieved with `initializeField()`)
+
+### Other changes
+
 - Added option `formatter(value): string` to `<Field>`
 - Added option `partial: boolean` to `setErrors(errors, options)`
 - Added option `partial: boolean` to `setValues(fields, options)`
@@ -199,11 +211,16 @@
 
 ## 4.0.0 (2023-03-24)
 
-- **[BREAKING]** Initial values are not replaced after form submission (to get the same behaviour,
+### Breaking changes
+
+- Initial values are not replaced after form submission (to get the same behaviour,
   call `initValues(submittedValues)`)
-- **[BREAKING]** onValidateField() must return the Error instead of throwing it
-- **[BREAKING]** Changed signature of onValidateField(value, name, values) to onValidateField(name,
+- onValidateField() must return the Error instead of throwing it
+- Changed signature of onValidateField(value, name, values) to onValidateField(name,
   value, values)
+
+### Other changes
+
 - Added `onLoad()` option to `useForm()`
 - Added `onChange()` option to `useForm()`
 - Return `hasError: boolean` from `useForm()`
@@ -251,7 +268,12 @@
 
 ## v3.0.0 (2020-10-14)
 
-- **[BREAKING]** Renamed attribute `changes` to `modifiedFields` returned from `useForm()`
+### Breaking changes
+
+- Renamed attribute `changes` to `modifiedFields` returned from `useForm()`
+
+### Other changes
+
 - Allow to return a falsy value (e.g. null, false) during validation instead of an empty object,
   when there are no errors
 - Automatically set attribute `id` on `<Field>` using the name and value
@@ -265,8 +287,13 @@
 
 ## v2.0.0 (2020-08-06)
 
-- **[BREAKING]** Removed attribute `validator` from `<Field>`
-- **[BREAKING]** Removed functions `register()` and `unregister()` returned from `useForm()`
+### Breaking changes
+
+- Removed attribute `validator` from `<Field>`
+- Removed functions `register()` and `unregister()` returned from `useForm()`
+
+### Other changes
+
 - Added function `remove(name)` returned by `useForm()` as a replacement of  `unregister()`
 - Added attribute `submitResult` returned by `useForm()`
 
