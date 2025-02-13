@@ -55,7 +55,7 @@ export type GetButtonPropsReturnType = {
   type?: any;
 }
 
-export type InitializeFieldFunction<V extends Values, E, R> = <C extends ElementType> (path: FieldPath<V>, formState: FormState<V, E, R>) => ComponentProps<C> | undefined
+export type InitializeFieldFunction<V extends Values, E> = <C extends ElementType> (path: FieldPath<V>, formState: FormState<V, E, unknown>) => ComponentProps<C> | undefined
 
 /**
  * A function that converts a value to a string.
@@ -359,7 +359,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * @param path
    * @param formState
    */
-  initializeField?: InitializeFieldFunction<V, E, R>;
+  initializeField?: InitializeFieldFunction<V, E>;
   /**
    * The loading function.
    */
