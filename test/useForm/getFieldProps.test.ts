@@ -59,18 +59,18 @@ function tests (mode: FormMode) {
       })
     })
 
-    describe('with options.parser = function', () => {
-      const parser = Number
+    describe('with options.parse = function', () => {
+      const parse = Number
 
-      it('should use parser function to transform value when onChange() is called', () => {
+      it('should use parse function to transform value when onChange() is called', () => {
         const initialValues = { a: 1 }
         const hook = renderHook(() => useForm({
           mode,
           initialValues
         }))
-        const props = hook.result.current.getFieldProps('a', null, { parser })
+        const props = hook.result.current.getFieldProps('a', null, { parse })
         act(() => props.onChange('1337'))
-        expect(hook.result.current.getValue('a')).toBe(parser('1337'))
+        expect(hook.result.current.getValue('a')).toBe(parse('1337'))
       })
 
       describe('with input type="checkbox"', () => {
@@ -78,7 +78,7 @@ function tests (mode: FormMode) {
           const props = hook.result.current.getFieldProps('a', {
             type: 'checkbox',
             [valueAttribute]: String(initialValues.a)
-          }, { parser })
+          }, { parse })
           expect(props[checkedAttribute]).toBe(true)
         })
 
@@ -86,7 +86,7 @@ function tests (mode: FormMode) {
           const props = hook.result.current.getFieldProps('a', {
             type: 'checkbox',
             [valueAttribute]: String(Math.random())
-          }, { parser })
+          }, { parse })
           expect(props[checkedAttribute]).toBe(false)
         })
       })
@@ -96,7 +96,7 @@ function tests (mode: FormMode) {
           const props = hook.result.current.getFieldProps('a', {
             type: 'radio',
             [valueAttribute]: String(initialValues.a)
-          }, { parser })
+          }, { parse })
           expect(props[checkedAttribute]).toBe(true)
         })
 
@@ -104,7 +104,7 @@ function tests (mode: FormMode) {
           const props = hook.result.current.getFieldProps('a', {
             type: 'radio',
             [valueAttribute]: String(Math.random())
-          }, { parser })
+          }, { parse })
           expect(props[checkedAttribute]).toBe(false)
         })
       })

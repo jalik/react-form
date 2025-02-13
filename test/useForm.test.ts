@@ -423,7 +423,7 @@ describe('useForm()', () => {
   })
 
   describe('handleSetValue(name, options)', () => {
-    describe('without parser option', () => {
+    describe('without parse option', () => {
       it('should set field value when called', () => {
         const initialValues = { username: undefined }
         const { result } = renderHook(() => {
@@ -438,7 +438,7 @@ describe('useForm()', () => {
       })
     })
 
-    describe('with parser option', () => {
+    describe('with parse option', () => {
       it('should set field value when called', () => {
         const initialValues = { username: undefined }
         const { result } = renderHook(() => {
@@ -447,7 +447,7 @@ describe('useForm()', () => {
           })
         })
         act(() => {
-          result.current.handleSetValue('username', { parser: (value) => value + '1' })('jalik')
+          result.current.handleSetValue('username', { parse: (value) => value + '1' })('jalik')
         })
         expect(result.current.getValue('username')).toBe('jalik1')
       })

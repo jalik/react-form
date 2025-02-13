@@ -108,7 +108,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     props?: ComponentProps<Component>,
     opts?: {
       format?: FormatFunction | null | false;
-      parser?: ParseFunction;
+      parse?: ParseFunction;
       setValueOptions?: Partial<SetValuesOptions>;
     }
   ): any;
@@ -162,7 +162,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
   handleFieldChange (
     path: FieldPath<V>,
     options?: {
-      parser?: ParseFunction;
+      parse?: ParseFunction;
       setValueOptions?: Partial<SetValuesOptions>;
     }
   ): (valueOrEvent: React.ChangeEvent<FieldElement> | unknown) => void;
@@ -179,7 +179,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
   handleSetValue (
     path: FieldPath<V>,
     options?: {
-      parser?: ParseFunction;
+      parse?: ParseFunction;
       setValueOptions?: Partial<SetValuesOptions>;
     }
   ): (value: unknown | undefined) => void;
@@ -716,12 +716,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   const handleSetValue = useCallback<UseFormHook<V, E, R>['handleSetValue']>((path, opts) => {
     const {
-      setValueOptions,
-      parser
+      parse,
+      setValueOptions
     } = opts ?? {}
 
     return (value) => {
-      const parsedValue = typeof value === 'string' && parser ? parser(value) : value
+      const parsedValue = typeof value === 'string' && typeof parse === 'function'
+        ? parse(value)
+        : value
       setValue(path, parsedValue, {
         validate: validateOnChange,
         ...setValueOptions
@@ -796,13 +798,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     props?: ComponentProps<Component>, // fixme improve type autocompletion
     opts: {
       format?: FormatFunction | null | false;
-      parser?: ParseFunction;
+      parse?: ParseFunction;
       setValueOptions?: Partial<SetValuesOptions>;
     } = {}
   ) => {
     const {
       format = String,
-      parser,
+      parse,
       setValueOptions
     } = opts ?? {}
 
@@ -841,7 +843,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     const finalProps: any = {
       onBlur: handleBlur,
       onChange: handleFieldChange(path, {
-        parser,
+        parse,
         setValueOptions
       }),
       id: getFieldId(path, formKey),
@@ -891,7 +893,9 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     if (type === 'checkbox' || type === 'radio') {
-      const parsedValue = (inputValue != null && parser ? parser(inputValue) : inputValue)
+      const parsedValue = typeof inputValue === 'string' && typeof parse === 'function'
+        ? parse(inputValue)
+        : inputValue
 
       if (contextValue instanceof Array) {
         // Set checked state by looking for checkbox value in the array.

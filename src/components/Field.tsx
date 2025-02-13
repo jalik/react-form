@@ -61,7 +61,7 @@ function Field<T, C extends ElementType = 'input'> (props: FieldProps<T, C>): Re
       key={form.key(name)}
       {...getFieldProps(name, others, {
         format: formatter,
-        parser
+        parse: parser
       })}
     />
   )

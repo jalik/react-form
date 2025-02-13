@@ -4,7 +4,7 @@
  */
 
 import deepExtend from '@jalik/deep-extend'
-import { FieldElement } from './useForm'
+import { FieldElement, ParseFunction } from './useForm'
 
 import { PathsAndValues } from './useFormState'
 
@@ -221,15 +221,17 @@ export function getFieldId (name: string, formId: string): string {
  * @param field
  * @param options
  */
-export function getFieldValue (field: FieldElement, options?: {
-  parser?: (value: string, target?: HTMLElement) => any
-}) {
-  const { parser } = options || {}
+export function getFieldValue (
+  field: FieldElement,
+  options?: {
+    parse?: ParseFunction
+  }) {
+  const { parse } = options ?? {}
   let value
 
   // Parses value using a custom parser or using the native parser (smart typing).
-  const parsedValue = typeof parser === 'function'
-    ? parser(field.value, field)
+  const parsedValue = typeof parse === 'function'
+    ? parse(field.value, field)
     : parseInputValue(field)
 
   const el = field.form?.elements.namedItem(field.name)
@@ -244,7 +246,7 @@ export function getFieldValue (field: FieldElement, options?: {
 
     if (value) {
       // Parse all checked/selected values.
-      value = value.map((v) => typeof parser === 'function' ? parser(v, field) : v)
+      value = value.map((v) => typeof parse === 'function' ? parse(v, field) : v)
     }
   } else if (field instanceof HTMLInputElement && field.type === 'checkbox') {
     if (field.value === '') {
