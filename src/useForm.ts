@@ -107,7 +107,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     path: FieldPath<V>,
     props?: ComponentProps<Component>,
     opts?: {
-      format?: FormatFunction | null;
+      format?: FormatFunction | null | false;
       parser?: ParseFunction;
       setValueOptions?: Partial<SetValuesOptions>;
     }
@@ -795,7 +795,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     path: FieldPath<V>,
     props?: ComponentProps<Component>, // fixme improve type autocompletion
     opts: {
-      format?: FormatFunction | null;
+      format?: FormatFunction | null | false;
       parser?: ParseFunction;
       setValueOptions?: Partial<SetValuesOptions>;
     } = {}
@@ -911,7 +911,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     }
 
     // Convert value to string.
-    if (format != null && typeof finalProps[valueAttribute] !== 'string' &&
+    if (typeof format === 'function' && typeof finalProps[valueAttribute] !== 'string' &&
       !(finalProps[valueAttribute] instanceof Array)) {
       finalProps[valueAttribute] = finalProps[valueAttribute] != null
         ? format(finalProps[valueAttribute])

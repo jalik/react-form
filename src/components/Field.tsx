@@ -25,7 +25,7 @@ export type FieldProps<T = string, C extends ElementType = any> =
   /**
    * The format function to call before displaying the value.
    */
-  formatter?: FormatFunction | null;
+  formatter?: FormatFunction | null | false;
   /**
    * The name of the field.
    */
