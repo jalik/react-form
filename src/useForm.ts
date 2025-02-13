@@ -65,7 +65,7 @@ export type FormatFunction = (value: unknown) => string
 /**
  * A function that converts a string to a value.
  */
-export type ParseFunction<T = any> = (value: unknown, target?: HTMLElement) => T
+export type ParseFunction<T = any> = (value: string, target?: HTMLElement) => T
 
 export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, R> & {
   /**
@@ -721,7 +721,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     } = opts ?? {}
 
     return (value) => {
-      const parsedValue = value != null && parser ? parser(value) : value
+      const parsedValue = typeof value === 'string' && parser ? parser(value) : value
       setValue(path, parsedValue, {
         validate: validateOnChange,
         ...setValueOptions
