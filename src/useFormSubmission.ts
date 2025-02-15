@@ -10,11 +10,13 @@ import { UseFormValuesHook } from './useFormValues'
 import { UseFormErrorsHook } from './useFormErrors'
 import { UseFormStatusHook } from './useFormStatus'
 
+export type AfterSubmitOption = 'clear' | 'initialize' | 'reset' | null
+
 export type UseFormSubmissionOptions<V extends Values, E, R> = {
   /**
-   * Tells if form values should be cleared after submit.
+   * Tells what to do with form values after submit.
    */
-  clearAfterSubmit?: boolean;
+  afterSubmit?: AfterSubmitOption;
   /**
    * The form errors hook.
    */
@@ -42,10 +44,6 @@ export type UseFormSubmissionOptions<V extends Values, E, R> = {
    */
   onSuccess? (result: R, values: Partial<V>): void;
   /**
-   * Use submitted values as initial values after form submission.
-   */
-  setInitialValuesOnSuccess?: boolean;
-  /**
    * Handle values to submit.
    * @param values
    */
@@ -69,14 +67,13 @@ export type UseFormSubmissionHook<V extends Values, E, R> = {
 
 function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOptions<V, E, R>): UseFormSubmissionHook<V, E, R> {
   const {
-    clearAfterSubmit,
+    afterSubmit,
     formErrors,
     formState,
     formStatus,
     formValues,
     nullify,
     onSuccess,
-    setInitialValuesOnSuccess,
     submit: submitFunc,
     trimOnSubmit
   } = options
@@ -95,8 +92,9 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
 
   const {
     clearValues,
-    setInitialValues,
-    getValues
+    getValues,
+    resetValues,
+    setInitialValues
   } = formValues
 
   const submit = useCallback<UseFormSubmissionHook<V, E, R>['submit']>(() => {
@@ -151,10 +149,12 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         clearModified(undefined, { forceUpdate: false })
         clearTouched(undefined, { forceUpdate: false })
 
-        if (setInitialValuesOnSuccess) {
-          setInitialValues(values)
-        } else if (clearAfterSubmit) {
+        if (afterSubmit === 'clear') {
           clearValues(undefined, { forceUpdate: true })
+        } else if (afterSubmit === 'initialize') {
+          setInitialValues(values)
+        } else if (afterSubmit === 'reset') {
+          resetValues(undefined, { forceUpdate: true })
         }
 
         if (onSuccess) {
@@ -171,7 +171,7 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         }))
         return undefined
       })
-  }, [clearAfterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onSuccess, setInitialValues, setInitialValuesOnSuccess, setState, trimOnSubmit])
+  }, [afterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onSuccess, resetValues, setInitialValues, setState, trimOnSubmit])
 
   useEffect(() => {
     submitRef.current = submitFunc

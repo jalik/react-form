@@ -9,43 +9,6 @@ import useForm from '../src/useForm'
 
 describe('useForm()', () => {
   describe('with options', () => {
-    describe('with clearAfterSubmit', () => {
-      describe('with clearAfterSubmit = true', () => {
-        it('should clear form after submit', async () => {
-          const { result } = renderHook(() => {
-            return useForm({
-              clearAfterSubmit: true,
-              initialValues: { username: 'test' },
-              onSubmit: (values) => Promise.resolve(values)
-            })
-          })
-
-          await act(async () => {
-            await result.current.submit()
-          })
-
-          expect(result.current.values.username).toBe(undefined)
-        })
-      })
-
-      describe('with clearAfterSubmit = false', () => {
-        it('should not clear form after submit', async () => {
-          const { result } = renderHook(() => {
-            return useForm({
-              clearAfterSubmit: false,
-              initialValues: { username: 'test' },
-              onSubmit: (values) => Promise.resolve(values)
-            })
-          })
-
-          await act(async () => {
-            await result.current.submit()
-            expect(result.current.values.username).toBeDefined()
-          })
-        })
-      })
-    })
-
     describe('with disabled = true', () => {
       it('should set state.disabled = true', () => {
         const { result } = renderHook(() => useForm({

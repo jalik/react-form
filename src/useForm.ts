@@ -35,7 +35,7 @@ import useFormValues, {
 import useFormLoader, { UseFormLoaderHook, UseFormLoaderOptions } from './useFormLoader'
 import useFormList, { UseFormListHook } from './useFormList'
 import useFormValidation, { UseFormValidationHook } from './useFormValidation'
-import useFormSubmission from './useFormSubmission'
+import useFormSubmission, { AfterSubmitOption } from './useFormSubmission'
 
 export type FieldElement =
   HTMLInputElement
@@ -307,9 +307,9 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
 
 export type UseFormOptions<V extends Values, E, R> = {
   /**
-   * Tells if form values should be cleared after submit.
+   * Tells what to do with values after submit.
    */
-  clearAfterSubmit?: boolean;
+  afterSubmit?: AfterSubmitOption;
   /**
    * Enables debugging.
    */
@@ -398,10 +398,6 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   reinitialize?: boolean;
   /**
-   * Use submitted values as initial values after form submission.
-   */
-  setInitialValuesOnSuccess?: boolean;
-  /**
    * The delay before submitting the form.
    */
   submitDelay?: number;
@@ -466,8 +462,7 @@ export type UseFormOptions<V extends Values, E, R> = {
  */
 function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<V, E, R>): UseFormHook<V, E, R> {
   const {
-    // todo add tests for clearAfterSubmit
-    clearAfterSubmit = false,
+    afterSubmit,
     debug = false,
     disabled = false,
     // todo add tests for disableOnSubmit
@@ -491,8 +486,6 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     preventDefaultOnSubmit = true,
     // todo add tests for reinitialize
     reinitialize = false,
-    // todo add tests for setInitialValuesOnSuccess
-    setInitialValuesOnSuccess = false,
     submitDelay = 100,
     transform,
     // todo add tests for trimOnBlur
@@ -592,14 +585,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
   // Handle form submission.
   const formSubmission = useFormSubmission<V, E, R>({
-    clearAfterSubmit,
+    afterSubmit,
     formErrors,
     formState,
     formStatus,
     formValues,
     nullify,
     onSuccess,
-    setInitialValuesOnSuccess,
     submit: onSubmit,
     trimOnSubmit
   })

@@ -168,6 +168,22 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getInitialValue('b')).toBe(2)
     })
   })
+
+  describe('with options.initialize = true', () => {
+    const initialValues = {
+      a: 1,
+      b: 2
+    }
+    it('should clear initial values', () => {
+      const hook = renderHook(() => useForm({
+        mode,
+        initialValues
+      }))
+      expect(hook.result.current.getInitialValues()).toStrictEqual(initialValues)
+      act(() => hook.result.current.clear(undefined, { initialize: true }))
+      expect(hook.result.current.getInitialValues()).toStrictEqual({})
+    })
+  })
 }
 
 describe('useForm({ mode: "controlled" }).clear()', () => {

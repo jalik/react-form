@@ -109,8 +109,6 @@ function tests (mode: FormMode) {
         })
       })
     })
-
-    // todo test options.mode
   })
 
   describe('with input type="checkbox"', () => {
