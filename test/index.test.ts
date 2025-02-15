@@ -12,7 +12,6 @@ describe('index', () => {
     expect(index.Field).toBeDefined()
     expect(index.FieldError).toBeDefined()
     expect(index.Form).toBeDefined()
-    expect(index.Option).toBeDefined()
   })
 
   it('should export contexts', () => {

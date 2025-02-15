@@ -26,7 +26,6 @@ export { default as Button, ButtonProps } from './components/Button'
 export { default as Field, FieldProps } from './components/Field'
 export { default as FieldError, FieldErrorProps } from './components/FieldError'
 export { default as Form, FormProps } from './components/Form'
-export { default as Option, OptionProps } from './components/Option'
 
 // export hooks
 export {

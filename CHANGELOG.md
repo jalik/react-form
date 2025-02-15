@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- refactor: remove component `<Option>`
 - refactor: remove method `handleChange()` from `useForm()`
 - refactor: remove options `clearAfterSubmit` and `setInitialValuesOnSuccess` in `useForm()`
 - refactor: rename option `onSubmitted()` to `onSuccess()` in `useForm()`
