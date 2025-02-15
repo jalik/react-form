@@ -10,7 +10,7 @@ export type FieldErrorProps<C extends ElementType> = ComponentProps<C> & {
   /**
    * The custom component to render.
    */
-  component?: C,
+  component?: C;
   /**
    * The error's field name.
    */
@@ -25,14 +25,15 @@ function FieldError<C extends ElementType = 'span'> (props: FieldErrorProps<C>):
   } = props
   const { errors } = useFormContext()
   const error = errors[name]
+  const message = error instanceof Error ? error.message : error
 
-  if (!error) {
+  if (!message) {
     return null
   }
 
   return (
     <Component {...others}>
-      {error.message}
+      {message}
     </Component>
   )
 }
