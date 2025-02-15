@@ -4,14 +4,15 @@
 
 ### Breaking changes
 
-- refactor: delete method `handleChange()` from `useForm()`
-- refactor: rename `useFieldArray().fields` to `items`
+- refactor: remove method `handleChange()` from `useForm()`
+- refactor: remove options `clearAfterSubmit` and `setInitialValuesOnSuccess` in `useForm()`
 - refactor: rename option `onSubmitted()` to `onSuccess()` in `useForm()`
 - refactor: rename method `setTouchedFields()` to `setTouched()` in
   `useForm()`
-- refactor: forms can be submitted if not modified by default (use option `disableSubmitIfNotModified` to change this)
 - refactor: rename type `ModifiedFields` to `ModifiedState`
-- rename type `TouchedFields` to `TouchedState`
+- refactor: rename type `TouchedFields` to `TouchedState`
+- refactor: rename `useFieldArray().fields` to `items`
+- refactor: forms can be submitted if not modified by default (use option `disableSubmitIfNotModified` to change this)
 - refactor: `setValues()` does not accept a function anymore in `useForm()`
 - refactor: add function `initialize()` to `useForm()` and make `setInitialValues()` do what it says
 - refactor: remove props `emptyOptionLabel`, `options` and `type` from `Field` component to only handle props initialization
@@ -37,6 +38,7 @@
 - feat: add method `getInitialErrors()` to `useForm()`
 - feat: add method `resetErrors(fields)` to `useForm()`
 - feat: add method `handleFieldChange(name, opts)` to `useForm()`
+- feat: add option `afterSubmit` to `useForm()`
 - feat: add option `format` to `getFieldProps()` returned by `useForm()`
 - feat: add option `initialErrors` to `useForm()`
 - feat: add option `initialModified` to `useForm()`
