@@ -6,6 +6,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/jalik/react-form.svg)](https://github.com/jalik/react-form/issues)
 ![GitHub](https://img.shields.io/github/license/jalik/react-form.svg)
 ![npm](https://img.shields.io/npm/dt/@jalik/react-form.svg)
+[![@jalik/react-form](https://snyk.io/advisor/npm-package/@jalik/react-form/badge.svg)](https://snyk.io/advisor/npm-package/@jalik/react-form)
 
 ## Why using this lib ?
 
