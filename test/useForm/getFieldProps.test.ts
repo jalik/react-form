@@ -187,6 +187,20 @@ function tests (mode: FormMode) {
           expect(props[checkedAttribute]).toBe(false)
         })
       })
+
+      describe(`with input ${valueAttribute}=""`, () => {
+        const hook = renderHook(() => useForm({
+          mode,
+          initialValues: { a: null }
+        }))
+        const props = hook.result.current.getFieldProps('a', {
+          type: 'checkbox',
+          [valueAttribute]: ''
+        })
+        it(`should set "${checkedAttribute}" = true`, () => {
+          expect(props[checkedAttribute]).toBe(true)
+        })
+      })
     })
   })
 
@@ -246,6 +260,20 @@ function tests (mode: FormMode) {
         })
         it(`should set "${checkedAttribute}" = false`, () => {
           expect(props[checkedAttribute]).toBe(false)
+        })
+      })
+
+      describe(`with input ${valueAttribute}=""`, () => {
+        const hook = renderHook(() => useForm({
+          mode,
+          initialValues: { a: null }
+        }))
+        const props = hook.result.current.getFieldProps('a', {
+          type: 'radio',
+          [valueAttribute]: ''
+        })
+        it(`should set "${checkedAttribute}" = true`, () => {
+          expect(props[checkedAttribute]).toBe(true)
         })
       })
     })

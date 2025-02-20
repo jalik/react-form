@@ -71,6 +71,7 @@
 - fix: fix "undefined path error" when field onBlur is called
 - fix: include value in field id for checkbox and radio elements so the focus is working when clicking on them
 - fix: replace field's null value with empty string in controlled mode
+- fix: fix checked state of radio/checkbox with empty string as value and context value is null
 
 ## v5.6.0 (2025-01-09)
 
