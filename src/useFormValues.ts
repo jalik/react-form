@@ -348,7 +348,10 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
           nextState.touchedFields = touchedRef.current
         }
         if (validate) {
-          nextState.needValidation = paths
+          // Update fields to validate.
+          nextState.needValidation = nextState.needValidation instanceof Array
+            ? Array.from(new Set([...paths, ...nextState.needValidation]))
+            : paths
         }
         return nextState
       })
