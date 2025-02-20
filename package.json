@@ -19,7 +19,6 @@
   "bugs": {
     "url": "https://github.com/jalik/react-form/issues"
   },
-  "type": "module",
   "sideEffects": false,
   "esnext": "./esm/index.js",
   "main": "./cjs/index.js",

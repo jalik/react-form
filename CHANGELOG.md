@@ -21,10 +21,6 @@
 - refactor: rename option `parser` to `parse` in `useForm().getFieldProps()`, `useForm().handleFieldChange()`, `useForm().handleSetValue()` and `getFieldValue()`
 - refactor: rename `handleBlur()` to `handleFieldBlur()` in `useForm()`
 
-**Potentially breaking change**
-
-- fix: declare package as module to avoid compile error in ViteJS (thinking it's a CommonJS package)
-
 ### Other changes
 
 - feat: add method `key(name)` to `useForm()` (uncontrolled mode)
