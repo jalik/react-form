@@ -106,7 +106,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
   const appendListItem = useCallback<UseFormListHook<V>['appendListItem']>(<T> (path: FieldPath<V>, ...items: T[]) => {
     if (items.length > 0) {
       // mark array as modified
-      setModified({ [path]: true })
+      setModified({ [path]: true }, { partial: true })
 
       const list = [...(getValue<T[]>(path) ?? []), ...items]
       // fixme todo optimize to avoid rerender

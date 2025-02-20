@@ -18,6 +18,35 @@ function tests (mode: FormMode) {
     act(() => hook.result.current.appendListItem('a', 2, 3))
     expect(hook.result.current.getValue('a')).toStrictEqual([1, 2, 3])
   })
+
+  it('should not change modified state of other fields', () => {
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues: {
+        a: [],
+        b: 2
+      },
+      initialModified: { b: true }
+    }))
+    expect(hook.result.current.isModified('b')).toBe(true)
+    act(() => hook.result.current.appendListItem('a', 2, 3))
+    expect(hook.result.current.isModified('a')).toBe(true)
+    expect(hook.result.current.isModified('b')).toBe(true)
+  })
+
+  it('should not change touched state of other fields', () => {
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues: {
+        a: [],
+        b: 2
+      },
+      initialTouched: { b: true }
+    }))
+    expect(hook.result.current.isTouched('b')).toBe(true)
+    act(() => hook.result.current.appendListItem('a', 2, 3))
+    expect(hook.result.current.isTouched('b')).toBe(true)
+  })
 }
 
 describe('useForm({ mode: "controlled" }).appendListItem()', () => {
