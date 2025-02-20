@@ -69,6 +69,7 @@
 - fix: replace field's null value with empty string in controlled mode
 - fix: fix checked state of radio/checkbox with empty string as value and context value is null
 - fix: update fields to validate instead of replacing them when setting values
+- fix: make option `context` optional in `useFieldArray()`
 
 ## v5.6.0 (2025-01-09)
 

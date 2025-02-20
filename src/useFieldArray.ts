@@ -15,7 +15,7 @@ export type ArrayItem<T> = {
 }
 
 export type UseFieldArrayOptions<T, V extends Values> = {
-  context: UseFormHook<V>;
+  context?: UseFormHook<V>;
   defaultValue: (T & boolean) | (T & number) | (T & object) | (T & string) | ((items: T[]) => T);
   name: FieldPath<V>;
   sort? (a: T, b: T): number;
