@@ -904,12 +904,16 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
     }
 
-    // Convert value to string.
     if (typeof format === 'function' && typeof finalProps[valueAttribute] !== 'string' &&
       !(finalProps[valueAttribute] instanceof Array)) {
+      // Convert value to string.
       finalProps[valueAttribute] = finalProps[valueAttribute] != null
         ? format(finalProps[valueAttribute])
         : ''
+    } else if (mode === 'controlled' && finalProps[valueAttribute] == null) {
+      // Make sure null is replaced with empty string
+      // to avoid switching from controlled to uncontrolled input.
+      finalProps[valueAttribute] = ''
     }
     return finalProps
   }, [formDisabled, formKey, getValue, handleFieldBlur, handleFieldChange, mode, state])
