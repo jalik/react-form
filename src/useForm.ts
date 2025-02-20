@@ -153,7 +153,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    * Handles field blur event.
    * @param path
    */
-  handleBlur (path: FieldPath<V>): (event: React.FocusEvent<FieldElement>) => void;
+  handleFieldBlur (path: FieldPath<V>): (event: React.FocusEvent<FieldElement> | unknown) => void;
   /**
    * Handles field change automatically by detecting if a value or an event is returned.
    * @param path
@@ -677,7 +677,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const debouncedValidateAndSubmit =
     useDebouncePromise(validateAndSubmit, submitDelay)
 
-  const handleBlur = useCallback<UseFormHook<V, E, R>['handleBlur']>((path) => () => {
+  const handleFieldBlur = useCallback<UseFormHook<V, E, R>['handleFieldBlur']>((path) => () => {
     setTouchedField(path, true, {
       forceUpdate: forceUpdateOnStatusChange
     })
@@ -828,7 +828,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // Set default props.
     const finalProps: any = {
-      onBlur: handleBlur(path),
+      onBlur: handleFieldBlur(path),
       onChange: handleFieldChange(path, {
         parse,
         setValueOptions
@@ -909,7 +909,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         : ''
     }
     return finalProps
-  }, [formDisabled, formKey, getValue, handleBlur, handleFieldChange, mode, state])
+  }, [formDisabled, formKey, getValue, handleFieldBlur, handleFieldChange, mode, state])
 
   /**
    * Returns form props.
@@ -1029,7 +1029,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     disabled: formDisabled,
     mode,
     forceUpdate,
-    handleBlur,
+    handleFieldBlur,
     handleFieldChange,
     handleReset,
     handleSetValue,

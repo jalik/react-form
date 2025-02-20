@@ -19,6 +19,7 @@
 - refactor: remove props `emptyOptionLabel`, `options` and `type` from `Field` component to only handle props initialization
 - refactor: rename mode `experimental_uncontrolled` to `uncontrolled`
 - refactor: rename option `parser` to `parse` in `useForm().getFieldProps()`, `useForm().handleFieldChange()`, `useForm().handleSetValue()` and `getFieldValue()`
+- refactor: rename `handleBlur()` to `handleFieldBlur()` in `useForm()`
 
 **Potentially breaking change**
 
