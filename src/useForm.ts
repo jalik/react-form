@@ -151,9 +151,9 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
   getValues: UseFormValuesHook<V>['getValues'];
   /**
    * Handles field blur event.
-   * @param event
+   * @param path
    */
-  handleBlur (event: React.FocusEvent<FieldElement>): void;
+  handleBlur (path: FieldPath<V>): (event: React.FocusEvent<FieldElement>) => void;
   /**
    * Handles field change automatically by detecting if a value or an event is returned.
    * @param path
@@ -677,25 +677,22 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const debouncedValidateAndSubmit =
     useDebouncePromise(validateAndSubmit, submitDelay)
 
-  const handleBlur = useCallback<UseFormHook<V, E, R>['handleBlur']>((event): void => {
-    const target = event.currentTarget ?? event.target
-    const { name } = target
-
-    setTouchedField(name, true, {
+  const handleBlur = useCallback<UseFormHook<V, E, R>['handleBlur']>((path) => () => {
+    setTouchedField(path, true, {
       forceUpdate: forceUpdateOnStatusChange
     })
 
     if (validateOnTouch) {
-      setNeedValidation([name])
+      setNeedValidation([path])
     }
 
     if (trimOnBlur) {
-      let value = getValue(name)
+      let value = getValue(path)
 
       if (typeof value === 'string') {
         // Remove extra spaces.
         value = value.trim()
-        setValue(name, value, { validate: validateOnTouch })
+        setValue(path, value, { validate: validateOnTouch })
       }
     }
   }, [forceUpdateOnStatusChange, getValue, setNeedValidation, setTouchedField, setValue, trimOnBlur, validateOnTouch])
@@ -730,12 +727,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
           (valueOrEvent as React.ChangeEvent<FieldElement>).currentTarget ??
           (valueOrEvent as React.ChangeEvent<FieldElement>).target
 
-        const { name } = target
-
         // Get parsed value from field.
         const parsedValue = getFieldValue(target, opts)
 
-        setValue(name, parsedValue, {
+        setValue(path, parsedValue, {
           validate: validateOnChange,
           ...opts
         })
@@ -833,7 +828,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // Set default props.
     const finalProps: any = {
-      onBlur: handleBlur,
+      onBlur: handleBlur(path),
       onChange: handleFieldChange(path, {
         parse,
         setValueOptions
