@@ -69,6 +69,7 @@
 - fix: do not mark form as validated when `validateFields()` was successful
 - fix: fix lost of modified state after using `appendListItem()`
 - fix: fix "undefined path error" when field onBlur is called
+- fix: include value in field id for checkbox and radio elements so the focus is working when clicking on them
 
 ## v5.6.0 (2025-01-09)
 

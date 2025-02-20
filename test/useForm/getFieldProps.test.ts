@@ -385,6 +385,27 @@ function tests (mode: FormMode) {
       })
     })
   })
+
+  describe('with generated "id" attribute', () => {
+    it('should contain value if type = "checkbox"', () => {
+      const hook = renderHook(() => useForm({}))
+      const props = hook.result.current.getFieldProps('a', {
+        type: 'checkbox',
+        value: 'TRUE'
+      })
+      expect(props.id).toBeDefined()
+      expect(props.id.includes('TRUE')).toBe(true)
+    })
+    it('should contain value if type = "radio"', () => {
+      const hook = renderHook(() => useForm({}))
+      const props = hook.result.current.getFieldProps('a', {
+        type: 'radio',
+        value: 'TRUE'
+      })
+      expect(props.id).toBeDefined()
+      expect(props.id.includes('TRUE')).toBe(true)
+    })
+  })
 }
 
 describe('useForm({ mode: "controlled" }).getFieldProps()', () => {

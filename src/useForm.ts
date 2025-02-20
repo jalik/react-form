@@ -833,7 +833,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
         parse,
         setValueOptions
       }),
-      id: getFieldId(path, formKey),
+      // Define field ID.
+      id: otherProps.type === 'checkbox' || otherProps.type === 'radio'
+        ? getFieldId(path + '_' + inputValue, formKey)
+        : getFieldId(path, formKey),
       // fixme avoid spreading checked and defaultChecked together
       ...otherProps,
       name: path
