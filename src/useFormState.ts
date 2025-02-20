@@ -241,7 +241,9 @@ function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E
     hasError: hasDefinedValues(state.errors),
     initialized: state.initialValues != null,
     modified: hasTrueValues(modifiedRef.current),
-    touched: hasTrueValues(touchedRef.current)
+    touched: hasTrueValues(touchedRef.current),
+    // Make sure form is never marked as validated when it has errors.
+    validated: state.validated && !hasDefinedValues(state.errors)
   }), [state])
 
   useEffect(() => {

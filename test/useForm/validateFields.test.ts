@@ -53,6 +53,27 @@ function tests (mode: FormMode) {
     expect(hook.result.current.getError('number')).toBeDefined()
     expect(hook.result.current.getError('text')).toBeDefined()
   })
+
+  it('should not set validated = true when some fields are valid', async () => {
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues: {
+        number: 'invalid',
+        text: 'valid'
+      },
+      validateField
+    }))
+    expect(hook.result.current.getErrors()).toStrictEqual({})
+    expect(hook.result.current.validated).toBe(false)
+    await act(() => hook.result.current.validateFields(['number']))
+    expect(hook.result.current.getError('number')).toBeDefined()
+    expect(hook.result.current.getError('text')).toBeUndefined()
+    expect(hook.result.current.validated).toBe(false)
+    await act(() => hook.result.current.validateFields(['text']))
+    expect(hook.result.current.getError('number')).toBeDefined()
+    expect(hook.result.current.getError('text')).toBeUndefined()
+    expect(hook.result.current.validated).toBe(false)
+  })
 }
 
 describe('useForm({ mode: "controlled" }).validateFields()', () => {

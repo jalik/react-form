@@ -7,6 +7,7 @@ import {
   Errors,
   FieldPath,
   FormMode,
+  FormState,
   ModifiedState,
   PathsAndValues,
   PathsOrValues,
@@ -322,10 +323,11 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       (initialize || !initializedRef.current) ||
       (forceUpdateOnStatusChange && hasDefinedValues(nextModified))) {
       setState((s) => {
-        const nextState = {
+        const nextState: FormState<V, E, R> = {
           ...s,
           submitError: undefined,
           submitted: false,
+          validated: false,
           values: nextValues
         }
 

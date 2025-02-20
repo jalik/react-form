@@ -149,7 +149,6 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
       ...s,
       needValidation: false,
       validateError: undefined,
-      validated: false,
       validating: true
     }))
 
@@ -179,7 +178,6 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
             ...s,
             needValidation: false,
             errors: nextErrors,
-            validated: !hasDefinedValues(nextErrors),
             validating: false
           }
         })
@@ -190,7 +188,6 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
           ...s,
           needValidation: false,
           validateError: error,
-          validated: false,
           validating: false
         }))
         return error
@@ -219,7 +216,6 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
       ...s,
       needValidation: false,
       validateError: undefined,
-      validated: false,
       validating: true
     }))
 
@@ -240,7 +236,6 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
         setState((s) => ({
           ...s,
           validateError: error,
-          validated: false,
           validating: false
         }))
         return undefined

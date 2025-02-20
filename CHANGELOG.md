@@ -65,6 +65,7 @@
 - fix: fix errors state after changing array items (insert, prepend, remove...)
 - fix: fix value returned by `getFieldProps()` to be empty string instead of null when format option is not null
 - fix: export types from index to simplify import declarations
+- fix: do not mark form as validated when `validateFields()` was successful
 
 ## v5.6.0 (2025-01-09)
 

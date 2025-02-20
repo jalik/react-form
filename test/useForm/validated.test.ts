@@ -37,7 +37,7 @@ function tests (mode: FormMode) {
     expect(hook.result.current.validated).toBe(true)
   })
 
-  it('should return false if form is not valid', async () => {
+  it('should return false if form has errors', async () => {
     const hook = renderHook(() => useForm({
       mode,
       initialValues: {
@@ -48,6 +48,7 @@ function tests (mode: FormMode) {
     }))
     expect(hook.result.current.validated).toBe(false)
     await act(() => hook.result.current.validate())
+    expect(hook.result.current.hasError).toBe(true)
     expect(hook.result.current.validated).toBe(false)
   })
 }
