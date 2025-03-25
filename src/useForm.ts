@@ -335,6 +335,10 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   disabled?: boolean;
   /**
+   * Enable HTML validation when submit event is triggered.
+   */
+  enableHTMLValidation?: boolean;
+  /**
    * Update the form when it is modified or touched (happens only at the form level).
    */
   forceUpdateOnStatusChange?: boolean;
@@ -471,6 +475,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     disableOnValidate = true,
     disableSubmitIfNotModified = false,
     disableSubmitIfNotValid = false,
+    enableHTMLValidation = false,
     forceUpdateOnStatusChange = false,
     initialErrors,
     initialModified,
@@ -929,10 +934,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   const getFormProps = useCallback((props: ComponentProps<'form'>): ComponentProps<'form'> => {
     return {
       ...props,
+      noValidate: !enableHTMLValidation,
       onReset: handleReset,
       onSubmit: handleSubmit
     }
-  }, [handleReset, handleSubmit])
+  }, [enableHTMLValidation, handleReset, handleSubmit])
 
   useEffect((): void => {
     initializeFieldRef.current = initializeFieldFunc
