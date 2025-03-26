@@ -41,6 +41,7 @@
 - feat: add method `resetErrors(fields)` to `useForm()`
 - feat: add method `handleFieldChange(name, opts)` to `useForm()`
 - feat: add option `afterSubmit` to `useForm()`
+- feat: add option `enableHTMLValidation` to `useForm()`
 - feat: add option `format` to `getFieldProps()` returned by `useForm()`
 - feat: add option `initialErrors` to `useForm()`
 - feat: add option `initialModified` to `useForm()`
