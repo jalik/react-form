@@ -189,6 +189,10 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
    */
   handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
   /**
+   * The generated form id.
+   */
+  id: string;
+  /**
    * Initializes form with values.
    */
   initialize: UseFormValuesHook<V>['initialize'];
@@ -940,12 +944,13 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    */
   const getFormProps = useCallback((props: ComponentProps<'form'>): ComponentProps<'form'> => {
     return {
+      id: formKey,
       ...props,
       noValidate: !enableHTMLValidation,
       onReset: handleReset,
       onSubmit: handleSubmit
     }
-  }, [enableHTMLValidation, handleReset, handleSubmit])
+  }, [enableHTMLValidation, formKey, handleReset, handleSubmit])
 
   useEffect((): void => {
     initializeFieldRef.current = initializeFieldFunc
@@ -1052,6 +1057,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     // global
     disabled: formDisabled,
+    id: formKey,
     mode,
     forceUpdate,
     handleFieldBlur,

@@ -54,6 +54,7 @@
 - feat: add option `forceUpdateOnStatusChange` to `useForm()`
 - feat: add option `sort` to `useFieldArray()`
 - feat: add hook `useWatch(path, callback)`
+- feat: return `id` from `useForm()`
 - feat: make `onSubmit` optional in `useForm()`
 - feat: pass `values` as second argument of `onSubmitted(result, values)`
 - feat: allow passing `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and `handleSetValue()` in `useForm()`
