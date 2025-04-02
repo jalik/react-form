@@ -377,6 +377,11 @@ export type UseFormOptions<V extends Values, E, R> = {
    */
   nullify?: boolean;
   /**
+   * Called when the form submission has failed.
+   * @param error
+   */
+  onError? (error: Error): void;
+  /**
    * Called when form is submitted.
    * @param values
    */
@@ -485,6 +490,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     load: onLoad,
     mode = 'controlled',
     nullify = false,
+    onError,
     onSubmit,
     onSuccess,
     onValuesChange,
@@ -596,6 +602,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     formStatus,
     formValues,
     nullify,
+    onError,
     onSuccess,
     submit: onSubmit,
     trimOnSubmit

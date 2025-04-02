@@ -38,6 +38,11 @@ export type UseFormSubmissionOptions<V extends Values, E, R> = {
    */
   nullify?: boolean;
   /**
+   * Called when form submission has failed.
+   * @param error
+   */
+  onError? (error: Error): void;
+  /**
    * Called when form has been successfully submitted.
    * @param result
    * @param values
@@ -73,6 +78,7 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
     formStatus,
     formValues,
     nullify,
+    onError,
     onSuccess,
     submit: submitFunc,
     trimOnSubmit
@@ -163,6 +169,9 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         return result
       })
       .catch((error) => {
+        if (onError) {
+          onError(error)
+        }
         setState((s) => ({
           ...s,
           submitError: error,
@@ -171,7 +180,7 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         }))
         return undefined
       })
-  }, [afterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onSuccess, resetValues, setInitialValues, setState, trimOnSubmit])
+  }, [afterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onError, onSuccess, resetValues, setInitialValues, setState, trimOnSubmit])
 
   useEffect(() => {
     submitRef.current = submitFunc

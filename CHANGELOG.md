@@ -46,6 +46,7 @@
 - feat: add option `initialErrors` to `useForm()`
 - feat: add option `initialModified` to `useForm()`
 - feat: add option `initialTouched` to `useForm()`
+- feat: add option `onError(error)` to `useForm()`
 - feat: add option `onValuesChange(values, mutation)` to `useForm()`
 - feat: add option `preventDefaultOnSubmit` to `useForm()`
 - feat: add option `disableSubmitIfNotModified` to `useForm()`
