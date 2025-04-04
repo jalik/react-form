@@ -41,74 +41,6 @@ function tests (mode: FormMode) {
         expect(props[valueAttribute]).toBe(String(initialValues.a))
       })
     })
-
-    describe('with options.format = null', () => {
-      const props = hook.result.current.getFieldProps('a', null, { format: null })
-
-      it(`should not modify "${valueAttribute}"`, () => {
-        expect(props[valueAttribute]).toBe(initialValues.a)
-      })
-    })
-
-    describe('with options.format = function', () => {
-      const format = (value: unknown) => ('_' + value)
-      const props = hook.result.current.getFieldProps('a', null, { format })
-
-      it(`should set "${valueAttribute}" with formatted value`, () => {
-        expect(props[valueAttribute]).toBe(format(initialValues.a))
-      })
-    })
-
-    describe('with options.parse = function', () => {
-      const parse = Number
-
-      it('should use parse function to transform value when onChange() is called', () => {
-        const initialValues = { a: 1 }
-        const hook = renderHook(() => useForm({
-          mode,
-          initialValues
-        }))
-        const props = hook.result.current.getFieldProps('a', null, { parse })
-        act(() => props.onChange('1337'))
-        expect(hook.result.current.getValue('a')).toBe(parse('1337'))
-      })
-
-      describe('with input type="checkbox"', () => {
-        it(`should set ${checkedAttribute}="true" when parsed input value = form value`, () => {
-          const props = hook.result.current.getFieldProps('a', {
-            type: 'checkbox',
-            [valueAttribute]: String(initialValues.a)
-          }, { parse })
-          expect(props[checkedAttribute]).toBe(true)
-        })
-
-        it(`should set ${checkedAttribute}="false" when parsed input value != form value`, () => {
-          const props = hook.result.current.getFieldProps('a', {
-            type: 'checkbox',
-            [valueAttribute]: String(Math.random())
-          }, { parse })
-          expect(props[checkedAttribute]).toBe(false)
-        })
-      })
-
-      describe('with input type="radio"', () => {
-        it(`should set ${checkedAttribute}="true" when parsed input value = form value`, () => {
-          const props = hook.result.current.getFieldProps('a', {
-            type: 'radio',
-            [valueAttribute]: String(initialValues.a)
-          }, { parse })
-          expect(props[checkedAttribute]).toBe(true)
-        })
-
-        it(`should set ${checkedAttribute}="false" when parsed input value != form value`, () => {
-          const props = hook.result.current.getFieldProps('a', {
-            type: 'radio',
-            [valueAttribute]: String(Math.random())
-          }, { parse })
-          expect(props[checkedAttribute]).toBe(false)
-        })
-      })
-    })
   })
 
   describe('with input type="checkbox"', () => {
@@ -432,6 +364,98 @@ function tests (mode: FormMode) {
       })
       expect(props.id).toBeDefined()
       expect(props.id.includes('TRUE')).toBe(true)
+    })
+  })
+
+  describe('with options.format', () => {
+    const initialValues = { num: 1 }
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues
+    }))
+
+    describe('with format = false', () => {
+      const props = hook.result.current.getFieldProps('num', null, { format: false })
+
+      it(`should not modify "${valueAttribute}"`, () => {
+        expect(props[valueAttribute]).toBe(initialValues.num)
+      })
+    })
+
+    describe('with format = null', () => {
+      const props = hook.result.current.getFieldProps('num', null, { format: null })
+
+      it(`should not modify "${valueAttribute}"`, () => {
+        expect(props[valueAttribute]).toBe(initialValues.num)
+      })
+    })
+
+    describe('with format = function', () => {
+      const format = (value: unknown) => ('_' + value)
+      const props = hook.result.current.getFieldProps('num', null, { format })
+
+      it(`should return "${valueAttribute}" using format function`, () => {
+        expect(props[valueAttribute]).toBe(format(initialValues.num))
+      })
+    })
+  })
+
+  describe('with options.parse', () => {
+    const initialValues = { num: 1 }
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues
+    }))
+
+    describe('with parse = function', () => {
+      const parse = Number
+
+      it('should use parse function to transform value when onChange() is called', () => {
+        const initialValues = { a: 1 }
+        const hook = renderHook(() => useForm({
+          mode,
+          initialValues
+        }))
+        const props = hook.result.current.getFieldProps('a', null, { parse })
+        act(() => props.onChange('1337'))
+        expect(hook.result.current.getValue('a')).toBe(parse('1337'))
+      })
+
+      describe('with input type="checkbox"', () => {
+        it(`should set ${checkedAttribute}="true" when parsed input value = form value`, () => {
+          const props = hook.result.current.getFieldProps('num', {
+            type: 'checkbox',
+            [valueAttribute]: String(initialValues.num)
+          }, { parse })
+          expect(props[checkedAttribute]).toBe(true)
+        })
+
+        it(`should set ${checkedAttribute}="false" when parsed input value != form value`, () => {
+          const props = hook.result.current.getFieldProps('num', {
+            type: 'checkbox',
+            [valueAttribute]: String(Math.random())
+          }, { parse })
+          expect(props[checkedAttribute]).toBe(false)
+        })
+      })
+
+      describe('with input type="radio"', () => {
+        it(`should set ${checkedAttribute}="true" when parsed input value = form value`, () => {
+          const props = hook.result.current.getFieldProps('num', {
+            type: 'radio',
+            [valueAttribute]: String(initialValues.num)
+          }, { parse })
+          expect(props[checkedAttribute]).toBe(true)
+        })
+
+        it(`should set ${checkedAttribute}="false" when parsed input value != form value`, () => {
+          const props = hook.result.current.getFieldProps('num', {
+            type: 'radio',
+            [valueAttribute]: String(Math.random())
+          }, { parse })
+          expect(props[checkedAttribute]).toBe(false)
+        })
+      })
     })
   })
 }
