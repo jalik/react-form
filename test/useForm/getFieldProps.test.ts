@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it, jest } from '@jest/globals'
 import { act, renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
 import { ComponentProps } from 'react'
@@ -435,7 +435,11 @@ function tests (mode: FormMode) {
   })
 
   describe('with options.parse', () => {
-    const initialValues = { num: 1 }
+    const initialValues = {
+      arr: [1, 2, 3],
+      num: 1,
+      num2: true
+    }
     const hook = renderHook(() => useForm({
       mode,
       initialValues
@@ -444,15 +448,31 @@ function tests (mode: FormMode) {
     describe('with parse = function', () => {
       const parse = Number
 
-      it('should use parse function to transform value when onChange() is called', () => {
-        const initialValues = { a: 1 }
-        const hook = renderHook(() => useForm({
-          mode,
-          initialValues
-        }))
-        const props = hook.result.current.getFieldProps('a', null, { parse })
-        act(() => props.onChange('1337'))
-        expect(hook.result.current.getValue('a')).toBe(parse('1337'))
+      it('should use parse function on string values when onChange() is called', () => {
+        const numProps = hook.result.current.getFieldProps('num2', null, { parse })
+        const numVal = '1337'
+        act(() => numProps.onChange(numVal))
+        expect(hook.result.current.getValue('num2')).toBe(parse(numVal))
+
+        const arrProps = hook.result.current.getFieldProps('arr', null, { parse })
+        const arrVal = ['4', '5']
+        act(() => arrProps.onChange(arrVal))
+        expect(hook.result.current.getValue('arr')).toStrictEqual(arrVal.map(parse))
+      })
+
+      it('should not use parse function on non string values when onChange() is called', () => {
+        const parseFn = jest.fn(parse)
+        const numProps = hook.result.current.getFieldProps('num2', null, { parse: parseFn })
+        const numVal = 999
+        act(() => numProps.onChange(numVal))
+        expect(parseFn).not.toHaveBeenCalled()
+        expect(hook.result.current.getValue('num2')).toBe(numVal)
+
+        const arrProps = hook.result.current.getFieldProps('arr', null, { parse: parseFn })
+        const arrVal = [8, 9]
+        act(() => arrProps.onChange(arrVal))
+        expect(parseFn).not.toHaveBeenCalled()
+        expect(hook.result.current.getValue('arr')).toStrictEqual(arrVal)
       })
 
       describe('with input type="checkbox"', () => {

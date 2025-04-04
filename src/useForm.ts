@@ -726,9 +726,16 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     } = opts ?? {}
 
     return (value) => {
-      const parsedValue = typeof value === 'string' && typeof parse === 'function'
-        ? parse(value)
-        : value
+      let parsedValue = value
+
+      if (typeof parse === 'function') {
+        if (value instanceof Array) {
+          parsedValue = value.map((el) => typeof el === 'string' ? parse(el) : el)
+        } else if (typeof value === 'string') {
+          parsedValue = parse(value)
+        }
+      }
+
       setValue(path, parsedValue, {
         validate: validateOnChange,
         ...setValueOptions

@@ -244,9 +244,9 @@ export function getFieldValue (
       value = getSelectedValues(field)
     }
 
-    if (value) {
+    if (value && typeof parse === 'function') {
       // Parse all checked/selected values.
-      value = value.map((v) => typeof parse === 'function' ? parse(v, field) : v)
+      value = value.map((v) => parse(v, field))
     }
   } else if (field instanceof HTMLInputElement && field.type === 'checkbox') {
     if (field.value === '') {

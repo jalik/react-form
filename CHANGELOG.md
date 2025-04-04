@@ -53,14 +53,15 @@
 - feat: add option `disableSubmitIfNotValid` to `useForm()`
 - feat: add option `forceUpdateOnStatusChange` to `useForm()`
 - feat: add option `sort` to `useFieldArray()`
+- feat: add option `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and `handleSetValue()` in `useForm()`
 - feat: add hook `useWatch(path, callback)`
 - feat: return `id` from `useForm()`
 - feat: make `onSubmit` optional in `useForm()`
 - feat: pass `values` as second argument of `onSubmitted(result, values)`
-- feat: allow passing `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and `handleSetValue()` in `useForm()`
-- feat: set `key` attribute using `useForm().key()` in `<Field>` component
+- feat: set `key` attribute on `<Field>` component using `useForm().key()`
 - feat: improve autocompletion of field names in functions arguments
 - feat: pass current items to callback of `handleAppend()` and `handlePrepend()` of `useFieldArray()`
+- feat: use `parse` option of `getFieldProps` to parse array values
 - fix: return `onClick` property in `getButtonProps()` in `useForm()`
 - fix: fix errors state after changing array items (insert, prepend, remove...)
 - fix: fix value returned by `getFieldProps()` to be empty string instead of null when format option is not null
