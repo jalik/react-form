@@ -368,34 +368,68 @@ function tests (mode: FormMode) {
   })
 
   describe('with options.format', () => {
-    const initialValues = { num: 1 }
+    const initialValues = {
+      und: undefined,
+      nul: null,
+      num: 1,
+      boo: true,
+      arr: [1, 2, 3]
+    }
     const hook = renderHook(() => useForm({
       mode,
       initialValues
     }))
 
     describe('with format = false', () => {
-      const props = hook.result.current.getFieldProps('num', null, { format: false })
+      const undProps = hook.result.current.getFieldProps('und', null, { format: false })
+      const nulProps = hook.result.current.getFieldProps('nul', null, { format: false })
+      const numProps = hook.result.current.getFieldProps('num', null, { format: false })
+      const booProps = hook.result.current.getFieldProps('boo', null, { format: false })
+      const arrProps = hook.result.current.getFieldProps('arr', null, { format: false })
 
       it(`should not modify "${valueAttribute}"`, () => {
-        expect(props[valueAttribute]).toBe(initialValues.num)
+        expect(undProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.und)
+        expect(nulProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.nul)
+        expect(numProps[valueAttribute]).toBe(initialValues.num)
+        expect(booProps[valueAttribute]).toBe(initialValues.boo)
+        expect(arrProps[valueAttribute]).toBe(initialValues.arr)
       })
     })
 
     describe('with format = null', () => {
-      const props = hook.result.current.getFieldProps('num', null, { format: null })
+      const undProps = hook.result.current.getFieldProps('und', null, { format: null })
+      const nulProps = hook.result.current.getFieldProps('nul', null, { format: null })
+      const numProps = hook.result.current.getFieldProps('num', null, { format: null })
+      const booProps = hook.result.current.getFieldProps('boo', null, { format: null })
+      const arrProps = hook.result.current.getFieldProps('arr', null, { format: null })
 
       it(`should not modify "${valueAttribute}"`, () => {
-        expect(props[valueAttribute]).toBe(initialValues.num)
+        expect(undProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.und)
+        expect(nulProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.nul)
+        expect(numProps[valueAttribute]).toBe(initialValues.num)
+        expect(booProps[valueAttribute]).toBe(initialValues.boo)
+        expect(arrProps[valueAttribute]).toBe(initialValues.arr)
       })
     })
 
     describe('with format = function', () => {
-      const format = (value: unknown) => ('_' + value)
-      const props = hook.result.current.getFieldProps('num', null, { format })
+      const format = (value: unknown) => ('_' + String(value) + '_')
 
-      it(`should return "${valueAttribute}" using format function`, () => {
-        expect(props[valueAttribute]).toBe(format(initialValues.num))
+      const undProps = hook.result.current.getFieldProps('und', null, { format })
+      const nulProps = hook.result.current.getFieldProps('nul', null, { format })
+      const numProps = hook.result.current.getFieldProps('num', null, { format })
+      const booProps = hook.result.current.getFieldProps('boo', null, { format })
+      const arrProps = hook.result.current.getFieldProps('arr', null, { format })
+
+      it('should not use format function when value is null or undefined', () => {
+        expect(undProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.und)
+        expect(nulProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.nul)
+      })
+
+      it(`should use format function to return "${valueAttribute}"`, () => {
+        expect(numProps[valueAttribute]).toBe(format(initialValues.num))
+        expect(booProps[valueAttribute]).toBe(format(initialValues.boo))
+        expect(arrProps[valueAttribute]).toStrictEqual(initialValues.arr.map(format))
       })
     })
   })
