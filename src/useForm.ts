@@ -519,6 +519,19 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     validateOnTouch = false
   } = options
 
+  useEffect(() => {
+    if (validateFieldFunc == null) {
+      if (validateOnChange) {
+        // eslint-disable-next-line no-console
+        console.error('validateField function must be provided when validateOnChange is true')
+      }
+      if (validateOnTouch) {
+        // eslint-disable-next-line no-console
+        console.error('validateField function must be provided when validateOnTouch is true')
+      }
+    }
+  }, [validateFieldFunc, validateOnChange, validateOnTouch])
+
   // Generate a unique ID for the form.
   const [formKey] = useState(() => randomKey(10))
 
