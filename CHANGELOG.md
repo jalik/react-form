@@ -42,7 +42,6 @@
 - feat: add method `handleFieldChange(name, opts)` to `useForm()`
 - feat: add option `afterSubmit` to `useForm()`
 - feat: add option `enableHTMLValidation` to `useForm()`
-- feat: add option `format` to `getFieldProps()` returned by `useForm()`
 - feat: add option `initialErrors` to `useForm()`
 - feat: add option `initialModified` to `useForm()`
 - feat: add option `initialTouched` to `useForm()`
@@ -53,6 +52,8 @@
 - feat: add option `disableSubmitIfNotValid` to `useForm()`
 - feat: add option `forceUpdateOnStatusChange` to `useForm()`
 - feat: add option `sort` to `useFieldArray()`
+- feat: add option `format` to `getFieldProps()` in `useForm()`
+- feat: add option `replaceNull` to `getFieldProps()` in `useForm()`
 - feat: add option `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and `handleSetValue()` in `useForm()`
 - feat: add hook `useWatch(path, callback)`
 - feat: return `id` from `useForm()`

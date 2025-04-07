@@ -388,8 +388,8 @@ function tests (mode: FormMode) {
       const arrProps = hook.result.current.getFieldProps('arr', null, { format: false })
 
       it(`should not modify "${valueAttribute}"`, () => {
-        expect(undProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.und)
-        expect(nulProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.nul)
+        expect(undProps[valueAttribute]).toBe('')
+        expect(nulProps[valueAttribute]).toBe('')
         expect(numProps[valueAttribute]).toBe(initialValues.num)
         expect(booProps[valueAttribute]).toBe(initialValues.boo)
         expect(arrProps[valueAttribute]).toBe(initialValues.arr)
@@ -404,8 +404,8 @@ function tests (mode: FormMode) {
       const arrProps = hook.result.current.getFieldProps('arr', null, { format: null })
 
       it(`should not modify "${valueAttribute}"`, () => {
-        expect(undProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.und)
-        expect(nulProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.nul)
+        expect(undProps[valueAttribute]).toBe('')
+        expect(nulProps[valueAttribute]).toBe('')
         expect(numProps[valueAttribute]).toBe(initialValues.num)
         expect(booProps[valueAttribute]).toBe(initialValues.boo)
         expect(arrProps[valueAttribute]).toBe(initialValues.arr)
@@ -422,8 +422,8 @@ function tests (mode: FormMode) {
       const arrProps = hook.result.current.getFieldProps('arr', null, { format })
 
       it('should not use format function when value is null or undefined', () => {
-        expect(undProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.und)
-        expect(nulProps[valueAttribute]).toBe(mode === 'controlled' ? '' : initialValues.nul)
+        expect(undProps[valueAttribute]).toBe('')
+        expect(nulProps[valueAttribute]).toBe('')
       })
 
       it(`should use format function to return "${valueAttribute}"`, () => {
@@ -509,6 +509,40 @@ function tests (mode: FormMode) {
           }, { parse })
           expect(props[checkedAttribute]).toBe(false)
         })
+      })
+    })
+  })
+
+  describe('with options.replaceNull', () => {
+    const initialValues = {
+      und: undefined,
+      nul: null,
+      num: 1,
+      boo: true,
+      arr: [1, 2, 3]
+    }
+    const hook = renderHook(() => useForm({
+      mode,
+      initialValues
+    }))
+
+    describe('with replaceNull = false', () => {
+      const undProps = hook.result.current.getFieldProps('und', null, { replaceNull: false })
+      const nulProps = hook.result.current.getFieldProps('nul', null, { replaceNull: false })
+
+      it('should not replace null with empty string', () => {
+        expect(undProps[valueAttribute]).toBe(undefined)
+        expect(nulProps[valueAttribute]).toBe(null)
+      })
+    })
+
+    describe('with replaceNull = true', () => {
+      const undProps = hook.result.current.getFieldProps('und', null, { replaceNull: true })
+      const nulProps = hook.result.current.getFieldProps('nul', null, { replaceNull: true })
+
+      it('should replace null with empty string', () => {
+        expect(undProps[valueAttribute]).toBe('')
+        expect(nulProps[valueAttribute]).toBe('')
       })
     })
   })

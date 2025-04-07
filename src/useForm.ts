@@ -109,6 +109,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     opts?: {
       format?: FormatFunction | null | false;
       parse?: ParseFunction;
+      replaceNull?: boolean;
       setValueOptions?: Partial<SetValuesOptions>;
     }
   ): any;
@@ -822,12 +823,14 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     opts: {
       format?: FormatFunction | null | false;
       parse?: ParseFunction;
+      replaceNull?: boolean;
       setValueOptions?: Partial<SetValuesOptions>;
     } = {}
   ) => {
     const {
       format = String,
       parse,
+      replaceNull = true,
       setValueOptions
     } = opts ?? {}
 
@@ -945,19 +948,17 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       }
     }
 
-    if (typeof format === 'function' && finalProps[valueAttribute] != null && typeof finalProps[valueAttribute] !== 'string') {
-      if (finalProps[valueAttribute] instanceof Array) {
-        // Convert array values to string.
-        finalProps[valueAttribute] = finalProps[valueAttribute].map(format)
-      } else {
-        // Convert value to string.
-        finalProps[valueAttribute] = finalProps[valueAttribute] != null
-          ? format(finalProps[valueAttribute])
-          : ''
+    if (finalProps[valueAttribute] != null) {
+      if (typeof format === 'function') {
+        if (finalProps[valueAttribute] instanceof Array) {
+          // Convert array values to string.
+          finalProps[valueAttribute] = finalProps[valueAttribute].map(format)
+        } else if (typeof finalProps[valueAttribute] !== 'string') {
+          // Convert value to string.
+          finalProps[valueAttribute] = format(finalProps[valueAttribute])
+        }
       }
-    } else if (mode === 'controlled' && finalProps[valueAttribute] == null) {
-      // Make sure null is replaced with empty string
-      // to avoid switching from controlled to uncontrolled input.
+    } else if (replaceNull) {
       finalProps[valueAttribute] = ''
     }
     return finalProps
