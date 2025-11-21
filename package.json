@@ -1,6 +1,6 @@
 {
   "name": "@jalik/react-form",
-  "version": "6.0.0-9",
+  "version": "6.0.0",
   "description": "Manage forms in React with ease.",
   "license": "MIT",
   "keywords": [
