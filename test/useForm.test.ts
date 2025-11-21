@@ -4,7 +4,7 @@
  */
 
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it, vi } from 'vitest'
 import useForm from '../src/useForm'
 
 describe('useForm()', () => {
@@ -63,7 +63,7 @@ describe('useForm()', () => {
 
     describe('with onSubmitted = function', () => {
       it('should call onSubmitted() after submit', async () => {
-        const onSuccess = jest.fn()
+        const onSuccess = vi.fn()
         const { result } = renderHook(() => useForm({
           initialValues: { username: undefined },
           onSubmit: (values) => Promise.resolve(values),
@@ -142,7 +142,7 @@ describe('useForm()', () => {
     describe('with validateOnSubmit = false', () => {
       it('should not validate on submit', async () => {
         const initialValues = { username: 'jalik' }
-        const validate = jest.fn(() => Promise.resolve(undefined))
+        const validate = vi.fn(() => Promise.resolve(undefined))
         const { result } = renderHook(() => {
           return useForm({
             initialValues,
@@ -662,7 +662,7 @@ describe('useForm()', () => {
     const initialValues = { username: 'jalik' }
 
     it('should call options.onSubmit()', async () => {
-      const onSubmit = jest.fn(() => Promise.resolve(true))
+      const onSubmit = vi.fn(() => Promise.resolve(true))
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
@@ -765,7 +765,7 @@ describe('useForm()', () => {
   describe('validate()', () => {
     it('should call options.validate()', async () => {
       const initialValues = { username: undefined }
-      const validate = jest.fn(() => Promise.resolve({ username: new Error('invalid') }))
+      const validate = vi.fn(() => Promise.resolve({ username: new Error('invalid') }))
       const { result } = renderHook(() => {
         return useForm({
           initialValues,
@@ -807,7 +807,7 @@ describe('useForm()', () => {
 
     it('should pass when no errors', async () => {
       const initialValues = { username: undefined }
-      const validate = jest.fn(() => Promise.resolve(undefined))
+      const validate = vi.fn(() => Promise.resolve(undefined))
       const { result } = renderHook(() => {
         return useForm({
           initialValues,

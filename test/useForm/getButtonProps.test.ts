@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
 import { FormMode } from '../../src'
@@ -40,7 +40,7 @@ function tests (mode: FormMode) {
   //     a: 1,
   //     b: 2
   //   }
-  //   const callback = jest.fn((values) => Promise.resolve(values))
+  //   const callback = vi.fn((values) => Promise.resolve(values))
   //   const hook = renderHook(() => useForm({
   //     mode,
   //     initialValues,

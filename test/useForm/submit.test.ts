@@ -4,7 +4,7 @@
  */
 
 import useForm from '../../src/useForm'
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { FormMode } from '../../src'
 
@@ -21,7 +21,7 @@ function tests (mode: FormMode) {
     b: 2
   }
   it('should call onSubmit function', async () => {
-    const callback = jest.fn(onSubmit)
+    const callback = vi.fn(onSubmit)
     const hook = renderHook(() => useForm({
       mode,
       initialValues,
@@ -33,7 +33,7 @@ function tests (mode: FormMode) {
 
   it('should pass values to onSubmit function', async () => {
     let v: Record<string, unknown> | undefined
-    const callback = jest.fn(async (values: Record<string, unknown>) => {
+    const callback = vi.fn(async (values: Record<string, unknown>) => {
       v = values
       return onSubmit(values)
     })

@@ -3,10 +3,10 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { expect, it } from '@jest/globals'
+import { expect, it } from 'vitest'
 import { render, renderHook, screen } from '@testing-library/react'
 import { Field, Form, useForm } from '../../src'
-import '@testing-library/jest-dom/jest-globals'
+import '@testing-library/jest-dom/vitest'
 
 it('should render component with passed props', () => {
   const hook = renderHook(() =>

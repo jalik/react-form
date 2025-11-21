@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it, vi } from 'vitest'
 import useForm from '../../../src/useForm'
 import { act, renderHook } from '@testing-library/react'
 
@@ -18,7 +18,7 @@ describe('useForm({ onValuesChange })', () => {
 
   describe('with a function', () => {
     it('should call the function on values change', () => {
-      const callback = jest.fn()
+      const callback = vi.fn()
       const hook = renderHook(() => useForm({
         onValuesChange: callback
       }))

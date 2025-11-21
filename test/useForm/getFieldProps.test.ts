@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import useForm from '../../src/useForm'
 import { ComponentProps } from 'react'
@@ -461,7 +461,7 @@ function tests (mode: FormMode) {
       })
 
       it('should not use parse function on non string values when onChange() is called', () => {
-        const parseFn = jest.fn(parse)
+        const parseFn = vi.fn(parse)
         const numProps = hook.result.current.getFieldProps('num2', null, { parse: parseFn })
         const numVal = 999
         act(() => numProps.onChange(numVal))

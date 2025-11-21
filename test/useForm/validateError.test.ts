@@ -4,7 +4,7 @@
  */
 
 import useForm from '../../src/useForm'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { Errors, FormMode } from '../../src'
 

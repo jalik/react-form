@@ -4,7 +4,7 @@
  */
 
 import useForm from '../../src/useForm'
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { FormMode } from '../../src'
 
@@ -15,7 +15,7 @@ function tests (mode: FormMode) {
   }
   describe('when submit is successful', () => {
     it('should not call onError function', async () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       const hook = renderHook(() => useForm({
         mode,
         initialValues,
@@ -29,7 +29,7 @@ function tests (mode: FormMode) {
 
   describe('when submit failed', () => {
     it('should call onError function', async () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       const hook = renderHook(() => useForm({
         mode,
         initialValues,
@@ -42,7 +42,7 @@ function tests (mode: FormMode) {
 
     it('should call onError function with error', async () => {
       let callbackArgs: unknown[] = []
-      const onError = jest.fn((...args) => {
+      const onError = vi.fn((...args) => {
         callbackArgs = args
       })
       const hook = renderHook(() => useForm({
