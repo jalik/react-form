@@ -285,7 +285,8 @@ describe('useForm()', () => {
         const { result } = renderHook(() => {
           return useForm({
             initialValues,
-            disableSubmitIfNotModified: true
+            disableSubmitIfNotModified: true,
+            onSubmit: () => new Promise(() => null)
           })
         })
         act(() => {
@@ -670,7 +671,7 @@ describe('useForm()', () => {
         })
       })
 
-      await act(async () => result.current.submit())
+      await act(() => result.current.submit())
 
       expect(onSubmit).toHaveBeenCalledTimes(1)
       expect(result.current.submitted).toBe(true)
