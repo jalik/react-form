@@ -108,8 +108,8 @@ There are several ways to load a form:
 ### Loading values inside the form component
 
 ```tsx
-import { Field, Form, useForm } from '@jalik/react-form'
-import { useEffect } from 'react'
+import { Button, Field, Form, useForm } from '@jalik/react-form'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 
 function UserFormPage () {
@@ -139,7 +139,7 @@ function UserFormPage () {
 ### Loading values using the `load` option in `useForm()`
 
 ```tsx
-import { Field, Form, useForm } from '@jalik/react-form'
+import { Button, Field, Form, useForm } from '@jalik/react-form'
 import { useCallback } from 'react'
 
 function loadUser (id) {
@@ -147,8 +147,6 @@ function loadUser (id) {
 }
 
 function UserFormPage (props) {
-  const params = useParams()
-
   const form = useForm({
     // initialValues must be null (or omitted) at first,
     // so the form will understand that it will be initialized later.
@@ -156,7 +154,7 @@ function UserFormPage (props) {
     // WARNING: load is called every time it changes,
     // in this case the form will be updated when the id changes.
     // Note that all fields are disabled during loading.
-    load: useCallback(() => loadUser(params.id), [params.id]),
+    load: useCallback(() => loadUser(1337), []),
     onSubmit: (values) => Promise.resolve({ saved: true }),
   })
 
@@ -292,14 +290,20 @@ This is where the magic happens, this hook defines the form state and its behavi
 import { useForm } from '@jalik/react-form'
 
 const form = useForm({
-  // optional, used to clear form state (values, errors...) after submit
-  clearAfterSubmit: false,
+  // optional, what to do after a successful submit: 'clear' | 'initialize' | 'reset' | null
+  afterSubmit: 'reset',
   // optional, used to debug form
   debug: false,
   // optional, used to disable all fields and buttons
   disabled: false,
   disableOnSubmit: true,
   disableOnValidate: true,
+  // optional, disables the submit button if form is not modified
+  disableSubmitIfNotModified: false,
+  // optional, disables the submit button if form is not valid
+  disableSubmitIfNotValid: false,
+  // optional, enable native HTML validation on submit
+  enableHTMLValidation: false,
   // optional, used to set initial values
   initialValues: undefined,
   // optional, used to replace empty string by null on change and on submit
@@ -317,12 +321,10 @@ const form = useForm({
   // REQUIRED, called when form is submitted
   onSubmit: (values) => Promise.resolve({ success: true }),
   // optional, called when form has been successfully submitted
-  onSubmitted: (result) => {
+  onSuccess: (result, values) => {
   },
   // optional, used to initialize form everytime initialValues changes
   reinitialize: false,
-  // Use submitted values to set initial values after form submission, so when form is reset, the last submitted values are used.
-  setInitialValuesOnSuccess: false,
   // optional, used to debounce submit
   submitDelay: 100,
   // optional, called when a field value changed
@@ -356,7 +358,7 @@ const form = useForm({
     return errors
   },
   // optional, used to debounce validation
-  validateDelay: 200,
+  validateDelay: 400,
   // optional, used to validate a single field (expect a promise)
   validateField: async (name, value, values) => {
     if (name === 'username' && !value) {
