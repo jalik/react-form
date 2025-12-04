@@ -44,7 +44,7 @@
     "test": "vitest run --passWithNoTests --coverage"
   },
   "dependencies": {
-    "@jalik/deep-extend": "^2.0.0",
+    "@jalik/deep-extend": "^3.0.1",
     "@jalik/observer": "^2.2.2"
   },
   "devDependencies": {

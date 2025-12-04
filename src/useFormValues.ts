@@ -21,7 +21,7 @@ import { UseFormStatusHook } from './useFormStatus'
 import { Observer } from '@jalik/observer'
 import { FieldStatus, inputChangeEvent } from './useFormWatch'
 import { UseFormErrorsHook } from './useFormErrors'
-import deepExtend from '@jalik/deep-extend'
+import { deepExtend } from '@jalik/deep-extend'
 
 export type UseFormValuesOptions<V extends Values, E, R> = {
   /**
