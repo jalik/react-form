@@ -1,5 +1,9 @@
 # Changelog
 
+## v6.0.1 (2025-12-04)
+
+- deps: upgrade dependencies
+
 ## v6.0.0 (2025-11-21)
 
 ### Breaking changes
@@ -13,12 +17,15 @@
 - refactor: rename type `ModifiedFields` to `ModifiedState`
 - refactor: rename type `TouchedFields` to `TouchedState`
 - refactor: rename `useFieldArray().fields` to `items`
-- refactor: forms can be submitted if not modified by default (use option `disableSubmitIfNotModified` to change this)
+- refactor: forms can be submitted if not modified by default (use option
+  `disableSubmitIfNotModified` to change this)
 - refactor: `setValues()` does not accept a function anymore in `useForm()`
 - refactor: add function `initialize()` to `useForm()` and make `setInitialValues()` do what it says
-- refactor: remove props `emptyOptionLabel`, `options` and `type` from `Field` component to only handle props initialization
+- refactor: remove props `emptyOptionLabel`, `options` and `type` from `Field` component to only
+  handle props initialization
 - refactor: rename mode `experimental_uncontrolled` to `uncontrolled`
-- refactor: rename option `parser` to `parse` in `useForm().getFieldProps()`, `useForm().handleFieldChange()`, `useForm().handleSetValue()` and `getFieldValue()`
+- refactor: rename option `parser` to `parse` in `useForm().getFieldProps()`,
+  `useForm().handleFieldChange()`, `useForm().handleSetValue()` and `getFieldValue()`
 - refactor: rename `handleBlur()` to `handleFieldBlur()` in `useForm()`
 
 ### Other changes
@@ -54,23 +61,27 @@
 - feat: add option `sort` to `useFieldArray()`
 - feat: add option `format` to `getFieldProps()` in `useForm()`
 - feat: add option `replaceNull` to `getFieldProps()` in `useForm()`
-- feat: add option `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and `handleSetValue()` in `useForm()`
+- feat: add option `setValueOptions` to `getFieldProps()`, `handleFieldChange()` and
+  `handleSetValue()` in `useForm()`
 - feat: add hook `useWatch(path, callback)`
 - feat: return `id` from `useForm()`
 - feat: make `onSubmit` optional in `useForm()`
 - feat: pass `values` as second argument of `onSubmitted(result, values)`
 - feat: set `key` attribute on `<Field>` component using `useForm().key()`
 - feat: improve autocompletion of field names in functions arguments
-- feat: pass current items to callback of `handleAppend()` and `handlePrepend()` of `useFieldArray()`
+- feat: pass current items to callback of `handleAppend()` and `handlePrepend()` of
+  `useFieldArray()`
 - feat: use `parse` option of `getFieldProps` to parse array values
 - fix: return `onClick` property in `getButtonProps()` in `useForm()`
 - fix: fix errors state after changing array items (insert, prepend, remove...)
-- fix: fix value returned by `getFieldProps()` to be empty string instead of null when format option is not null
+- fix: fix value returned by `getFieldProps()` to be empty string instead of null when format option
+  is not null
 - fix: export types from index to simplify import declarations
 - fix: do not mark form as validated when `validateFields()` was successful
 - fix: fix lost of modified state after using `appendListItem()`
 - fix: fix "undefined path error" when field onBlur is called
-- fix: include value in field id for checkbox and radio elements so the focus is working when clicking on them
+- fix: include value in field id for checkbox and radio elements so the focus is working when
+  clicking on them
 - fix: replace field's null value with empty string in controlled mode
 - fix: fix checked state of radio/checkbox with empty string as value and context value is null
 - fix: update fields to validate instead of replacing them when setting values
