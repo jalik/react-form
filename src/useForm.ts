@@ -108,6 +108,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     props?: ComponentProps<Component>,
     opts?: {
       format?: FormatFunction | null | false;
+      formatItems?: boolean;
       parse?: ParseFunction;
       replaceNull?: boolean;
       setValueOptions?: Partial<SetValuesOptions>;
@@ -822,6 +823,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     props?: ComponentProps<Component>, // fixme improve type autocompletion
     opts: {
       format?: FormatFunction | null | false;
+      formatItems?: boolean;
       parse?: ParseFunction;
       replaceNull?: boolean;
       setValueOptions?: Partial<SetValuesOptions>;
@@ -829,6 +831,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   ) => {
     const {
       format = String,
+      formatItems = true,
       parse,
       replaceNull = true,
       setValueOptions
@@ -950,7 +953,8 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
 
     if (finalProps[valueAttribute] != null) {
       if (typeof format === 'function') {
-        if (finalProps[valueAttribute] instanceof Array) {
+        // todo call format on the value and never on items
+        if (finalProps[valueAttribute] instanceof Array && formatItems) {
           // Convert array values to string.
           finalProps[valueAttribute] = finalProps[valueAttribute].map(format)
         } else if (typeof finalProps[valueAttribute] !== 'string') {

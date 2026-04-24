@@ -431,6 +431,26 @@ function tests (mode: FormMode) {
         expect(booProps[valueAttribute]).toBe(format(initialValues.boo))
         expect(arrProps[valueAttribute]).toStrictEqual(initialValues.arr.map(format))
       })
+
+      describe('and formatItems = true', () => {
+        it('should call the format function on array items', () => {
+          const props = hook.result.current.getFieldProps('arr', null, {
+            format,
+            formatItems: true
+          })
+          expect(props[valueAttribute]).toStrictEqual(initialValues.arr.map(format))
+        })
+      })
+
+      describe('and formatItems = false', () => {
+        it(`should use format function to format the array "${valueAttribute}"`, () => {
+          const props = hook.result.current.getFieldProps('arr', null, {
+            format,
+            formatItems: false
+          })
+          expect(props[valueAttribute]).toBe(format(initialValues.arr))
+        })
+      })
     })
   })
 
