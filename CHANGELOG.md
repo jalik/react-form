@@ -1,5 +1,12 @@
 # Changelog
 
+## v6.1.0 (2026-04-24)
+
+- fix: fix errors, touched fields and modified fields after inserting or removing array items
+- feat: add option `formatItems` to `getFieldProps()` in `useForm()`
+- deps: remove all babel dependencies
+- deps: upgrade dependencies
+
 ## v6.0.1 (2025-12-04)
 
 - deps: upgrade dependencies
