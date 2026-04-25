@@ -266,16 +266,41 @@ export function getFieldValue (
 }
 
 /**
- * Returns the index of an object path.
- * @param key
+ * Extracts indexed parts of a given path and returns them as an array.
+ * @param path
  */
-export function getIndexFromPath (key: string): number | null {
-  const match = key.match(/\[(\d+)]$/)
-
-  if (match && match[1] != null) {
-    return parseInt(match[1], 10)
+export function getIndexedPathParts (path: string): [string, number, string] {
+  const endIndex = path.lastIndexOf(']')
+  if (endIndex === -1) {
+    throw new Error(`Invalid path index: ${path}`)
   }
-  return null
+  const startIndex = path.lastIndexOf('[', endIndex)
+  if (startIndex === -1) {
+    throw new Error(`Invalid path index: ${path}`)
+  }
+  if (endIndex - startIndex === 0) {
+    throw new Error(`Invalid path index: ${path}`)
+  }
+  const match = path.substring(startIndex + 1, endIndex)
+  const index = parseInt(match, 10)
+
+  if (Number.isNaN(index)) {
+    throw new Error(`Invalid path index: ${path}`)
+  }
+  return [
+    path.substring(0, startIndex + 1),
+    index,
+    path.substring(endIndex)
+  ]
+}
+
+/**
+ * Returns the index of an object path.
+ * @param path
+ */
+export function getIndexFromPath (path: string): number | null {
+  const parts = getIndexedPathParts(path)
+  return parts[1] ?? null
 }
 
 /**
@@ -506,6 +531,7 @@ export function resolve<T> (
 
 /**
  * Moves path value in a record.
+ * todo add unit tests
  * @param record
  * @param path
  * @param fromIndex
@@ -538,6 +564,7 @@ export function movePathIndices<T extends Record<string, unknown>> (record: T, p
 
 /**
  * Swaps two list values in a record.
+ * todo add unit tests
  * @param record
  * @param path
  * @param fromIndex
@@ -555,6 +582,7 @@ export function swapPathIndices<T extends Record<string, unknown>> (record: T, p
 
 /**
  * Updates indices in paths of a record.
+ * todo add unit tests
  * @param record
  * @param path
  * @param index
@@ -571,21 +599,19 @@ export function updatePathIndices<T extends Record<string, unknown>> (
 
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]
-    result[key] = record[key]
 
     if (key.startsWith(`${path}[`)) {
-      const pathIndex = getIndexFromPath(key)
+      const [prefix, pathIndex, suffix] = getIndexedPathParts(key)
 
-      if (pathIndex != null && pathIndex >= index) {
-        result[`${path}[${pathIndex + change}]`] = record[key]
-
-        // Delete the first index when inserting items
-        // or the last index when removing items.
-        if ((change > 0 && pathIndex === index) ||
-          (change < 0 && pathIndex === index + 1)) {
-          delete result[key]
-        }
+      if (pathIndex < index) {
+        result[key] = record[key]
+      } else if (pathIndex > index || change > 0) {
+        const newIndex = pathIndex + change
+        const newKey = `${prefix}${newIndex}${suffix}`
+        result[newKey] = record[key]
       }
+    } else {
+      result[key] = record[key]
     }
   }
   return result as T

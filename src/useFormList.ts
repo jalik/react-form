@@ -198,14 +198,14 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
 
   const removeListItem = useCallback<UseFormListHook<V>['removeListItem']>((path, ...indices) => {
     if (indices.length > 0) {
-      const reversedIndices = [...indices].reverse()
+      const sortedIndices = [...indices].sort().reverse()
 
       let errors = { ...getErrors() }
       let modified = { ...getModified() }
       let touched = { ...getTouched() }
 
-      for (let i = 0; i < reversedIndices.length; i++) {
-        const index = reversedIndices[i]
+      for (let i = 0; i < sortedIndices.length; i++) {
+        const index = sortedIndices[i]
         errors = updatePathIndices(errors, path, index, -1)
         modified = updatePathIndices(modified, path, index, -1)
         touched = updatePathIndices(touched, path, index, -1)
@@ -219,8 +219,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setErrors(errors)
 
       const list = [...(getValue<unknown[]>(path) ?? [])]
-      for (let i = 0; i < reversedIndices.length; i++) {
-        const index = reversedIndices[i]
+      for (let i = 0; i < sortedIndices.length; i++) {
+        const index = sortedIndices[i]
         list.splice(index, 1)
       }
       // fixme todo optimize to avoid rerender
