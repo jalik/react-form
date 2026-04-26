@@ -1,5 +1,9 @@
 # Changelog
 
+## v6.1.1 (2026-04-25)
+
+- fix: fix errors, touched fields and modified fields after moving array items
+
 ## v6.1.0 (2026-04-24)
 
 - fix: fix errors, touched fields and modified fields after inserting or removing array items
