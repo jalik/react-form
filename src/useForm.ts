@@ -37,6 +37,13 @@ import useFormList, { UseFormListHook } from './useFormList'
 import useFormValidation, { UseFormValidationHook } from './useFormValidation'
 import useFormSubmission, { AfterSubmitOption } from './useFormSubmission'
 
+type FieldProps = {
+  defaultValue?: any;
+  type?: string;
+  value?: any;
+  [key: string]: any;
+}
+
 export type FieldElement =
   HTMLInputElement
   | HTMLSelectElement
@@ -689,7 +696,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
     })
   }, [nullify, setValues])
 
-  const validateAndSubmit = useCallback(async (): Promise<R | undefined> => {
+  const validateAndSubmit = useCallback<UseFormHook<V, E, R>['submit']>(async () => {
     // Submit without validation if:
     // - validation is disabled
     // - form is already validated
@@ -818,16 +825,10 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
    * - Initialized props
    * - Passed props
    */
-  const getFieldProps = useCallback<UseFormHook<V, E, R>['getFieldProps']>(<Component extends ElementType> (
-    path: FieldPath<V>,
-    props?: ComponentProps<Component>, // fixme improve type autocompletion
-    opts: {
-      format?: FormatFunction | null | false;
-      formatItems?: boolean;
-      parse?: ParseFunction;
-      replaceNull?: boolean;
-      setValueOptions?: Partial<SetValuesOptions>;
-    } = {}
+  const getFieldProps = useCallback<UseFormHook<V, E, R>['getFieldProps']>((
+    path,
+    props, // fixme improve type autocompletion
+    opts = {}
   ) => {
     const {
       format = String,
@@ -841,7 +842,7 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
       value,
       defaultValue,
       ...otherProps
-    } = props ?? {} as ComponentProps<Component>
+    } = (props ?? {}) as FieldProps
 
     const checkedAttribute = mode === 'controlled'
       ? 'checked'
