@@ -530,35 +530,74 @@ export function resolve<T> (
 }
 
 /**
+ * Normalizes index to be within a valid range.
+ * @param index
+ * @param maxIndex
+ */
+export function normalizeIndex (index: number, maxIndex: number): number {
+  return Math.max(0, Math.min(index, maxIndex))
+}
+
+/**
  * Moves path value in a record.
  * todo add unit tests
  * @param record
  * @param path
  * @param fromIndex
  * @param toIndex
+ * @param maxIndex
  */
-export function movePathIndices<T extends Record<string, unknown>> (record: T, path: string, fromIndex: number, toIndex: number): T {
-  const minIndex = Math.min(fromIndex, toIndex)
-  const maxIndex = Math.max(fromIndex, toIndex)
+export function movePathIndices<T extends Record<string, unknown>> (record: T, path: string, fromIndex: number, toIndex: number, maxIndex: number): T {
+  const normalizedFromIndex = normalizeIndex(fromIndex, maxIndex)
+  const normalizedToIndex = normalizeIndex(toIndex, maxIndex)
+
+  const startIndex = Math.max(0, Math.min(normalizedFromIndex, normalizedToIndex))
+  const endIndex = Math.min(maxIndex, Math.max(normalizedFromIndex, normalizedToIndex))
   const result: Record<string, unknown> = {}
   const keys = Object.keys(record)
+
+  if (startIndex === endIndex || startIndex < 0 || endIndex > maxIndex) {
+    return record
+  }
 
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]
     result[key] = record[key]
 
     if (key.startsWith(`${path}[`)) {
-      const pathIndex = getIndexFromPath(key)
+      const [prefix, pathIndex, suffix] = getIndexedPathParts(key)
 
-      if (pathIndex != null && pathIndex >= minIndex && pathIndex < maxIndex) {
-        result[`${path}[${pathIndex + 1}]`] = record[key]
+      if (pathIndex != null && pathIndex >= startIndex && pathIndex <= endIndex) {
+        if (pathIndex === normalizedFromIndex) {
+          const toKey = `${prefix}${normalizedToIndex}${suffix}`
+          // Update the destination
+          result[toKey] = record[key]
+          // Update the source
+          result[key] = record[toKey]
+        } else if (pathIndex === normalizedToIndex) {
+          const fromKey = `${prefix}${normalizedFromIndex}${suffix}`
+          // Update the destination
+          result[key] = record[fromKey]
+          // Update the source
+          result[fromKey] = record[key]
+        } else {
+          let newIndex = pathIndex
+          if (normalizedToIndex > pathIndex) {
+            newIndex = pathIndex - 1
+          } else {
+            newIndex = pathIndex + 1
+          }
+          const newKey = `${prefix}${newIndex}${suffix}`
+          // Update the destination
+          result[newKey] = record[key]
+          // Update the source
+          if (newIndex !== normalizedFromIndex && newIndex !== normalizedToIndex) {
+            result[key] = record[newKey]
+          }
+        }
       }
     }
   }
-  const fromValue = record[`${path}[${fromIndex}]`]
-  const toValue = record[`${path}[${toIndex}]`]
-  result[`${path}[${toIndex}]`] = fromValue
-  result[`${path}[${fromIndex}]`] = toValue
   return result as T
 }
 
@@ -596,6 +635,10 @@ export function updatePathIndices<T extends Record<string, unknown>> (
 ): T {
   const result: Record<string, unknown> = {}
   const keys = Object.keys(record)
+
+  if (change === 0) {
+    return record
+  }
 
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]

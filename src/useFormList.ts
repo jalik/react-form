@@ -145,22 +145,23 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
   const moveListItem = useCallback<UseFormListHook<V>['moveListItem']>((path, fromIndex, toIndex) => {
-    const minIndex = Math.min(fromIndex, toIndex)
-    const maxIndex = Math.max(fromIndex, toIndex)
-    const modified = movePathIndices(getModified(), path, fromIndex, toIndex)
+    const list = [...(getValue<unknown[]>(path) ?? [])]
+    const maxIndex = list.length - 1
+    const startIndex = Math.min(fromIndex, toIndex)
+    const endIndex = Math.max(fromIndex, toIndex)
+    const modified = movePathIndices(getModified(), path, fromIndex, toIndex, maxIndex)
 
-    for (let i = minIndex; i < maxIndex; i++) {
+    for (let i = startIndex; i < endIndex; i++) {
       modified[`${path}[${i}]`] = true
     }
     // mark array as modified
     modified[path] = true
 
     setModified(modified)
-    setTouched(movePathIndices(getTouched(), path, fromIndex, toIndex))
-    setErrors(movePathIndices(getErrors(), path, fromIndex, toIndex))
+    setTouched(movePathIndices(getTouched(), path, fromIndex, toIndex, maxIndex))
+    setErrors(movePathIndices(getErrors(), path, fromIndex, toIndex, maxIndex))
 
-    const list = [...(getValue<unknown[]>(path) ?? [])]
-    const index = Math.min(Math.max(toIndex, 0), list.length)
+    const index = Math.min(Math.max(toIndex, 0), maxIndex)
     const [item] = list.splice(fromIndex, 1)
     list.splice(index, 0, item)
     // fixme todo optimize to avoid rerender
