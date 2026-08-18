@@ -52,14 +52,14 @@ export type FieldElement =
 export type GetButtonProps = {
   disabled?: boolean;
   onClick?: (...args: any) => void;
-  type?: 'submit' | 'reset' | 'button';
+  type?: HTMLButtonElement['type'];
   [key: string]: any;
 }
 
 export type GetButtonPropsReturnType = {
   disabled?: boolean;
   onClick?: (...args: any) => void;
-  type?: any;
+  type?: HTMLButtonElement['type'];
 }
 
 export type InitializeFieldFunction<V extends Values, E> = <C extends ElementType> (path: FieldPath<V>, formState: FormState<V, E, unknown>) => ComponentProps<C> | undefined
@@ -74,7 +74,7 @@ export type FormatFunction = (value: unknown) => string
  */
 export type ParseFunction<T = any> = (value: string, target?: HTMLElement) => T
 
-export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, R> & {
+export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V, E, R> & {
   /**
    * Clears the form (values, errors...).
    */
@@ -482,7 +482,7 @@ export type UseFormOptions<V extends Values, E, R> = {
 /**
  * Manage form state and actions.
  */
-function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<V, E, R>): UseFormHook<V, E, R> {
+function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOptions<V, E, R>): UseFormHook<V, E, R> {
   const {
     afterSubmit,
     debug = false,
@@ -531,11 +531,11 @@ function useForm<V extends Values, E = Error, R = any> (options: UseFormOptions<
   useEffect(() => {
     if (validateFieldFunc == null) {
       if (validateOnChange) {
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.error('validateField function must be provided when validateOnChange is true')
       }
       if (validateOnTouch) {
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.error('validateField function must be provided when validateOnTouch is true')
       }
     }

@@ -12,7 +12,7 @@ export type DebouncedFunction<T> = (...args: any[]) => Promise<T>;
  */
 function useDebouncePromise<T> (func: DebouncedFunction<T>, delay = 50): DebouncedFunction<T> {
   const funcRef = useRef(func)
-  const timerRef = useRef<NodeJS.Timeout>()
+  const timerRef = useRef<number | null>(null)
 
   const debouncedFunc = useCallback((...args: unknown[]) => (
     new Promise<T>((resolve) => {

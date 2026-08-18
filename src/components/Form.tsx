@@ -15,7 +15,7 @@ export type FormProps<V extends Values, E, R> = ComponentProps<'form'> & {
   context: UseFormHook<V, E, R>;
 }
 
-function Form<V extends Values = Values, E = Error, R = any> (props: FormProps<V, E, R>): ReactElement {
+function Form<V extends Values = Values, E = Error, R = unknown> (props: FormProps<V, E, R>): ReactElement {
   const {
     children,
     context,

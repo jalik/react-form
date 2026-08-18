@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { FormMode } from '../../src'
 
-async function load (): Promise<any> {
+async function load (): Promise<undefined> {
   throw new Error('Unknown error')
 }
 

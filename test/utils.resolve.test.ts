@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { resolve } from '../src/utils'
 
 describe('resolve(path, context)', () => {
-  const context: any = {
+  const context = {
     array: [
       42,
       {
@@ -267,6 +267,7 @@ describe('resolve(path, context)', () => {
   describe('resolve("array[1].string", context)', () => {
     it('should return the value of the nested object attribute', () => {
       expect(resolve('array[1].string', context))
+        // @ts-expect-error property string does not exist on number | { string: string }
         .toBe(context.array[1].string)
     })
   })
@@ -274,6 +275,7 @@ describe('resolve(path, context)', () => {
   describe('resolve("array[1][string]", context)', () => {
     it('should return the value of the nested object attribute', () => {
       expect(resolve('array[1][string]', context))
+        // @ts-expect-error property string does not exist on number | { string: string }
         .toBe(context.array[1].string)
     })
   })
@@ -281,6 +283,7 @@ describe('resolve(path, context)', () => {
   describe('resolve("array[1].array[0]", context)', () => {
     it('should return the value of the nested array index', () => {
       expect(resolve('array[1].array[0]', context))
+        // @ts-expect-error property string does not exist on number | { string: string }
         .toBe(context.array[1].array[0])
     })
   })
@@ -288,6 +291,7 @@ describe('resolve(path, context)', () => {
   describe('resolve("array[1][array][0]", context)', () => {
     it('should return the value of the nested array index', () => {
       expect(resolve('array[1][array][0]', context))
+        // @ts-expect-error property string does not exist on number | { string: string }
         .toBe(context.array[1].array[0])
     })
   })
@@ -297,7 +301,7 @@ describe('resolve(path, context)', () => {
   describe('resolve("object.array[0][array][1].object[field]", context)', () => {
     it('should return deep nested value', () => {
       expect(resolve('object.array[0][array][1].object[field]', context))
-        .toBe(context.object.array[0].array[1].object.field)
+        .toBe(context.object.array[0].array[1]?.object.field)
     })
   })
 })

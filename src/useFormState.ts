@@ -48,7 +48,7 @@ export type ModifiedState = Record<string, boolean>;
  */
 export type TouchedState = Record<string, boolean>;
 
-export type FormState<V extends Values = Values, E = Error, R = any> = {
+export type FormState<V extends Values = Values, E = Error, R = unknown> = {
   /**
    * Disables all fields and buttons.
    */
@@ -247,7 +247,7 @@ function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E
 
   useEffect(() => {
     if (debug) {
-      // eslint-disable-next-line no-console
+      // oxlint-disable-next-line no-console
       console.debug('FORM STATE', computedState)
     }
   }, [computedState, debug])

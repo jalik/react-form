@@ -61,7 +61,6 @@ function useFormWatch<V extends Values> (): UseFormWatchHook<V> {
   }, [])
 
   const watch = useCallback<UseFormWatchHook<V>['watch']>((path, callback) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       const id = inputChangeEvent(path)
       watchers.current.on(id, callback)

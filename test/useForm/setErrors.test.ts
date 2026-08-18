@@ -8,10 +8,12 @@ import { describe, expect, it } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { FormMode } from '../../src'
 
+type TestValues = { a: string, b: string, c: string }
+
 function test (mode: FormMode) {
   describe('with partial = false', () => {
     it('should replace all errors', () => {
-      const hook = renderHook(() => useForm<any, string>({
+      const hook = renderHook(() => useForm<TestValues, string>({
         mode
       }))
       act(() => hook.result.current.setErrors({
@@ -31,7 +33,7 @@ function test (mode: FormMode) {
 
   describe('with partial = true', () => {
     it('should replace given errors only', () => {
-      const hook = renderHook(() => useForm<any, string>({
+      const hook = renderHook(() => useForm<TestValues, string>({
         mode,
         initialErrors: {
           a: 'invalid'
@@ -53,7 +55,7 @@ function test (mode: FormMode) {
     })
 
     it('should delete errors with null or undefined value', () => {
-      const hook = renderHook(() => useForm<any, string>({
+      const hook = renderHook(() => useForm<TestValues, string>({
         mode,
         initialErrors: {
           a: 'invalid',
