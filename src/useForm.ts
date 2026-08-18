@@ -118,7 +118,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
       formatItems?: boolean;
       parse?: ParseFunction;
       replaceNull?: boolean;
-      setValueOptions?: Partial<SetValuesOptions>;
+      setValueOptions?: SetValuesOptions;
     }
   ): any;
   /**
@@ -172,7 +172,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     path: FieldPath<V>,
     options?: {
       parse?: ParseFunction;
-      setValueOptions?: Partial<SetValuesOptions>;
+      setValueOptions?: SetValuesOptions;
     }
   ): (valueOrEvent: React.ChangeEvent<FieldElement> | unknown) => void;
   /**
@@ -189,7 +189,7 @@ export type UseFormHook<V extends Values, E = Error, R = any> = FormState<V, E, 
     path: FieldPath<V>,
     options?: {
       parse?: ParseFunction;
-      setValueOptions?: Partial<SetValuesOptions>;
+      setValueOptions?: SetValuesOptions;
     }
   ): (value: unknown | undefined) => void;
   /**
@@ -370,7 +370,7 @@ export type UseFormOptions<V extends Values, E, R> = {
   /**
    * Sets the initial values.
    */
-  initialValues?: Partial<V>;
+  initialValues?: V;
   /**
    * Sets field props dynamically.
    * @param path
@@ -398,19 +398,19 @@ export type UseFormOptions<V extends Values, E, R> = {
    * Called when form is submitted.
    * @param values
    */
-  onSubmit?: (values: Partial<V>) => Promise<R>;
+  onSubmit?: (values: V) => Promise<R>;
   /**
    * Called when form has been successfully submitted.
    * @param result
    * @param values
    */
-  onSuccess? (result: R, values: Partial<V>): void;
+  onSuccess? (result: R, values: V): void;
   /**
    * Called when form values have changed.
    * @param values
    * @param previousValues
    */
-  onValuesChange? (values: Partial<V>, previousValues: Partial<V>): void;
+  onValuesChange? (values: V, previousValues: V): void;
   /**
    * Prevents native action when form is submitted.
    */
@@ -443,7 +443,7 @@ export type UseFormOptions<V extends Values, E, R> = {
    * @param modifiedFields
    */
   validate? (
-    values: Partial<V>,
+    values: V,
     modifiedFields: ModifiedState
   ): Promise<Errors<E> | undefined>;
   /**
@@ -459,7 +459,7 @@ export type UseFormOptions<V extends Values, E, R> = {
   validateField? (
     path: FieldPath<V>,
     value: unknown,
-    values: Partial<V>
+    values: V
   ): Promise<E | undefined>;
   /**
    * Enables validation on field change.

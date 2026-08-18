@@ -9,7 +9,7 @@ import useFieldArray from '../src/useFieldArray'
 import { act, renderHook } from '@testing-library/react'
 
 type Item = {
-  id: number
+  id: number | null
 }
 type ItemsForm = {
   items: Item[]
@@ -43,10 +43,10 @@ describe('useFieldArray()', () => {
       })
     })
     const { result: array } = renderHook(() => {
-      return useFieldArray<Partial<Item>, ItemsForm>({
+      return useFieldArray<Item, ItemsForm>({
         name: 'items',
         context: form.current,
-        defaultValue: {}
+        defaultValue: { id: null }
       })
     })
 

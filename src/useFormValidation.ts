@@ -11,7 +11,7 @@ import { hasDefinedValues } from './utils'
 import { UseFormErrorsHook } from './useFormErrors'
 import useDebouncePromise from './useDebouncePromise'
 
-export type ValidateFieldFunction<V extends Values, E> = (path: FieldPath<V>, value: unknown, values: Partial<V>) => Promise<E | undefined>
+export type ValidateFieldFunction<V extends Values, E> = (path: FieldPath<V>, value: unknown, values: V) => Promise<E | undefined>
 
 export type UseFormValidationOptions<V extends Values, E, R> = {
   /**
@@ -35,7 +35,7 @@ export type UseFormValidationOptions<V extends Values, E, R> = {
    * @param values
    * @param modified
    */
-  validate? (values: Partial<V>, modified: ModifiedState): Promise<Errors<E> | undefined>;
+  validate? (values: V, modified: ModifiedState): Promise<Errors<E> | undefined>;
   /**
    * Validates a single field.
    * @param path
@@ -155,6 +155,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
     const validate = validateFieldRef.current
     const promises = validate
       ? paths.map((path) => {
+        // fixme catch error during validation
         return Promise.resolve(validate(path, getValue(path), getValues()))
           .then((error): [FieldPath<V>, E | undefined] => [path, error])
       })
@@ -220,6 +221,7 @@ function useFormValidation<V extends Values, E, R> (options: UseFormValidationOp
     }))
 
     return Promise.resolve(
+      // fixme catch error during validation
       validateRef.current(getValues(), { ...modifiedRef.current })
     )
       .then((nextErrors = {}) => {

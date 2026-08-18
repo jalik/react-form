@@ -56,7 +56,7 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
    * Executes a callback when values changed.
    * @param values
    */
-  onValuesChange?: (values: Partial<V>, previousValues: Partial<V>) => void;
+  onValuesChange?: (values: V, previousValues: V) => void;
   /**
    * Resets values with initial values when they change.
    */
@@ -66,7 +66,7 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
    * @param mutation
    * @param values
    */
-  transform? (mutation: PathsAndValues<V>, values: Partial<V>): PathsAndValues<V>;
+  transform? (mutation: PathsAndValues<V>, values: V): PathsAndValues<V>;
   /**
    * Registered watchers.
    */
@@ -104,7 +104,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns the initial values.
    */
-  getInitialValues (): Partial<V> | undefined;
+  getInitialValues (): V | undefined;
   /**
    * Returns a value.
    */
@@ -112,14 +112,14 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns values.
    */
-  getValues (): Partial<V>;
+  getValues (): V;
   /**
    * Initialize form with values.
    * @param values
    * @param options
    */
   initialize (
-    values: Partial<V>,
+    values: V,
     options?: { forceUpdate?: boolean }
   ): void;
   /**
@@ -252,9 +252,9 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     const previousValues = clone(valuesRef.current)
     const nextErrors: Errors<E> = {}
     const nextModified: ModifiedState = {}
-    let nextValues: Partial<V> = partial
+    let nextValues: V = partial
       ? valuesRef.current
-      : {} as Partial<V>
+      : {} as V
     let mutation: PathsOrValues<V> = { ...values }
 
     if (transformRef.current && applyTransform) {
@@ -446,7 +446,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   const setInitialValues = useCallback<UseFormValuesHook<V>['setInitialValues']>((values, opts) => {
     const { partial } = opts ?? {}
     const paths = Object.keys(values)
-    let nextValues = (partial ? clone(initialValuesRef.current) ?? {} : {}) as Partial<V>
+    let nextValues = (partial ? clone(initialValuesRef.current) ?? {} : {}) as V
 
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i]
@@ -487,7 +487,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       }
       nextValues = record
     } else {
-      nextValues = getInitialValues() ?? {}
+      nextValues = getInitialValues() ?? {} as PathsOrValues<V>
     }
     setValues(nextValues, {
       applyTransform: false,

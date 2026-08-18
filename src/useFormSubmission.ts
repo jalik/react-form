@@ -47,12 +47,12 @@ export type UseFormSubmissionOptions<V extends Values, E, R> = {
    * @param result
    * @param values
    */
-  onSuccess? (result: R, values: Partial<V>): void;
+  onSuccess? (result: R, values: V): void;
   /**
    * Handle values to submit.
    * @param values
    */
-  submit? (values: Partial<V>): Promise<R>;
+  submit? (values: V): Promise<R>;
   /**
    * Enables trimming on submit.
    */

@@ -34,7 +34,7 @@ export type PathsAndValues<V extends Values> = Record<FieldPath<V>, unknown>
 /**
  * Contains form values as object or a flat object with paths and values.
  */
-export type PathsOrValues<V extends Values> = PathsAndValues<V> | Partial<V>
+export type PathsOrValues<V extends Values> = PathsAndValues<V> | V
 /**
  * Contains the form errors.
  */
@@ -80,7 +80,7 @@ export type FormState<V extends Values = Values, E = Error, R = any> = {
   /**
    * Contains initial form values.
    */
-  initialValues: Partial<V> | undefined;
+  initialValues: V | undefined;
   /**
    * The loading error.
    */
@@ -144,7 +144,7 @@ export type FormState<V extends Values = Values, E = Error, R = any> = {
   /**
    * The form values.
    */
-  values: Partial<V>;
+  values: V;
 }
 
 export type UseFormStateOptions<V extends Values, E, R> = {
@@ -152,7 +152,7 @@ export type UseFormStateOptions<V extends Values, E, R> = {
   /**
    * Sets the initial state of the form.
    */
-  initialState?: Partial<FormState<V, E, R>>;
+  initialState: Partial<FormState<V, E, R>>;
 }
 
 export type UseFormStateHook<V extends Values, E, R> = {
@@ -171,7 +171,7 @@ export type UseFormStateHook<V extends Values, E, R> = {
   /**
    * The initial values ref (uncontrolled mode).
    */
-  initialValuesRef: MutableRefObject<Partial<V> | undefined>;
+  initialValuesRef: MutableRefObject<V | undefined>;
   /**
    * The modified fields ref (uncontrolled mode).
    */
@@ -191,49 +191,48 @@ export type UseFormStateHook<V extends Values, E, R> = {
   /**
    * The values ref (uncontrolled mode).
    */
-  valuesRef: MutableRefObject<Partial<V>>;
+  valuesRef: MutableRefObject<V>;
 }
 
-function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E, R> = {}): UseFormStateHook<V, E, R> {
+function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E, R>): UseFormStateHook<V, E, R> {
   const {
     debug = false,
-    initialState = {}
+    initialState
   } = options
 
   const [state, setState] = useState<FormState<V, E, R>>(() => ({
-    disabled: false,
-    hasError: false,
-    initialModified: {},
-    initialTouched: {},
-    initialValues: undefined,
-    loadError: undefined,
-    loading: false,
-    modified: false,
-    needValidation: false,
-    submitCount: 0,
-    submitError: undefined,
-    submitResult: undefined,
-    submitted: false,
-    submitting: false,
-    touched: false,
-    validateError: undefined,
-    validated: false,
-    validating: false,
-    ...initialState,
-    errors: filterErrors(initialState.errors),
-    initialized: initialState.initialValues != null,
-    initialErrors: filterErrors(initialState.initialErrors),
-    modifiedFields: initialState.initialModified ?? {},
-    touchedFields: initialState.initialTouched ?? {},
-    values: initialState.initialValues ?? {}
+    disabled: initialState.disabled ?? false,
+    errors: filterErrors(initialState?.errors),
+    hasError: initialState.hasError ?? false,
+    initialized: initialState?.initialValues != null,
+    initialErrors: filterErrors(initialState?.initialErrors),
+    initialModified: initialState.initialModified ?? {},
+    initialTouched: initialState.initialTouched ?? {},
+    initialValues: initialState.initialValues,
+    loadError: initialState.loadError,
+    loading: initialState.loading ?? false,
+    modified: initialState.modified ?? false,
+    modifiedFields: initialState?.initialModified ?? {},
+    needValidation: initialState.needValidation ?? false,
+    submitCount: initialState.submitCount ?? 0,
+    submitError: initialState.submitError,
+    submitResult: initialState.submitResult,
+    submitted: initialState.submitted ?? false,
+    submitting: initialState.submitting ?? false,
+    touched: initialState.touched ?? false,
+    touchedFields: initialState?.initialTouched ?? {},
+    validateError: initialState.validateError,
+    validated: initialState.validated ?? false,
+    validating: initialState.validating ?? false,
+    values: initialState?.initialValues ?? {} as V
   }))
 
   const errorsRef = useRef<Errors<E>>(state.errors)
-  const initialValuesRef = useRef<Partial<V | undefined>>(state.initialValues)
+  const initialValuesRef = useRef<V | undefined>(state.initialValues)
   const initializedRef = useRef<boolean>(state.initialized)
   const modifiedRef = useRef<ModifiedState>(state.initialModified ?? {})
   const touchedRef = useRef<TouchedState>(state.initialTouched ?? {})
-  const valuesRef = useRef<Partial<V>>(state.values ?? {})
+  const valuesRef = useRef<V>(state.values ?? {})
 
   // Computed values.
   const computedState = useMemo(() => ({
