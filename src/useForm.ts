@@ -19,7 +19,6 @@ import useFormState, {
   FormMode,
   FormState,
   ModifiedState,
-  PathsOrValues,
   Values
 } from './useFormState'
 import { getFieldId, getFieldValue, hasDefinedValues, randomKey } from './utils'
@@ -78,15 +77,11 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
   /**
    * Clears the form (values, errors...).
    */
-  clear: UseFormValuesHook<V>['clearValues'];
-  /**
-   * Clears all or given errors.
-   */
-  clearErrors: UseFormErrorsHook<V, E>['clearErrors'];
+  clear: UseFormValuesHook<V>['clearValues']; // todo rename to clearValues
   /**
    * Clears all or given touched fields.
    */
-  clearTouchedFields: UseFormStatusHook<V>['clearTouched'];
+  clearTouchedFields: UseFormStatusHook<V>['clearTouched']; // todo rename to clearTouchedFields
   /**
    * Performs an update of the form state (uncontrolled mode).
    */
@@ -96,14 +91,6 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
    * @param props
    */
   getButtonProps (props?: GetButtonProps): GetButtonPropsReturnType;
-  /**
-   * Returns field error.
-   */
-  getError: UseFormErrorsHook<V, E>['getError'];
-  /**
-   * Returns form errors.
-   */
-  getErrors: UseFormErrorsHook<V, E>['getErrors'];
   /**
    * Returns field props by name.
    * @param path
@@ -126,38 +113,6 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
    * @param props
    */
   getFormProps (props?: ComponentProps<'form'>): ComponentProps<'form'>;
-  /**
-   * Returns field's initial error.
-   */
-  getInitialError: UseFormErrorsHook<V, E>['getInitialError'];
-  /**
-   * Returns initial errors.
-   */
-  getInitialErrors: UseFormErrorsHook<V, E>['getInitialErrors'];
-  /**
-   * Returns field's initial value.
-   */
-  getInitialValue: UseFormValuesHook<V>['getInitialValue'];
-  /**
-   * Returns initial values.
-   */
-  getInitialValues: UseFormValuesHook<V>['getInitialValues'];
-  /**
-   * Returns modified fields.
-   */
-  getModified: UseFormStatusHook<V>['getModified'];
-  /**
-   * Returns touched fields.
-   */
-  getTouched: UseFormStatusHook<V>['getTouched'];
-  /**
-   * Returns field value.
-   */
-  getValue: UseFormValuesHook<V>['getValue'];
-  /**
-   * Returns form values.
-   */
-  getValues: UseFormValuesHook<V>['getValues'];
   /**
    * Handles field blur event.
    * @param path
@@ -202,18 +157,6 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
    */
   id: string;
   /**
-   * Initializes form with values.
-   */
-  initialize: UseFormValuesHook<V>['initialize'];
-  /**
-   * Tells if the field or form was modified.
-   */
-  isModified: UseFormStatusHook<V>['isModified'];
-  /**
-   * Tells if the field or form was touched.
-   */
-  isTouched: UseFormStatusHook<V>['isTouched'];
-  /**
    * Returns the key of a field.
    */
   key: UseFormKeysHook<V>['getKey'];
@@ -228,68 +171,15 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
   /**
    * Removes given fields.
    */
-  removeFields: UseFormValuesHook<V>['removeValues'];
+  removeFields: UseFormValuesHook<V>['removeValues']; // todo rename to removeValues
   /**
    * Resets all or given fields.
    */
-  reset: UseFormValuesHook<V>['resetValues'];
-  /**
-   * Resets all errors or for given paths.
-   */
-  resetErrors: UseFormErrorsHook<V, E>['resetErrors'];
-  /**
-   * Resets touched state of given fields or all fields.
-   */
-  resetTouched: UseFormStatusHook<V>['resetTouched'];
-  /**
-   * Sets a single field error.
-   */
-  setError: UseFormErrorsHook<V, E>['setError'];
-  /**
-   * Sets all or partial errors.
-   */
-  setErrors: UseFormErrorsHook<V, E>['setErrors'];
-  /**
-   * Sets initial values.
-   */
-  setInitialValues: UseFormValuesHook<V>['setInitialValues'];
-  /**
-   * Sets all partial or partial touched fields.
-   */
-  setTouched: UseFormStatusHook<V>['setTouched'];
-  /**
-   * Sets a single touched field.
-   */
-  setTouchedField: UseFormStatusHook<V>['setTouchedField'];
-  /**
-   * Sets a single field value.
-   */
-  setValue: UseFormValuesHook<V>['setValue'];
-  /**
-   * Sets all or partial fields values.
-   * @param values
-   * @param options
-   */
-  setValues (
-    values: PathsOrValues<V>,
-    options?: SetValuesOptions
-  ): void;
+  reset: UseFormValuesHook<V>['resetValues']; // todo rename to resetValues
   /**
    * Calls the onSubmit function with form values.
    */
   submit: DebouncedFunction<R | undefined>;
-  /**
-   * Calls the validate function with form values.
-   */
-  validate: UseFormValidationHook<V, E, R>['validate'];
-  /**
-   * Calls the validateField function for a single field value.
-   */
-  validateField: UseFormValidationHook<V, E, R>['validateField'];
-  /**
-   * Calls the validate or validateField function for all or given fields.
-   */
-  validateFields: UseFormValidationHook<V, E, R>['validateFields'];
   /**
    * Enables validation on field change.
    */
@@ -299,16 +189,23 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
    */
   validateOnInit: boolean;
   /**
-   * Enables validation on form submit.
+   * Enables validation on form submitting.
    */
   validateOnSubmit: boolean;
   /**
    * Enables validation on field touch.
    */
   validateOnTouch: boolean;
-} & Pick<UseFormWatchHook<V>,
-  'watch' |
-  'watchers'>
+}
+  & Pick<UseFormErrorsHook<V, E>,
+  'clearErrors' |
+  'getError' |
+  'getErrors' |
+  'getInitialError' |
+  'getInitialErrors' |
+  'resetErrors' |
+  'setError' |
+  'setErrors'>
   & Pick<UseFormListHook<V>,
   'appendListItem' |
   'insertListItem' |
@@ -317,6 +214,41 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
   'removeListItem' |
   'replaceListItem' |
   'swapListItem'>
+  & Pick<UseFormStatusHook<V>,
+  // 'clearModified' | // todo add
+  // 'clearTouched' | // todo rename from clearTouchedFields
+  'getModified' |
+  'getTouched' |
+  'isModified' |
+  'isTouched' |
+  // 'resetModified' | // todo add
+  'resetTouched' |
+  // 'setModified' | // todo add
+  // 'setModifiedField' | // todo add
+  'setTouched' |
+  'setTouchedField'>
+  & Pick<UseFormValuesHook<V>,
+  // 'clearValues' | // todo rename from clear
+  'getInitialValue' |
+  'getInitialValues' |
+  'getValue' |
+  'getValues' |
+  'initialize' |
+  // 'removeValues' | // todo rename from removeFields
+  // 'resetValues' | // todo rename from reset
+  'setInitialValues' |
+  'setValue' |
+  'setValues'>
+  & Pick<UseFormValidationHook<V, E, R>,
+  // 'setValidated' | // todo add
+  // 'setValidateError' | // todo add
+  // 'setValidating' | // todo add
+  'validate' |
+  'validateField' |
+  'validateFields'>
+  & Pick<UseFormWatchHook<V>,
+  'watch' |
+  'watchers'>
 
 export type UseFormOptions<V extends Values, E, R> = {
   /**

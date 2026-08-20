@@ -23,6 +23,31 @@ import { FieldStatus, inputChangeEvent } from './useFormWatch'
 import { UseFormErrorsHook } from './useFormErrors'
 import { deepExtend } from '@jalik/deep-extend'
 
+export type ClearValuesOptions = {
+  forceUpdate?: boolean;
+  initialize?: boolean;
+}
+
+export type SetValuesOptions = {
+  applyTransform?: boolean;
+  forceUpdate?: boolean;
+  initialize?: boolean;
+  nullify?: boolean;
+  partial?: boolean;
+  updateErrors?: boolean;
+  updateModified?: boolean;
+  updateTouched?: boolean;
+  validate?: boolean;
+}
+
+export type SetValueOptions = Pick<SetValuesOptions,
+  'forceUpdate' |
+  'nullify' |
+  'updateErrors' |
+  'updateModified' |
+  'updateTouched' |
+  'validate'>
+
 export type UseFormValuesOptions<V extends Values, E, R> = {
   /**
    * Update the form when it is modified or touched (happens only at the form level).
@@ -73,18 +98,6 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
   watchers: MutableRefObject<Observer<any, string>>;
 }
 
-export type SetValuesOptions = {
-  applyTransform?: boolean;
-  forceUpdate?: boolean;
-  initialize?: boolean;
-  nullify?: boolean;
-  partial?: boolean;
-  updateErrors?: boolean;
-  updateModified?: boolean;
-  updateTouched?: boolean;
-  validate?: boolean;
-}
-
 export type UseFormValuesHook<V extends Values> = {
   /**
    * Clears all values (set to undefined) or for given paths.
@@ -93,10 +106,8 @@ export type UseFormValuesHook<V extends Values> = {
    */
   clearValues (
     paths?: FieldPath<V>[],
-    options?: {
-      forceUpdate?: boolean;
-      initialize?: boolean;
-    }): void;
+    options?: ClearValuesOptions
+  ): void;
   /**
    * Returns the initial value of a field.
    */
@@ -155,17 +166,11 @@ export type UseFormValuesHook<V extends Values> = {
    * @param value
    * @param options
    */
-  setValue <P extends FieldPath<V>>(
+  setValue<P extends FieldPath<V>> (
     path: P,
     value: V[P],
-    options?: {
-      forceUpdate?: boolean;
-      nullify?: boolean;
-      updateErrors?: boolean;
-      updateModified?: boolean;
-      updateTouched?: boolean;
-      validate?: boolean;
-    }): void;
+    options?: SetValueOptions
+  ): void;
   /**
    * Sets given values of all values.
    * @param values
