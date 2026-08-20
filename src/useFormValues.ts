@@ -14,7 +14,7 @@ import {
   UseFormStateHook,
   Values
 } from './useFormState'
-import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { RefObject, useCallback, useEffect, useRef } from 'react'
 import { build, clone, hasDefinedValues, reconstruct, resolve } from './utils'
 import { UseFormKeysHook } from './useFormKeys'
 import { UseFormStatusHook } from './useFormStatus'
@@ -95,7 +95,7 @@ export type UseFormValuesOptions<V extends Values, E, R> = {
   /**
    * Registered watchers.
    */
-  watchers: MutableRefObject<Observer<any, string>>;
+  watchers: RefObject<Observer<any, string>>;
 }
 
 export type UseFormValuesHook<V extends Values> = {

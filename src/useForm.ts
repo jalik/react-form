@@ -61,7 +61,7 @@ export type GetButtonPropsReturnType = {
   type?: HTMLButtonElement['type'];
 }
 
-export type InitializeFieldFunction<V extends Values, E> = <C extends ElementType> (path: FieldPath<V>, formState: FormState<V, E, unknown>) => ComponentProps<C> | undefined
+export type InitializeFieldFunction<V extends Values, E> = <C extends ElementType> (path: FieldPath<V>, formState: FormState<V, E>) => ComponentProps<C> | undefined
 
 /**
  * A function that converts a value to a string.
@@ -143,7 +143,7 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
    * Handles form submit event.
    * @param event
    */
-  handleSubmit (event: React.FormEvent<HTMLFormElement>): void;
+  handleSubmit: React.SubmitEventHandler<HTMLFormElement>;
   /**
    * The generated form id.
    */
@@ -705,7 +705,7 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
   /**
    * Handles form submit.
    */
-  const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = useCallback((event): void => {
     if (submitRef.current != null) {
       if (preventDefaultOnSubmit) {
         event.preventDefault()

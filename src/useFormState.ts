@@ -3,15 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import {
-  Dispatch,
-  MutableRefObject,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import { Dispatch, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { filterErrors } from './useFormErrors'
 import { hasDefinedValues, hasTrueValues } from './utils'
 
@@ -34,7 +26,9 @@ export type FieldPath<V extends Values> = LooseString<keyof V & string>
 /**
  * Contains field paths and values.
  */
-export type PathsAndValues<V extends Values> = Partial<V> & Partial<Record<FieldPath<V>, unknown | null>>
+export type PathsAndValues<V extends Values> =
+  Partial<V>
+  & Partial<Record<FieldPath<V>, unknown | null>>
 /**
  * Contains form values as object or a flat object with paths and values.
  */
@@ -167,19 +161,19 @@ export type UseFormStateHook<V extends Values, E, R> = {
   /**
    * The errors ref (uncontrolled mode).
    */
-  errorsRef: MutableRefObject<Errors<E>>;
+  errorsRef: RefObject<Errors<E>>;
   /**
    * Tells if the form was initialized (uncontrolled mode).
    */
-  initializedRef: MutableRefObject<boolean>;
+  initializedRef: RefObject<boolean>;
   /**
    * The initial values ref (uncontrolled mode).
    */
-  initialValuesRef: MutableRefObject<V | undefined>;
+  initialValuesRef: RefObject<V | undefined>;
   /**
    * The modified fields ref (uncontrolled mode).
    */
-  modifiedRef: MutableRefObject<ModifiedState>;
+  modifiedRef: RefObject<ModifiedState>;
   /**
    * The current state of the form.
    */
@@ -191,11 +185,11 @@ export type UseFormStateHook<V extends Values, E, R> = {
   /**
    * The touched fields ref (uncontrolled mode).
    */
-  touchedRef: MutableRefObject<TouchedState>;
+  touchedRef: RefObject<TouchedState>;
   /**
    * The values ref (uncontrolled mode).
    */
-  valuesRef: MutableRefObject<V>;
+  valuesRef: RefObject<V>;
 }
 
 function useFormState<V extends Values, E, R> (options: UseFormStateOptions<V, E, R>): UseFormStateHook<V, E, R> {

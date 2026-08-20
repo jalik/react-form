@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { RefObject, useCallback, useEffect, useRef } from 'react'
 import { Errors, FieldPath, ModifiedState, UseFormStateHook, Values } from './useFormState'
 import { UseFormStatusHook } from './useFormStatus'
 import { UseFormValuesHook } from './useFormValues'
@@ -81,7 +81,7 @@ export type UseFormValidationHook<V extends Values, E, R> = {
   /**
    * The ref of the validation function.
    */
-  validateRef: MutableRefObject<UseFormValidationOptions<V, E, R>['validate']>;
+  validateRef: RefObject<UseFormValidationOptions<V, E, R>['validate']>;
 }
 
 function useFormValidation<V extends Values, E, R> (options: UseFormValidationOptions<V, E, R>): UseFormValidationHook<V, E, R> {

@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { RefObject, useCallback, useEffect, useRef } from 'react'
 import { Observer } from '@jalik/observer'
 import { FieldPath, Values } from './useFormState'
 
@@ -46,7 +46,7 @@ export type UseFormWatchHook<V extends Values> = {
   /**
    * Registered watchers.
    */
-  watchers: MutableRefObject<Observer<any, string>>;
+  watchers: RefObject<Observer<any, string>>;
 }
 
 export function inputChangeEvent (name: string): string {

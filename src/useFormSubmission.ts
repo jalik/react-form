@@ -3,7 +3,7 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { RefObject, useCallback, useEffect, useRef } from 'react'
 import { UseFormStateHook, Values } from './useFormState'
 import { build, clone } from './utils'
 import { UseFormValuesHook } from './useFormValues'
@@ -67,7 +67,7 @@ export type UseFormSubmissionHook<V extends Values, E, R> = {
   /**
    * The ref of the submit function.
    */
-  submitRef: MutableRefObject<UseFormSubmissionOptions<V, E, R>['submit']>
+  submitRef: RefObject<UseFormSubmissionOptions<V, E, R>['submit']>
 }
 
 function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOptions<V, E, R>): UseFormSubmissionHook<V, E, R> {

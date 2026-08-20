@@ -3,9 +3,9 @@
  * Copyright (c) 2025 Karl STEIN
  */
 
-import { MutableRefObject, useEffect, useRef } from 'react'
+import { RefObject, useEffect, useRef } from 'react'
 
-function useMountedRef (): MutableRefObject<boolean> {
+function useMountedRef (): RefObject<boolean> {
   const mountedRef = useRef<boolean>(false)
 
   useEffect(() => {
