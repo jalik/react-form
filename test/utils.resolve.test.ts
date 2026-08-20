@@ -53,6 +53,14 @@ describe('resolve(path, context)', () => {
     })
   })
 
+  describe('with path containing space', () => {
+    it('should resolve path with space', () => {
+      const context = { attrs: { 'my attr': 'value' } }
+      expect(resolve('attrs.my attr', context)).toBe('value')
+      expect(resolve('attrs[my attr]', context)).toBe('value')
+    })
+  })
+
   // Undefined or null context.
 
   describe('resolve("", null)', () => {

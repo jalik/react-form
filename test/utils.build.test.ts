@@ -38,9 +38,22 @@ describe('build(path, value, context)', () => {
 
   describe('with path containing space', () => {
     it('should not throw an error', () => {
-      const context = { my: { 'test 1': null } }
+      const context = { a: { 'b 1': { c: false } } }
+
       expect(() => {
-        build('my[test 1]', true, context)
+        build('a[b 1]', { c: true }, context)
+      }).not.toThrow()
+
+      expect(() => {
+        build('a[b 1].c', true, context)
+      }).not.toThrow()
+
+      expect(() => {
+        build('a.b 1', { c: true }, context)
+      }).not.toThrow()
+
+      expect(() => {
+        build('a.b 1.c', true, context)
       }).not.toThrow()
     })
 
@@ -48,6 +61,24 @@ describe('build(path, value, context)', () => {
       const context = { my: { 'test 1': null } }
       const result = build('my[test 1]', true, context)
       expect(result).toStrictEqual({ my: { 'test 1': true } })
+
+      const result2 = build('attrs.my attr', true, {})
+      expect(result2).toStrictEqual({ attrs: { 'my attr': true } })
+
+      const result3 = build('attrs[my attr]', true, {})
+      expect(result3).toStrictEqual({ attrs: { 'my attr': true } })
+
+      const result4 = build('attrs[my attr].foo', true, {})
+      expect(result4).toStrictEqual({ attrs: { 'my attr': { foo: true } } })
+
+      const result5 = build('attrs.my attr.foo', true, {})
+      expect(result5).toStrictEqual({ attrs: { 'my attr': { foo: true } } })
+
+      const result6 = build('attrs.my attr.foo bar', true, {})
+      expect(result6).toStrictEqual({ attrs: { 'my attr': { 'foo bar': true } } })
+
+      const result7 = build('attrs.my attr.sub attr.foo bar', true, {})
+      expect(result7).toStrictEqual({ attrs: { 'my attr': { 'sub attr': { 'foo bar': true } } } })
     })
   })
 
@@ -221,6 +252,22 @@ describe('build(path, value, context)', () => {
     it('should return deep nested object', () => {
       expect(build('object.array[0][array][1].object[number]', 42, {}))
         .toMatchObject({ object: { array: [{ array: [undefined, { object: { number: 42 } }] }] } })
+    })
+  })
+
+  describe('flatten and reconstruct with keys containing spaces', () => {
+    it('should correctly build objects with keys containing spaces (attrs.my attr = attrs[my attr])', () => {
+      expect(build('attrs.my attr', 'value', {}))
+        .toMatchObject({ attrs: { 'my attr': 'value' } })
+
+      expect(build('attrs[my attr]', 'value', {}))
+        .toMatchObject({ attrs: { 'my attr': 'value' } })
+
+      expect(build('attrs.my attr.sub attr', 'value', {}))
+        .toMatchObject({ attrs: { 'my attr': { 'sub attr': 'value' } } })
+
+      expect(build('attrs[my attr][sub attr]', 'value', {}))
+        .toMatchObject({ attrs: { 'my attr': { 'sub attr': 'value' } } })
     })
   })
 })
