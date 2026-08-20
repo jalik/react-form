@@ -18,20 +18,20 @@ If you feel concerned, then it's all for you :)
 ## Features
 
 - Fields props initialization at form level (optional)
-- Management of fields state and updates (value and onChange)
+- Management of field state and updates (value and onChange)
 - Tracking of modified fields
 - Tracking of touched fields
 - Various form status info (modified, disabled, validating, submitting...)
 - Form loading using promise (optional)
-- Auto disabling fields until form is initialized
-- Auto disabling fields when form is disabled, not modified, validating or submitting
+- Auto-disabling fields until the form is initialized
+- Auto-disabling fields when the form is disabled, not modified, validating or submitting
 - Parsing of field value when modified (smart typing or custom parser)
 - Replacement of empty string by null on field change and form submit
-- Trim values on form submit
+- Trim values on form submitting
 - Field validation on change (optional)
 - Field validation on init/load (optional)
 - Field validation on touch (optional)
-- Field validation on submit (optional)
+- Field validation on submitting (optional)
 - Field and form validation using a custom function or schema (like yup)
 - Form and field errors handling
 - Reset form or fields
@@ -47,7 +47,7 @@ here: https://codesandbox.io/s/jalik-react-form-demo-wx6hg?file=/src/components/
 ## Installing
 
 ```shell
-npm i -P @jalik/react-form
+npm i @jalik/react-form
 ```
 
 ```shell
@@ -78,8 +78,8 @@ function authenticate (username, password) {
 function SignInForm () {
   const form = useForm({
     initialValues: {
-      username: null,
-      password: null
+      username: '',
+      password: ''
     },
     // onSubmit needs to return a promise,
     // so the form is aware of the submit state.
@@ -123,7 +123,7 @@ function UserFormPage () {
     // so the form will understand that it will be initialized later.
     initialValues: user,
     reinitialize: true,
-    onSubmit: (values) => Promise.resolve({ saved: true }),
+    onSubmit: async (values) => ({ saved: true }),
   })
 
   return (
@@ -155,7 +155,7 @@ function UserFormPage (props) {
     // in this case the form will be updated when the id changes.
     // Note that all fields are disabled during loading.
     load: useCallback(() => loadUser(1337), []),
-    onSubmit: (values) => Promise.resolve({ saved: true }),
+    onSubmit: async (values) => ({ saved: true }),
   })
 
   return (
@@ -173,8 +173,8 @@ function UserFormPage (props) {
 ### Validating using a schema
 
 Form validation using a schema needs a small amount of work.  
-Here we use `@jalik/schema` to validate the form using a schema, but it is possible to use any lib (
-yup, joi...).
+Here we use `@jalik/schema` to validate the form using a schema, but it is possible to use any lib
+(yup, joi...).
 
 ```tsx
 import { Button, Field, FieldError, Form, useForm } from '@jalik/react-form'
@@ -228,10 +228,6 @@ const SignInFormSchema = new Schema({
   }
 })
 
-const initializeField = createFieldInitializer(SignInFormSchema)
-const validate = createFormValidator(SignInFormSchema)
-const validateField = createFieldValidator(SignInFormSchema)
-
 function SignInForm () {
   const form = useForm({
     initialValues: {
@@ -239,12 +235,12 @@ function SignInForm () {
       password: null
     },
     // This function sets the fields props based on a schema.
-    initializeField,
+    initializeField: createFieldInitializer(SignInFormSchema),
     // This function validates all fields (even missing ones) based on a schema.
-    validate,
+    validate: createFormValidator(SignInFormSchema),
     // This function validates a single field based on a schema.
-    validateField,
-    onSubmit: (values) => Promise.resolve({ success: true })
+    validateField: createFieldValidator(SignInFormSchema),
+    onSubmit: async (values) => ({ success: true })
   })
   return (
     <Form context={form}>
@@ -260,21 +256,47 @@ function SignInForm () {
 }
 ```
 
-## Customizing components
+## Form component linking
 
-It's possible to use custom UI components with provided components `<Field>`, `Button`.
+To link and initialize your components with a form instance, use `getButtonProps()`, `getFieldProps()` and `getFormProps()`.
 
 ```tsx
-import { Button, Field } from '@jalik/react-form'
-import { Button as RsButton } from 'reactstrap'
-import { TextInput } from 'mantine/core'
+import { useFormContext } from '@jalik/react-form'
+import { MyCustomButton, MyCustomForm, MyCustomInput } from 'my-custom-ui'
 
 export function FormButton (props) {
-  return <Button {...props} component={RsButton} />
+  const form = useFormContext()
+  return <MyCustomButton {...form.getButtonProps(props)} />
 }
 
 export function FormInput (props) {
-  return <Field {...props} component={TextInput} />
+  const { name } = props
+  const form = useFormContext()
+  return <MyCustomInput {...form.getFieldProps(name, props)} />
+}
+
+export function FormWrapper (props) {
+  const form = useFormContext()
+  return <MyCustomForm {...form.getFormProps(props)} />
+}
+```
+
+Or use the provided components `<Button>`, `<Field>` and `<Form>`.
+
+```tsx
+import { Button, Field, Form } from '@jalik/react-form'
+import { MyCustomButton, MyCustomForm, MyCustomInput } from 'my-custom-ui'
+
+export function FormButton (props) {
+  return <Button {...props} component={MyCustomButton} />
+}
+
+export function FormInput (props) {
+  return <Field {...props} component={MyCustomInput} />
+}
+
+export function FormWrapper (props) {
+  return <Form {...props} component={MyCustomForm} />
 }
 ```
 
@@ -282,7 +304,7 @@ export function FormInput (props) {
 
 ### Hooks
 
-#### useForm(options)
+#### useForm (options)
 
 This is where the magic happens, this hook defines the form state and its behavior.
 
@@ -304,29 +326,63 @@ const form = useForm({
   disableSubmitIfNotValid: false,
   // optional, enable native HTML validation on submit
   enableHTMLValidation: false,
+  // optional, update form when status changes
+  forceUpdateOnStatusChange: false,
   // optional, used to set initial values
   initialValues: undefined,
+  // optional, sets initial errors
+  initialErrors: {},
+  // optional, sets initial modified fields
+  initialModified: {},
+  // optional, sets initial touched fields
+  initialTouched: {},
   // optional, used to replace empty string by null on change and on submit
   nullify: false,
+  // optional, prevent native action on submit
+  preventDefaultOnSubmit: true,
+  // optional, used to initialize form everytime initialValues changes
+  reinitialize: false,
+  // optional, used to debounce submit
+  submitDelay: 100,
+  // optional, used to remove extra spaces on blur
+  trimOnBlur: false,
+  // optional, used to remove extra spaces on submit
+  trimOnSubmit: false,
+  // optional, used to debounce validation
+  validateDelay: 400,
+  // optional, used to validate field on change
+  validateOnChange: false,
+  // optional, used to validate all fields on initialization
+  validateOnInit: false,
+  // optional, used to validate all fields on submit
+  validateOnSubmit: true,
+  // optional, used to validate field on touch
+  validateOnTouch: false,
+
   // optional, used to set field props dynamically
   initializeField: (name, formState) => ({
     className: formState.modifiedFields[name] ? 'input-modified' : undefined,
     required: name === 'username'
   }),
+
   // optional, used to load initial values
-  load: () => Promise.resolve({
+  load: async () => ({
     id: 1,
     username: 'test'
   }),
+
   // REQUIRED, called when form is submitted
-  onSubmit: (values) => Promise.resolve({ success: true }),
+  onSubmit: async (values) => ({ success: true }),
+
   // optional, called when form has been successfully submitted
   onSuccess: (result, values) => {
+    // resuls contains the value returned by onSubmit, in this example { success: true }
   },
-  // optional, used to initialize form everytime initialValues changes
-  reinitialize: false,
-  // optional, used to debounce submit
-  submitDelay: 100,
+
+  // optional, called when form values have changed
+  onValuesChange: (values, previousValues) => {
+  },
+
   // optional, called when a field value changed
   // mutation contains all pending changes in a flat object ({field: value})
   // values contains the next form values
@@ -341,10 +397,7 @@ const form = useForm({
     }
     return mutation
   },
-  // optional, used to remove extra spaces on blur
-  trimOnBlur: false,
-  // optional, used to remove extra spaces on submit
-  trimOnSubmit: false,
+
   // optional, used to validate all fields (expect a promise)
   validate: async (values) => {
     const errors = {}
@@ -357,8 +410,7 @@ const form = useForm({
     }
     return errors
   },
-  // optional, used to debounce validation
-  validateDelay: 400,
+
   // optional, used to validate a single field (expect a promise)
   validateField: async (name, value, values) => {
     if (name === 'username' && !value) {
@@ -367,19 +419,11 @@ const form = useForm({
       // or an Error
       return new Error('field is required')
     }
-  },
-  // optional, used to validate field on change
-  validateOnChange: false,
-  // optional, used to validate all fields on initialization
-  validateOnInit: false,
-  // optional, used to validate all fields on submit
-  validateOnSubmit: true,
-  // optional, used to validate field on touch
-  validateOnTouch: false
+  }
 })
 ```
 
-#### useFormContext()
+#### useFormContext ()
 
 This hook returns the form context and functions.
 
@@ -387,80 +431,117 @@ This hook returns the form context and functions.
 import { useFormContext } from '@jalik/react-form'
 
 const {
-  // clears the form (values, errors...)
-  clear,
-  // clears all errors
-  clearErrors,
-  // clears all or given fields
-  clearTouchedFields,
+  // FORM STATE
   // tells if the form is disabled
   disabled,
-  // fields errors
-  errors,
-  // returns the field props by name
+  // tells if the form has been initialized
+  initialized,
+  // tells if the form was modified
+  modified,
+  // tells if the form was touched
+  touched,
+
+  // FORM UTILS
+  // returns the button props
   getButtonProps,
-  // returns the field props by name
+  // returns the field props
   getFieldProps,
+  // handler for onChange
+  handleChange,
+  // handler for onBlur
+  handleBlur,
+  // handler for onReset
+  handleReset,
+  // handler for onChange((value) => {}) instead of onChange((event) => {})
+  handleSetValue,
+  // handler for onSubmit
+  handleSubmit,
+
+  // LOADING
+  load,
+  // tells if the form is loading
+  loading,
+  // loading error (if any)
+  loadError,
+
+  // FIELD VALUES
+  // clears the form (values, errors...)
+  clearValues,
   // returns the field initial value by name
   getInitialValue,
   // returns the field initial value by name
   getValue,
-  // handler for onChange events
-  handleChange,
-  // handler for onBlur events
-  handleBlur,
-  // handler for onReset events
-  handleReset,
-  // handler for value based onChange events
-  // (value) => {} instead of (event) => {}
-  handleSetValue,
-  // handler for onSubmit events
-  handleSubmit,
-  // tells if the form has errors
-  hasError,
-  // tells if the form has been initialized
-  initialized,
   // initial values (used when form is reset)
   initialValues,
-  // the load function
-  load,
-  // loading error (if any)
-  loadError,
-  // tells if the form is loading
-  loading,
-  // tells if the form was modified
-  modified,
-  // the list of modified fields
-  modifiedFields,
-  // tells if the form will trigger a validation
-  // can be a boolean or a list of fields to validate
-  needValidation,
   // removes fields (used for dynamic forms)
-  removeFields,
+  removeValues,
   // resets all or given fields to their initial values
-  reset,
-  // sets a single field error
-  setError,
-  // sets fields errors
-  setErrors,
+  resetValues,
   // sets the initial values
   setInitialValues,
-  // set a single touched field
-  setTouchedField,
-  // set all or given touched field
-  setTouchedFields,
   // sets value of a field
   setValue,
   // sets values of multiple fields
   setValues,
+  // the form values
+  values,
+
+  // LIST MANAGEMENT
+  appendListItem,
+  insertListItem,
+  moveListItem,
+  prependListItem,
+  removeListItem,
+  replaceListItem,
+  swapListItem,
+
+  // FIELD ERRORS
+  // clears all errors
+  clearErrors,
+  // fields errors
+  errors,
+  // tells if the form has errors
+  hasError,
+  // sets a single field error
+  setError,
+  // sets fields errors
+  setErrors,
+
+  // FIELD STATE MANAGEMENT
+  // clears all or given fields
+  clearModifiedFields,
+  // clears all or given fields
+  clearTouchedFields,
+  // returns the modified fields
+  getModifiedFields,
+  // returns the touched fields
+  getTouchedFields,
+  // check if a field was modified
+  isModified,
+  // check if a field was touched
+  isTouched,
+  // the list of modified fields
+  modifiedFields,
+  // resets modified fields to their initial values
+  resetModifiedFields,
+  // resets touched fields to their initial values
+  resetTouchedFields,
+  // set a single modified field
+  setModifiedField,
+  // set all or given modified field
+  setModifiedFields,
+  // set a single touched field
+  setTouchedField,
+  // set all or given touched field
+  setTouchedFields,
+  // the list of touched fields
+  touchedFields,
+
+  // FORM SUBMISSION
   // submits the form with values (validate first)
   submit,
-  // validates all fields
-  validate,
-  // validates given fields
-  validateFields,
-  // the number of times the form was submitted
-  // resets to zero when submission succeeds
+  // the number of times the form was submitted.
+  // resets to zero when submission succeeds.
   submitCount,
   // the submit error (if any)
   submitError,
@@ -470,14 +551,25 @@ const {
   submitted,
   // tells if the form is submitting
   submitting,
-  // tells if the form was touched
-  touched,
-  // the list of touched fields
-  touchedFields,
+
+  // VALIDATION
+  // tells if the form will trigger a validation
+  // can be a boolean or a list of fields to validate
+  needValidation,
+  // sets the validation state of the form
+  setValidated,
+  // sets the validation error
+  setValidateError,
+  // tells if the form is validating
+  setValidating,
+  // validates all fields
+  validate,
   // the validation error (if any)
   // happens only when an error is thrown during validation
   // it's different from the field validation errors
   validateError,
+  // validates given fields
+  validateFields,
   // tells if the form was successfully validated
   validated,
   // tells if a field should be validated on change
@@ -490,9 +582,58 @@ const {
   validateOnTouch,
   // tells if the form is validating
   validating,
-  // the form values
-  values
+
+  // WATCH
+  watch,
+  watchers,
 } = useFormContext()
+```
+
+#### useFieldArray (options)
+
+This hook returns utils to manage an array of fields.
+
+```tsx
+import { useFieldArray, useForm } from '@jalik/react-form'
+
+function ItemListForm () {
+  const form = useForm({
+    initialValues: {
+      items: [{ name: 'Item 1' }]
+    },
+    onSubmit: (values) => Promise.resolve(values)
+  })
+
+  const {
+    items,
+    append,
+    prepend,
+    remove,
+    insert,
+    replace,
+    move,
+    swap,
+    handleAppend,
+    handlePrepend,
+    handleRemove
+  } = useFieldArray({
+    context: form,
+    name: 'items',
+    defaultValue: { name: 'New Item' }
+  })
+
+  return (
+    <div>
+      {items.map((item, index) => (
+        <div key={item.key}>
+          <Field name={item.name} />
+          <button type="button" onClick={handleRemove(index)}>Remove</button>
+        </div>
+      ))}
+      <button type="button" onClick={handleAppend}>Add Item</button>
+    </div>
+  )
+}
 ```
 
 ### Components
