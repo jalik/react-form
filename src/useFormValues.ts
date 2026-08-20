@@ -78,7 +78,7 @@ export type SetValuesOptions = {
   forceUpdate?: boolean;
   initialize?: boolean;
   nullify?: boolean;
-  partial: boolean;
+  partial?: boolean;
   updateErrors?: boolean;
   updateModified?: boolean;
   updateTouched?: boolean;
@@ -108,7 +108,7 @@ export type UseFormValuesHook<V extends Values> = {
   /**
    * Returns a value.
    */
-  getValue<T = unknown> (path: FieldPath<V>, defaultValue?: T): T | undefined;
+  getValue<P extends FieldPath<V>> (path: P, defaultValue?: V[P]): V[P] | undefined;
   /**
    * Returns values.
    */
@@ -155,9 +155,9 @@ export type UseFormValuesHook<V extends Values> = {
    * @param value
    * @param options
    */
-  setValue (
-    path: FieldPath<V>,
-    value: any,
+  setValue <P extends FieldPath<V>>(
+    path: P,
+    value: V[P],
     options?: {
       forceUpdate?: boolean;
       nullify?: boolean;
@@ -255,7 +255,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     let nextValues: V = partial
       ? valuesRef.current
       : {} as V
-    let mutation: PathsOrValues<V> = { ...values }
+    let mutation = { ...values }
 
     if (transformRef.current && applyTransform) {
       // Pre calculate next values.
@@ -272,7 +272,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
       // Replace empty string with null.
       if (value === '' && nullify) {
-        value = null
+        value = null as any
       }
 
       nextValues = build(path, value, nextValues)

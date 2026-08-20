@@ -72,7 +72,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const items = useMemo<ArrayItem<T>[]>(() => {
     // Update this code when values changed.
     if (values != null) {
-      let array = getValue<T[]>(name) ?? []
+      let array = getValue(name) ?? []
 
       if (typeof sort === 'function') {
         array = array.sort(sort)
@@ -116,7 +116,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const handleAppend = useCallback((event: SyntheticEvent | Event): void => {
     event.preventDefault()
     append(typeof defaultValue === 'function'
-      ? defaultValue(getValue<T[]>(name) ?? [])
+      ? defaultValue(getValue(name) ?? [])
       : defaultValue)
   }, [append, defaultValue, getValue, name])
 
@@ -126,7 +126,7 @@ function useFieldArray<T, V extends Values> (options: UseFieldArrayOptions<T, V>
   const handlePrepend = useCallback((event: SyntheticEvent | Event): void => {
     event.preventDefault()
     prepend(typeof defaultValue === 'function'
-      ? defaultValue(getValue<T[]>(name) ?? [])
+      ? defaultValue(getValue(name) ?? [])
       : defaultValue)
   }, [prepend, defaultValue, getValue, name])
 

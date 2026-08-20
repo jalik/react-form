@@ -108,9 +108,9 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       // mark array as modified
       setModified({ [path]: true }, { partial: true })
 
-      const list = [...(getValue<T[]>(path) ?? []), ...items]
+      const list = [...(getValue(path) ?? []), ...items]
       // fixme todo optimize to avoid rerender
-      setValue(path, list, {
+      setValue(path, list as any, {
         forceUpdate: true,
         updateErrors: false,
         updateModified: false,
@@ -132,10 +132,10 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setTouched(updatePathIndices(getTouched(), path, index, items.length))
       setErrors(updatePathIndices(getErrors(), path, index, items.length))
 
-      const list = [...(getValue<unknown[]>(path) ?? [])]
+      const list = [...(getValue(path) ?? [])] as any[]
       list.splice(index, 0, ...items)
       // fixme todo optimize to avoid rerender
-      setValue(path, list, {
+      setValue(path, list as any, {
         forceUpdate: true,
         updateErrors: false,
         updateModified: false,
@@ -145,7 +145,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
   }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
 
   const moveListItem = useCallback<UseFormListHook<V>['moveListItem']>((path, fromIndex, toIndex) => {
-    const list = [...(getValue<unknown[]>(path) ?? [])]
+    const list = [...(getValue(path) ?? [])]
     const maxIndex = list.length - 1
     const startIndex = Math.min(fromIndex, toIndex)
     const endIndex = Math.max(fromIndex, toIndex)
@@ -165,7 +165,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     const [item] = list.splice(fromIndex, 1)
     list.splice(index, 0, item)
     // fixme todo optimize to avoid rerender
-    setValue(path, list, {
+    setValue(path, list as any, {
       forceUpdate: true,
       updateErrors: false,
       updateModified: false,
@@ -186,9 +186,9 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setTouched(updatePathIndices(getTouched(), path, 0, items.length))
       setErrors(updatePathIndices(getErrors(), path, 0, items.length))
 
-      const list = [...items, ...(getValue<T[]>(path) ?? [])]
+      const list = [...items, ...(getValue(path) ?? [])]
       // fixme todo optimize to avoid rerender
-      setValue(path, list, {
+      setValue(path, list as any, {
         forceUpdate: true,
         updateErrors: false,
         updateModified: false,
@@ -219,13 +219,13 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       setTouched(touched)
       setErrors(errors)
 
-      const list = [...(getValue<unknown[]>(path) ?? [])]
+      const list = [...(getValue(path) ?? [])]
       for (let i = 0; i < sortedIndices.length; i++) {
         const index = sortedIndices[i]
         list.splice(index, 1)
       }
       // fixme todo optimize to avoid rerender
-      setValue(path, list, {
+      setValue(path, list as any, {
         forceUpdate: true,
         updateErrors: false,
         updateModified: false,
@@ -245,10 +245,10 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
 
     clearErrors([fieldPath])
 
-    const list = [...(getValue<unknown[]>(path) ?? [])]
+    const list = [...(getValue(path) ?? [])] as any[]
     list[index] = item
     // fixme todo optimize to avoid rerender
-    setValue(path, list, {
+    setValue(path, list as any, {
       forceUpdate: true,
       updateErrors: false,
       updateModified: false,
@@ -267,7 +267,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     setTouched(swapPathIndices(getTouched(), path, fromIndex, toIndex))
     setErrors(swapPathIndices(getErrors(), path, fromIndex, toIndex))
 
-    const list = [...(getValue<unknown[]>(path) ?? [])]
+    const list = [...(getValue(path) ?? [])]
     let a
     let b
 
@@ -281,7 +281,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     list.splice(fromIndex, 0, b)
     list.splice(toIndex, 0, a)
     // fixme todo optimize to avoid rerender
-    setValue(path, list, {
+    setValue(path, list as any, {
       forceUpdate: true,
       updateErrors: false,
       updateModified: false,

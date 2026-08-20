@@ -730,7 +730,7 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
       if (typeof value === 'string') {
         // Remove extra spaces.
         value = value.trim()
-        setValue(path, value, { validate: validateOnTouch })
+        setValue(path, value as any, { validate: validateOnTouch })
       }
     }
   }, [forceUpdateOnStatusChange, getValue, setNeedValidation, setTouchedField, setValue, trimOnBlur, validateOnTouch])
@@ -758,7 +758,7 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
         }
       }
 
-      setValue(path, parsedValue, {
+      setValue(path, parsedValue as any, {
         validate: validateOnChange,
         ...setValueOptions
       })
@@ -935,7 +935,7 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
         parsedValue = null
       }
 
-      if (contextValue instanceof Array) {
+      if (contextValue && contextValue as any instanceof Array) {
         // Set checked state by looking for checkbox value in the array.
         finalProps[checkedAttribute] = contextValue.includes(parsedValue)
         // Make sure required attribute is not set on multiple fields.

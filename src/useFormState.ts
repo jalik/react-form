@@ -24,17 +24,21 @@ export type FormMode = 'controlled' | 'uncontrolled'
  */
 export type Values = Record<string, any>;
 /**
+ * Allows any string while preserving autocomplete for known keys.
+ */
+export type LooseString<T extends string> = T | (string & {})
+/**
  * Represents a field path.
  */
-export type FieldPath<V extends Values> = (keyof V & string) | string
+export type FieldPath<V extends Values> = LooseString<keyof V & string>
 /**
- * Contains fields paths and values.
+ * Contains field paths and values.
  */
-export type PathsAndValues<V extends Values> = Record<FieldPath<V>, unknown>
+export type PathsAndValues<V extends Values> = Partial<V> & Partial<Record<FieldPath<V>, unknown | null>>
 /**
  * Contains form values as object or a flat object with paths and values.
  */
-export type PathsOrValues<V extends Values> = PathsAndValues<V> | V
+export type PathsOrValues<V extends Values> = PathsAndValues<V> | Partial<V>
 /**
  * Contains the form errors.
  */

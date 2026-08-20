@@ -74,7 +74,7 @@ export type UseFormErrorsHook<V extends Errors, E> = {
    * @param opts
    */
   setErrors (
-    errors: Errors<E>,
+    errors: Partial<Errors<E>>,
     opts?: {
       forceUpdate?: boolean;
       partial?: boolean
