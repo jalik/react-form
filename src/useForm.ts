@@ -240,9 +240,10 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
   'setValue' |
   'setValues'>
   & Pick<UseFormValidationHook<V, E, R>,
-  // 'setValidated' | // todo add
-  // 'setValidateError' | // todo add
-  // 'setValidating' | // todo add
+  // 'setNeedValidation' |
+  'setValidateError' |
+  'setValidated' |
+  'setValidating' |
   'validate' |
   'validateField' |
   'validateFields'>
@@ -994,10 +995,13 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
 
     // validation
     needValidation: state.needValidation,
+    setValidated: formValidation.setValidated,
+    setValidateError: formValidation.setValidateError,
+    setValidating: formValidation.setValidating,
+    validate: formValidation.validate,
     validateError: state.validateError,
     validated: state.validated,
     validating: state.validating,
-    validate: formValidation.validate,
     validateField: formValidation.validateField,
     validateFields: formValidation.validateFields,
 
