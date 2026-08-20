@@ -20,15 +20,63 @@ export type Values = Record<string, any>;
  */
 export type LooseString<T extends string> = T | (string & {})
 /**
+ * Represents a primitive value.
+ */
+export type Primitive =
+  string |
+  number |
+  boolean |
+  bigint |
+  symbol |
+  null |
+  undefined |
+  Date |
+  File |
+  Blob
+/**
+ * Tells if a type is any.
+ */
+export type IsAny<T> = 0 extends (1 & T) ? true : false
+/**
+ * Represents all known nested paths of an array.
+ */
+export type KnownArrayPath<T> = T extends Primitive
+  ? `${number}`
+  : `${number}` | `${number}.${KnownFieldPath<T>}`
+/**
+ * Represents all known nested paths of an object.
+ */
+export type KnownObjectPath<T> = {
+  [K in keyof T & string]: T[K] extends Primitive
+    ? K
+    : T[K] extends readonly (infer I)[]
+      ? K | `${K}.${KnownArrayPath<I>}`
+      : T[K] extends object
+        ? K | `${K}.${KnownFieldPath<T[K]>}`
+        : K
+}[keyof T & string]
+/**
+ * Represents all known nested paths of a value.
+ */
+export type KnownFieldPath<T> = IsAny<T> extends true
+  ? string
+  : T extends Primitive
+    ? never
+    : T extends readonly (infer I)[]
+      ? KnownArrayPath<I>
+      : T extends object
+        ? KnownObjectPath<T>
+        : never
+/**
  * Represents a field path.
  */
-export type FieldPath<V extends Values> = LooseString<keyof V & string>
+export type FieldPath<V extends Values> = LooseString<KnownFieldPath<V>>
 /**
  * Contains field paths and values.
  */
 export type PathsAndValues<V extends Values> =
   Partial<V>
-  & Partial<Record<FieldPath<V>, unknown | null>>
+  & Partial<Record<FieldPath<V>, unknown | null | undefined>>
 /**
  * Contains form values as object or a flat object with paths and values.
  */

@@ -408,7 +408,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
     if (paths) {
       for (let i = 0; i < paths.length; i++) {
-        nextValues[paths[i]] = undefined
+        (nextValues as Record<string, any>)[paths[i]] = undefined
       }
     }
     setValues(nextValues, {
@@ -487,8 +487,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
     if (paths) {
       const record = {} as PathsAndValues<V>
       for (let i = 0; i < paths.length; i++) {
-        const path = paths[i]
-        record[path] = getInitialValue(path)
+        (record as Record<string, any>)[paths[i]] = getInitialValue(paths[i])
       }
       nextValues = record
     } else {
