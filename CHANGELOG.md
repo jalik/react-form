@@ -1,5 +1,46 @@
 # Changelog
 
+## v7.0.0 (2026-08-20)
+
+### Breaking changes
+
+- refactor: previous values typed as `Partial<Values>` now use the raw type in several places (`initialValues`, `onSubmit()`, `onSuccess()`, `onValuesChange()`, `validate()`, `validateField()`)
+- refactor: the first generic of `getValue<P>()` and `getInitialValue<P>()` in `useForm()` now represent the type of the path (first argument) to improve inference, if the type is not detected (returned as `unknown`), use casting (ex: `getValue('address.street') as string`)
+
+
+- refactor: rename `clear()` to `clearValues()` in `useForm()`
+- refactor: rename `clearTouched()` to `clearTouchedFields()` in `useForm()`
+- refactor: rename `getModified()` to `getModifiedFields()` in `useForm()`
+- refactor: rename `getTouched()` to `getTouchedFields()` in `useForm()`
+- refactor: rename `removeFields()` to `removeValues()` in `useForm()`
+- refactor: rename `reset()` to `resetValues()` in `useForm()`
+- refactor: rename `resetTouched()` to `resetTouchedFields()` in `useForm()`
+- refactor: rename `setTouched()` to `setTouchedFields()` in `useForm()`
+
+
+- deps: upgrade to react@19
+- deps: upgrade to nodejs@24
+- deps: upgrade to concurrently@10
+- deps: upgrade to jsdom@30
+- deps: upgrade to @testing-library/jest-dom@7
+- deps: upgrade to @testing-library/react@16
+- deps: upgrade to typescript@7
+
+### Other changes
+
+- feat: improve path autocompletion of nested objects (`getValue('address.street.num')`)
+- feat: add support for array index in paths using dot notation (`getValue('array.0')`)
+- feat: add `clearModifiedFields()` to `useForm()`
+- feat: add `resetModifiedFields()` to `useForm()`
+- feat: add `setModifiedFields()` to `useForm()`
+- feat: add `setValidated(bool)` to `useForm()`
+- feat: add `setValidateError(error)` to `useForm()`
+- feat: add `setValidating(bool)` to `useForm()`
+
+
+- deps: replace eslint@8 by oxlint@1
+- deps: upgrade dependencies
+
 ## v6.1.1 (2026-04-25)
 
 - fix: fix errors, touched fields and modified fields after moving array items
@@ -160,7 +201,7 @@
 - Do not set form `validated` when validation starts
 - Fixed form `hasError` not being false in some cases
 - Fixed `validateFields()` to not dispatch fail state when validation succeeds
-- Fixed cases where field name resolution was not working
+- Fixed cases where field name resolution is not working when the path contains a space (ex: `attrs[my attr]`)
 - Fixed update of previously defined values not being removed with `setValues()`
 
 ## 5.1.1 (2023-06-28)
