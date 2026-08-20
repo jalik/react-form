@@ -218,6 +218,20 @@ describe('build(path, value, context)', () => {
     })
   })
 
+  describe('build("array.0", 42, {})', () => {
+    it('should return { array: [42] }', () => {
+      expect(build('array.0', 42, {}))
+        .toMatchObject({ array: [42] })
+    })
+  })
+
+  describe('build("array.1.string", "text", {})', () => {
+    it('should return { array: [undefined, { string: "text" }] }', () => {
+      expect(build('array.1.string', 'text', {}))
+        .toMatchObject({ array: [undefined, { string: 'text' }] })
+    })
+  })
+
   describe('build("array[1].string", "text", {})', () => {
     it('should return { array: [undefined, { string: "text" }] }', () => {
       expect(build('array[1].string', 'text', {}))

@@ -272,6 +272,21 @@ describe('resolve(path, context)', () => {
     })
   })
 
+  describe('resolve("array.0", context)', () => {
+    it('should return the value of the array at index 0', () => {
+      expect(resolve('array.0', context))
+        .toBe(context.array[0])
+    })
+  })
+
+  describe('resolve("array.1.string", context)', () => {
+    it('should return the value of the nested object attribute', () => {
+      expect(resolve('array.1.string', context))
+        // @ts-expect-error property string does not exist on number | { string: string }
+        .toBe(context.array[1].string)
+    })
+  })
+
   describe('resolve("array[1].string", context)', () => {
     it('should return the value of the nested object attribute', () => {
       expect(resolve('array[1].string', context))

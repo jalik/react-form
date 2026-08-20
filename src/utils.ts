@@ -8,6 +8,17 @@ import { FieldElement, ParseFunction } from './useForm'
 
 import { PathsAndValues } from './useFormState'
 
+function isPathNumeric (path: string): boolean {
+  const dotIndex = path.indexOf('.')
+  const bracketIndex = path.indexOf('[')
+  let endIndex = dotIndex
+  if (bracketIndex !== -1 && (dotIndex === -1 || bracketIndex < dotIndex)) {
+    endIndex = bracketIndex
+  }
+  const segment = endIndex !== -1 ? path.substring(0, endIndex) : path
+  return /^[0-9]+$/.test(segment)
+}
+
 /**
  * Returns the copy of an object built from the path with the assigned value.
  */
@@ -66,14 +77,26 @@ export function build<T> (
     // Resolve dot "." path.
     // ex: "object.field" => field: "object", subPath: "field"
     const field: string = path.substring(0, dotIndex)
+    const subPath = path.substring(dotIndex + 1)
 
-    // Create object if it does not exist.
-    if (typeof ctx === 'undefined' || ctx == null) {
-      ctx = { [field]: {} }
-    } else if (typeof ctx[field] === 'undefined' || ctx[field] == null) {
-      ctx[field] = {}
+    if (/^[0-9]+$/.test(field)) {
+      const key = parseInt(field, 10)
+      if (ctx == null || !(ctx instanceof Array)) {
+        ctx = []
+      }
+      if (ctx[key] == null) {
+        ctx[key] = isPathNumeric(subPath) ? [] : {}
+      }
+      ctx[key] = build(subPath, value, ctx[key], true)
+    } else {
+      // Create object if it does not exist.
+      if (typeof ctx === 'undefined' || ctx == null) {
+        ctx = isPathNumeric(subPath) ? { [field]: [] } : { [field]: {} }
+      } else if (typeof ctx[field] === 'undefined' || ctx[field] == null) {
+        ctx[field] = isPathNumeric(subPath) ? [] : {}
+      }
+      ctx[field] = build(subPath, value, ctx[field], true)
     }
-    ctx[field] = build(path.substring(dotIndex + 1), value, ctx[field], true)
   } else if (bracketIndex !== -1 && (dotIndex === -1 || bracketIndex < dotIndex)) {
     // Resolve brackets "[?]" path.
     // ex: "[0].field" => field: "[0]", subPath: "field"
@@ -112,6 +135,8 @@ export function build<T> (
       const field = path.substring(0, bracketIndex)
       ctx[field] = build(path.substring(bracketIndex), value, ctx[field], true)
     }
+  } else if (ctx instanceof Array && /^[0-9]+$/.test(path)) {
+    ctx[parseInt(path, 10)] = value
   } else if (typeof value === 'undefined') {
     // Remove attribute, instead of using undefined.
     delete ctx[path]
@@ -486,11 +511,20 @@ export function resolve<T> (
 
   // Resolve dot "." path.
   if (dotIndex !== -1 && (bracketIndex === -1 || dotIndex < bracketIndex)) {
-    if (typeof context !== 'object' || (context instanceof Array)) {
+    const field = path.substring(0, dotIndex)
+
+    if (context instanceof Array) {
+      if (/^[0-9]+$/.test(field)) {
+        const index = parseInt(field, 10)
+        return resolve(path.substring(dotIndex + 1), context[index], true)
+      }
+      throw new SyntaxError(`path ${path} is not valid for the given context`)
+    }
+
+    if (typeof context !== 'object' || context == null) {
       throw new SyntaxError(`path ${path} is not valid for the given context`)
     }
     // ex: "object.field" => field: "object", path: "field"
-    const field = path.substring(0, dotIndex)
 
     // Check for extra space.
     if (field.indexOf(' ') !== -1) {
