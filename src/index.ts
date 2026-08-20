@@ -1,9 +1,10 @@
 /*
  * This file is licensed under the MIT License (MIT)
- * Copyright (c) 2025 Karl STEIN
+ * Copyright (c) 2026 Karl STEIN
  */
 
-// export functions
+// functions
+
 export {
   build,
   flatten,
@@ -21,20 +22,35 @@ export {
   updatePathIndices
 } from './utils'
 
-// export components
-export { default as Button, ButtonProps } from './components/Button'
-export { default as Field, FieldProps } from './components/Field'
-export { default as FieldError, FieldErrorProps } from './components/FieldError'
-export { default as Form, FormProps } from './components/Form'
+// components
 
-// export hooks
+export { default as Button } from './components/Button'
+export type { ButtonProps } from './components/Button'
+
+export { default as Field } from './components/Field'
+export type { FieldProps } from './components/Field'
+
+export { default as FieldError } from './components/FieldError'
+export type { FieldErrorProps } from './components/FieldError'
+
+export { default as Form } from './components/Form'
+export type { FormProps } from './components/Form'
+
+// hooks
+
 export {
-  default as useFieldArray,
+  default as useFieldArray
+} from './useFieldArray'
+
+export type {
   UseFieldArrayOptions
 } from './useFieldArray'
 
 export {
-  default as useForm,
+  default as useForm
+} from './useForm'
+
+export type {
   UseFormOptions,
   UseFormHook,
   FieldElement,
@@ -48,8 +64,7 @@ export {
   FormContext
 } from './useFormContext'
 
-// export types
-export {
+export type {
   Errors,
   FieldPath,
   FormMode,
@@ -61,6 +76,6 @@ export {
   Values
 } from './useFormState'
 
-export {
+export type {
   ValidateFieldFunction
 } from './useFormValidation'

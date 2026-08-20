@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- chore: migrate to ESM-only package
 - refactor: previous values typed as `Partial<Values>` now use the raw type in several places (`initialValues`, `onSubmit()`, `onSuccess()`, `onValuesChange()`, `validate()`, `validateField()`)
 - refactor: the first generic of `getValue<P>()` and `getInitialValue<P>()` in `useForm()` now represent the type of the path (first argument) to improve inference, if the type is not detected (returned as `unknown`), use casting (ex: `getValue('address.street') as string`)
 
