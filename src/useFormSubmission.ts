@@ -92,8 +92,8 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
   const submitRef = useRef(submitFunc)
 
   const {
-    clearModified,
-    clearTouched
+    clearModifiedFields,
+    clearTouchedFields
   } = formStatus
 
   const {
@@ -152,8 +152,8 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         }))
 
         clearErrors(undefined, { forceUpdate: false })
-        clearModified(undefined, { forceUpdate: false })
-        clearTouched(undefined, { forceUpdate: false })
+        clearModifiedFields(undefined, { forceUpdate: false })
+        clearTouchedFields(undefined, { forceUpdate: false })
 
         if (afterSubmit === 'clear') {
           clearValues(undefined, { forceUpdate: true })
@@ -180,7 +180,7 @@ function useFormSubmission<V extends Values, E, R> (options: UseFormSubmissionOp
         }))
         return undefined
       })
-  }, [afterSubmit, clearErrors, clearModified, clearTouched, clearValues, getValues, nullify, onError, onSuccess, resetValues, setInitialValues, setState, trimOnSubmit])
+  }, [afterSubmit, clearErrors, clearModifiedFields, clearTouchedFields, clearValues, getValues, nullify, onError, onSuccess, resetValues, setInitialValues, setState, trimOnSubmit])
 
   useEffect(() => {
     submitRef.current = submitFunc

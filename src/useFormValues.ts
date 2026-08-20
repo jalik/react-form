@@ -213,10 +213,10 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
   } = formState
 
   const {
-    clearModified,
-    clearTouched,
-    resetModified,
-    resetTouched,
+    clearModifiedFields,
+    clearTouchedFields,
+    resetModifiedFields,
+    resetTouchedFields,
     isTouched
   } = formStatus
 
@@ -423,8 +423,8 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
     // Clear linked states after values.
     clearErrors(paths, { forceUpdate: true })
-    clearModified(paths, { forceUpdate: true })
-    clearTouched(paths, { forceUpdate: true })
+    clearModifiedFields(paths, { forceUpdate: true })
+    clearTouchedFields(paths, { forceUpdate: true })
 
     // todo optimize to avoid rerender
     setState((s) => ({
@@ -436,7 +436,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       validateError: undefined,
       validated: false
     }))
-  }, [clearErrors, clearModified, clearTouched, setState, setValues])
+  }, [clearErrors, clearModifiedFields, clearTouchedFields, setState, setValues])
 
   const initialize = useCallback<UseFormValuesHook<V>['initialize']>((values, opts) => {
     setValues(values, {
@@ -506,8 +506,8 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
 
     // Reset linked states after values.
     resetErrors(paths, { forceUpdate: true })
-    resetModified(paths, { forceUpdate: true })
-    resetTouched(paths, { forceUpdate: true })
+    resetModifiedFields(paths, { forceUpdate: true })
+    resetTouchedFields(paths, { forceUpdate: true })
 
     // todo optimize to avoid rerender
     setState((s) => ({
@@ -518,7 +518,7 @@ function useFormValues<V extends Values, E, R> (options: UseFormValuesOptions<V,
       validateError: undefined,
       validated: false
     }))
-  }, [getInitialValue, getInitialValues, resetErrors, resetModified, resetTouched, setState, setValues])
+  }, [getInitialValue, getInitialValues, resetErrors, resetModifiedFields, resetTouchedFields, setState, setValues])
 
   useEffect(() => {
     onValuesChangeRef.current = onValuesChange

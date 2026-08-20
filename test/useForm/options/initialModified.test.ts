@@ -20,7 +20,7 @@ function tests (mode: FormMode) {
         mode,
         initialModified
       }))
-      expect(hook.result.current.getModified()).toStrictEqual(initialModified)
+      expect(hook.result.current.getModifiedFields()).toStrictEqual(initialModified)
     })
 
     it('should set mark form as modified', () => {

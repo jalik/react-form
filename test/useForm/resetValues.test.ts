@@ -58,16 +58,16 @@ function tests (mode: FormMode) {
         mode,
         initialModified
       }))
-      expect(hook.result.current.getModified()).toStrictEqual(initialModified)
+      expect(hook.result.current.getModifiedFields()).toStrictEqual(initialModified)
       expect(hook.result.current.modifiedFields).toStrictEqual(initialModified)
       act(() => hook.result.current.setValues({ b: null }, {
         forceUpdate: true,
         partial: false
       }))
-      expect(hook.result.current.getModified()).not.toStrictEqual(initialModified)
+      expect(hook.result.current.getModifiedFields()).not.toStrictEqual(initialModified)
       expect(hook.result.current.modifiedFields).not.toStrictEqual(initialModified)
       act(() => hook.result.current.resetValues())
-      expect(hook.result.current.getModified()).toStrictEqual(initialModified)
+      expect(hook.result.current.getModifiedFields()).toStrictEqual(initialModified)
       expect(hook.result.current.modifiedFields).toStrictEqual(initialModified)
     })
 
@@ -81,13 +81,13 @@ function tests (mode: FormMode) {
         mode,
         initialTouched
       }))
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
       expect(hook.result.current.touchedFields).toStrictEqual(initialTouched)
-      act(() => hook.result.current.setTouched({ b: false }, { forceUpdate: true }))
-      expect(hook.result.current.getTouched()).not.toStrictEqual(initialTouched)
+      act(() => hook.result.current.setTouchedFields({ b: false }, { forceUpdate: true }))
+      expect(hook.result.current.getTouchedFields()).not.toStrictEqual(initialTouched)
       expect(hook.result.current.touchedFields).not.toStrictEqual(initialTouched)
       act(() => hook.result.current.resetValues())
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
       expect(hook.result.current.touchedFields).toStrictEqual(initialTouched)
     })
   })
@@ -152,7 +152,7 @@ function tests (mode: FormMode) {
         mode,
         initialModified
       }))
-      expect(hook.result.current.getModified()).toStrictEqual(initialModified)
+      expect(hook.result.current.getModifiedFields()).toStrictEqual(initialModified)
       act(() => hook.result.current.setValues(nextModified))
       expect(hook.result.current.isModified('a')).toBe(nextModified.a)
       expect(hook.result.current.isModified('b')).toBe(nextModified.b)
@@ -178,8 +178,8 @@ function tests (mode: FormMode) {
         mode,
         initialTouched
       }))
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
-      act(() => hook.result.current.setTouched(nextTouched))
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
+      act(() => hook.result.current.setTouchedFields(nextTouched))
       expect(hook.result.current.isTouched('a')).toBe(nextTouched.a)
       expect(hook.result.current.isTouched('b')).toBe(nextTouched.b)
       expect(hook.result.current.isTouched('c')).toBe(nextTouched.c)

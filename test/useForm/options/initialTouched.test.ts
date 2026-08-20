@@ -20,7 +20,7 @@ function tests (mode: FormMode) {
         mode,
         initialTouched
       }))
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
     })
 
     it('should set mark form as touched', () => {

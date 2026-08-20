@@ -10,25 +10,25 @@ import { FormMode } from '../../src'
 
 function tests (mode: FormMode) {
   describe('without arguments', () => {
-    const initialTouched = {
+    const initialModified = {
       a: true,
       b: false
     }
 
-    it('should return touched fields', () => {
+    it('should return modified fields', () => {
       const hook = renderHook(() => useForm({
         mode,
-        initialTouched
+        initialModified
       }))
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
+      expect(hook.result.current.getModifiedFields()).toStrictEqual(initialModified)
     })
   })
 }
 
-describe('useForm({ mode: "controlled" }).getTouched()', () => {
+describe('useForm({ mode: "controlled" }).getModifiedFields()', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode: "uncontrolled" }).getTouched()', () => {
+describe('useForm({ mode: "uncontrolled" }).getModifiedFields()', () => {
   tests('uncontrolled')
 })

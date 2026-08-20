@@ -49,7 +49,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isModified('a')).toBe(true)
       expect(hook.result.current.isModified('b')).toBe(true)
       act(() => hook.result.current.clearValues())
-      expect(hook.result.current.getModified()).toStrictEqual({})
+      expect(hook.result.current.getModifiedFields()).toStrictEqual({})
     })
 
     it('should clear all touched states', () => {
@@ -63,7 +63,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isTouched('a')).toBe(true)
       expect(hook.result.current.isTouched('b')).toBe(true)
       act(() => hook.result.current.clearValues())
-      expect(hook.result.current.getTouched()).toStrictEqual({})
+      expect(hook.result.current.getTouchedFields()).toStrictEqual({})
     })
 
     it('should not clear initial values', () => {

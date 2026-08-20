@@ -92,10 +92,10 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
   } = formErrors
 
   const {
-    getModified,
-    getTouched,
-    setModified,
-    setTouched
+    getModifiedFields,
+    getTouchedFields,
+    setModifiedFields,
+    setTouchedFields
   } = formStatus
 
   const {
@@ -106,7 +106,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
   const appendListItem = useCallback<UseFormListHook<V>['appendListItem']>(<T> (path: FieldPath<V>, ...items: T[]) => {
     if (items.length > 0) {
       // mark array as modified
-      setModified({ [path]: true }, { partial: true })
+      setModifiedFields({ [path]: true }, { partial: true })
 
       const list = [...(getValue(path) ?? []), ...items]
       // fixme todo optimize to avoid rerender
@@ -117,19 +117,19 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
         updateTouched: false
       })
     }
-  }, [getValue, setModified, setValue])
+  }, [getValue, setModifiedFields, setValue])
 
   const insertListItem = useCallback<UseFormListHook<V>['insertListItem']>(<T> (path: FieldPath<V>, index: number, ...items: T[]) => {
     if (items.length > 0) {
-      setModified({
-        ...updatePathIndices(getModified(), path, index, items.length),
+      setModifiedFields({
+        ...updatePathIndices(getModifiedFields(), path, index, items.length),
         ...Object.fromEntries(
           items.map((_, i) => ([`${path}[${index + i}]`, true]))
         ),
         // mark array as modified
         [path]: true
       })
-      setTouched(updatePathIndices(getTouched(), path, index, items.length))
+      setTouchedFields(updatePathIndices(getTouchedFields(), path, index, items.length))
       setErrors(updatePathIndices(getErrors(), path, index, items.length))
 
       const list = [...(getValue(path) ?? [])] as any[]
@@ -142,14 +142,14 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
         updateTouched: false
       })
     }
-  }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
+  }, [getErrors, getModifiedFields, getTouchedFields, getValue, setErrors, setModifiedFields, setTouchedFields, setValue])
 
   const moveListItem = useCallback<UseFormListHook<V>['moveListItem']>((path, fromIndex, toIndex) => {
     const list = [...(getValue(path) ?? [])]
     const maxIndex = list.length - 1
     const startIndex = Math.min(fromIndex, toIndex)
     const endIndex = Math.max(fromIndex, toIndex)
-    const modified = movePathIndices(getModified(), path, fromIndex, toIndex, maxIndex)
+    const modified = movePathIndices(getModifiedFields(), path, fromIndex, toIndex, maxIndex)
 
     for (let i = startIndex; i < endIndex; i++) {
       modified[`${path}[${i}]`] = true
@@ -157,8 +157,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
     // mark array as modified
     modified[path] = true
 
-    setModified(modified)
-    setTouched(movePathIndices(getTouched(), path, fromIndex, toIndex, maxIndex))
+    setModifiedFields(modified)
+    setTouchedFields(movePathIndices(getTouchedFields(), path, fromIndex, toIndex, maxIndex))
     setErrors(movePathIndices(getErrors(), path, fromIndex, toIndex, maxIndex))
 
     const index = Math.min(Math.max(toIndex, 0), maxIndex)
@@ -171,19 +171,19 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       updateModified: false,
       updateTouched: false
     })
-  }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
+  }, [getErrors, getModifiedFields, getTouchedFields, getValue, setErrors, setModifiedFields, setTouchedFields, setValue])
 
   const prependListItem = useCallback<UseFormListHook<V>['prependListItem']>(<T> (path: FieldPath<V>, ...items: T[]) => {
     if (items.length > 0) {
-      setModified({
-        ...updatePathIndices(getModified(), path, 0, items.length),
+      setModifiedFields({
+        ...updatePathIndices(getModifiedFields(), path, 0, items.length),
         ...Object.fromEntries(
           items.map((_, i) => ([`${path}[${i}]`, true]))
         ),
         // mark array as modified
         [path]: true
       })
-      setTouched(updatePathIndices(getTouched(), path, 0, items.length))
+      setTouchedFields(updatePathIndices(getTouchedFields(), path, 0, items.length))
       setErrors(updatePathIndices(getErrors(), path, 0, items.length))
 
       const list = [...items, ...(getValue(path) ?? [])]
@@ -195,15 +195,15 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
         updateTouched: false
       })
     }
-  }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
+  }, [getErrors, getModifiedFields, getTouchedFields, getValue, setErrors, setModifiedFields, setTouchedFields, setValue])
 
   const removeListItem = useCallback<UseFormListHook<V>['removeListItem']>((path, ...indices) => {
     if (indices.length > 0) {
       const sortedIndices = [...indices].sort().reverse()
 
       let errors = { ...getErrors() }
-      let modified = { ...getModified() }
-      let touched = { ...getTouched() }
+      let modified = { ...getModifiedFields() }
+      let touched = { ...getTouchedFields() }
 
       for (let i = 0; i < sortedIndices.length; i++) {
         const index = sortedIndices[i]
@@ -215,8 +215,8 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       // mark array as modified
       modified[path] = true
 
-      setModified(modified)
-      setTouched(touched)
+      setModifiedFields(modified)
+      setTouchedFields(touched)
       setErrors(errors)
 
       const list = [...(getValue(path) ?? [])]
@@ -232,12 +232,12 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
         updateTouched: false
       })
     }
-  }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
+  }, [getErrors, getModifiedFields, getTouchedFields, getValue, setErrors, setModifiedFields, setTouchedFields, setValue])
 
   const replaceListItem = useCallback<UseFormListHook<V>['replaceListItem']>(<T> (path: FieldPath<V>, index: number, item: T) => {
     const fieldPath = `${path}[${index}]`
 
-    setModified({
+    setModifiedFields({
       [fieldPath]: true,
       // mark array as modified
       [path]: true
@@ -254,17 +254,17 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       updateModified: false,
       updateTouched: false
     })
-  }, [clearErrors, getValue, setModified, setValue])
+  }, [clearErrors, getValue, setModifiedFields, setValue])
 
   const swapListItem = useCallback<UseFormListHook<V>['swapListItem']>((path, fromIndex, toIndex) => {
-    setModified({
-      ...swapPathIndices(getModified(), path, fromIndex, toIndex),
+    setModifiedFields({
+      ...swapPathIndices(getModifiedFields(), path, fromIndex, toIndex),
       [`${path}[${fromIndex}]`]: true,
       [`${path}[${toIndex}]`]: true,
       // mark array as modified
       [path]: true
     })
-    setTouched(swapPathIndices(getTouched(), path, fromIndex, toIndex))
+    setTouchedFields(swapPathIndices(getTouchedFields(), path, fromIndex, toIndex))
     setErrors(swapPathIndices(getErrors(), path, fromIndex, toIndex))
 
     const list = [...(getValue(path) ?? [])]
@@ -287,7 +287,7 @@ function useFormList<V extends Values, E, R> (options: UseFormListOptions<V, E, 
       updateModified: false,
       updateTouched: false
     })
-  }, [getErrors, getModified, getTouched, getValue, setErrors, setModified, setTouched, setValue])
+  }, [getErrors, getModifiedFields, getTouchedFields, getValue, setErrors, setModifiedFields, setTouchedFields, setValue])
 
   return {
     appendListItem,

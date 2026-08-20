@@ -580,7 +580,7 @@ describe('useForm()', () => {
       })
 
       act(() => {
-        result.current.setTouched({
+        result.current.setTouchedFields({
           username: true,
           password: true
         })
@@ -603,7 +603,7 @@ describe('useForm()', () => {
         })
 
         act(() => {
-          result.current.setTouched({
+          result.current.setTouchedFields({
             username: false,
             password: false
           })

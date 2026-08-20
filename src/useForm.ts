@@ -75,10 +75,6 @@ export type ParseFunction<T = any> = (value: string, target?: HTMLElement) => T
 
 export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V, E, R> & {
   /**
-   * Clears all or given touched fields.
-   */
-  clearTouchedFields: UseFormStatusHook<V>['clearTouched']; // todo rename to clearTouchedFields
-  /**
    * Performs an update of the form state (uncontrolled mode).
    */
   forceUpdate (): void;
@@ -203,17 +199,17 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
   'replaceListItem' |
   'swapListItem'>
   & Pick<UseFormStatusHook<V>,
-  // 'clearModified' | // todo add
-  // 'clearTouched' | // todo rename from clearTouchedFields
-  'getModified' |
-  'getTouched' |
+  'clearModifiedFields' |
+  'clearTouchedFields' |
+  'getModifiedFields' |
+  'getTouchedFields' |
   'isModified' |
   'isTouched' |
-  // 'resetModified' | // todo add
-  'resetTouched' |
-  // 'setModified' | // todo add
+  'resetModifiedFields' |
+  'resetTouchedFields' |
+  'setModifiedFields' |
   'setModifiedField' |
-  'setTouched' |
+  'setTouchedFields' |
   'setTouchedField'>
   & Pick<UseFormValuesHook<V>,
   'clearValues' |
@@ -958,21 +954,24 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
     getFormProps,
 
     // status
+    clearModifiedFields: formStatus.clearModifiedFields,
+    clearTouchedFields: formStatus.clearTouchedFields,
+    getModifiedFields: formStatus.getModifiedFields,
+    getTouchedFields: formStatus.getTouchedFields,
     initialModified: state.initialModified,
     initialTouched: state.initialTouched,
-    modified: state.modified,
-    modifiedFields: state.modifiedFields,
-    setModifiedField: formStatus.setModifiedField,
-    touched: state.touched,
-    touchedFields: state.touchedFields,
-    clearTouchedFields: formStatus.clearTouched,
-    getModified: formStatus.getModified,
-    getTouched: formStatus.getTouched,
     isModified: formStatus.isModified,
     isTouched: formStatus.isTouched,
-    resetTouched: formStatus.resetTouched,
+    modified: state.modified,
+    modifiedFields: state.modifiedFields,
+    resetModifiedFields: formStatus.resetModifiedFields,
+    resetTouchedFields: formStatus.resetTouchedFields,
+    setModifiedField: formStatus.setModifiedField,
+    setModifiedFields: formStatus.setModifiedFields,
     setTouchedField: formStatus.setTouchedField,
-    setTouched: formStatus.setTouched,
+    setTouchedFields: formStatus.setTouchedFields,
+    touched: state.touched,
+    touchedFields: state.touchedFields,
 
     // submission
     submitCount: state.submitCount,

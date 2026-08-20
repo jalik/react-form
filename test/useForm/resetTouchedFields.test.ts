@@ -21,11 +21,11 @@ function tests (mode: FormMode) {
         mode,
         initialTouched
       }))
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
-      act(() => hook.result.current.setTouched({ a: !initialTouched.a }))
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
+      act(() => hook.result.current.setTouchedFields({ a: !initialTouched.a }))
       expect(hook.result.current.isTouched('a')).toBe(!initialTouched.a)
-      act(() => hook.result.current.resetTouched())
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
+      act(() => hook.result.current.resetTouchedFields())
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
     })
   })
 
@@ -35,8 +35,8 @@ function tests (mode: FormMode) {
         mode,
         initialTouched
       }))
-      expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
-      act(() => hook.result.current.setTouched({
+      expect(hook.result.current.getTouchedFields()).toStrictEqual(initialTouched)
+      act(() => hook.result.current.setTouchedFields({
         a: !initialTouched.a,
         b: !initialTouched.b,
         c: !initialTouched.c
@@ -44,7 +44,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isTouched('a')).toBe(!initialTouched.a)
       expect(hook.result.current.isTouched('b')).toBe(!initialTouched.b)
       expect(hook.result.current.isTouched('c')).toBe(!initialTouched.c)
-      act(() => hook.result.current.resetTouched(['a', 'c']))
+      act(() => hook.result.current.resetTouchedFields(['a', 'c']))
       expect(hook.result.current.isTouched('a')).toBe(initialTouched.a)
       expect(hook.result.current.isTouched('b')).toBe(!initialTouched.b)
       expect(hook.result.current.isTouched('c')).toBe(initialTouched.c)
@@ -52,10 +52,10 @@ function tests (mode: FormMode) {
   })
 }
 
-describe('useForm({ mode: "controlled" }).resetTouched()', () => {
+describe('useForm({ mode: "controlled" }).resetTouchedFields()', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode: "uncontrolled" }).resetTouched()', () => {
+describe('useForm({ mode: "uncontrolled" }).resetTouchedFields()', () => {
   tests('uncontrolled')
 })
