@@ -75,10 +75,6 @@ export type ParseFunction<T = any> = (value: string, target?: HTMLElement) => T
 
 export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V, E, R> & {
   /**
-   * Clears the form (values, errors...).
-   */
-  clear: UseFormValuesHook<V>['clearValues']; // todo rename to clearValues
-  /**
    * Clears all or given touched fields.
    */
   clearTouchedFields: UseFormStatusHook<V>['clearTouched']; // todo rename to clearTouchedFields
@@ -169,14 +165,6 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
    */
   mode: FormMode;
   /**
-   * Removes given fields.
-   */
-  removeFields: UseFormValuesHook<V>['removeValues']; // todo rename to removeValues
-  /**
-   * Resets all or given fields.
-   */
-  reset: UseFormValuesHook<V>['resetValues']; // todo rename to resetValues
-  /**
    * Calls the onSubmit function with form values.
    */
   submit: DebouncedFunction<R | undefined>;
@@ -224,18 +212,18 @@ export type UseFormHook<V extends Values, E = Error, R = unknown> = FormState<V,
   // 'resetModified' | // todo add
   'resetTouched' |
   // 'setModified' | // todo add
-  // 'setModifiedField' | // todo add
+  'setModifiedField' |
   'setTouched' |
   'setTouchedField'>
   & Pick<UseFormValuesHook<V>,
-  // 'clearValues' | // todo rename from clear
+  'clearValues' |
   'getInitialValue' |
   'getInitialValues' |
   'getValue' |
   'getValues' |
   'initialize' |
-  // 'removeValues' | // todo rename from removeFields
-  // 'resetValues' | // todo rename from reset
+  'removeValues' |
+  'resetValues' |
   'setInitialValues' |
   'setValue' |
   'setValues'>
@@ -974,6 +962,7 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
     initialTouched: state.initialTouched,
     modified: state.modified,
     modifiedFields: state.modifiedFields,
+    setModifiedField: formStatus.setModifiedField,
     touched: state.touched,
     touchedFields: state.touchedFields,
     clearTouchedFields: formStatus.clearTouched,
@@ -1006,20 +995,20 @@ function useForm<V extends Values, E = Error, R = unknown> (options: UseFormOpti
     validateFields: formValidation.validateFields,
 
     // values
-    initialized: state.initialized,
-    initialValues: state.initialValues,
-    values: state.values,
-    clear: formValues.clearValues,
+    clearValues: formValues.clearValues,
     getInitialValue: formValues.getInitialValue,
     getInitialValues: formValues.getInitialValues,
     getValue: formValues.getValue,
     getValues: formValues.getValues,
     initialize: formValues.initialize,
-    removeFields: formValues.removeValues,
-    reset: formValues.resetValues,
+    initialized: state.initialized,
+    initialValues: state.initialValues,
+    removeValues: formValues.removeValues,
+    resetValues: formValues.resetValues,
     setInitialValues: formValues.setInitialValues,
     setValue: formValues.setValue,
     setValues: setFormValues,
+    values: state.values,
 
     // global
     disabled: formDisabled,

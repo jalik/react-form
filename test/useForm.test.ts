@@ -40,7 +40,7 @@ describe('useForm()', () => {
       it('should replace empty string with null', () => {
         const { result } = renderHook(() => {
           return useForm({
-            initialValues: { username: undefined },
+            initialValues: { username: 'xxx' },
             nullify: true
           })
         })
@@ -81,7 +81,7 @@ describe('useForm()', () => {
       it('should apply transform when calling setValues()', () => {
         const { result } = renderHook(() => {
           return useForm({
-            initialValues: { username: undefined },
+            initialValues: { username: '' },
             transform: (mutation) => {
               const result = { ...mutation }
               Object.entries(result).forEach(([name]) => {
@@ -175,7 +175,7 @@ describe('useForm()', () => {
 
       act(() => {
         result.current.setValue('username', 'test')
-        result.current.clear()
+        result.current.clearValues()
       })
 
       expect(result.current.initialized).toBe(true)
@@ -371,7 +371,7 @@ describe('useForm()', () => {
 
   describe('getValue(name)', () => {
     it('should return field value', () => {
-      const initialValues = { username: undefined }
+      const initialValues = { username: '' }
       const { result } = renderHook(() => {
         return useForm({
           initialValues
@@ -471,7 +471,7 @@ describe('useForm()', () => {
       act(() => {
         result.current.setValue('username', 'test')
         result.current.setError('username', new Error('invalid'))
-        result.current.removeFields(['username'])
+        result.current.removeValues(['username'])
       })
 
       expect(result.current.values.username).toBe(undefined)
@@ -492,7 +492,7 @@ describe('useForm()', () => {
 
       act(() => {
         result.current.setValue('username', 'test')
-        result.current.reset()
+        result.current.resetValues()
       })
 
       expect(result.current.modified).toBe(false)
@@ -506,7 +506,7 @@ describe('useForm()', () => {
       it('should reset given fields', () => {
         const initialValues = {
           username: 'jalik',
-          password: undefined
+          password: ''
         }
         const { result } = renderHook(() => {
           return useForm({
@@ -519,7 +519,7 @@ describe('useForm()', () => {
             username: 'test',
             password: 'secret'
           })
-          result.current.reset(['password'])
+          result.current.resetValues(['password'])
         })
 
         expect(result.current.isModified('username')).toBe(true)
@@ -641,7 +641,7 @@ describe('useForm()', () => {
       it('should replace given values only', () => {
         const initialValues = {
           username: 'a',
-          password: undefined
+          password: ''
         }
         const { result } = renderHook(() => {
           return useForm({

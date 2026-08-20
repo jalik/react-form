@@ -22,9 +22,9 @@ function tests (mode: FormMode) {
         initialValues
       }))
       expect(hook.result.current.getValues()).toStrictEqual(initialValues)
-      act(() => hook.result.current.setValues({ b: null }))
+      act(() => hook.result.current.setValues({ b: 999 }))
       expect(hook.result.current.getValues()).not.toStrictEqual(initialValues)
-      act(() => hook.result.current.reset())
+      act(() => hook.result.current.resetValues())
       expect(hook.result.current.getValues()).toStrictEqual(initialValues)
     })
 
@@ -43,7 +43,7 @@ function tests (mode: FormMode) {
       act(() => hook.result.current.setErrors({ b: null }, { forceUpdate: true }))
       expect(hook.result.current.getErrors()).not.toStrictEqual(initialErrors)
       expect(hook.result.current.errors).not.toStrictEqual(initialErrors)
-      act(() => hook.result.current.reset())
+      act(() => hook.result.current.resetValues())
       expect(hook.result.current.getErrors()).toStrictEqual(initialErrors)
       expect(hook.result.current.errors).toStrictEqual(initialErrors)
     })
@@ -66,7 +66,7 @@ function tests (mode: FormMode) {
       }))
       expect(hook.result.current.getModified()).not.toStrictEqual(initialModified)
       expect(hook.result.current.modifiedFields).not.toStrictEqual(initialModified)
-      act(() => hook.result.current.reset())
+      act(() => hook.result.current.resetValues())
       expect(hook.result.current.getModified()).toStrictEqual(initialModified)
       expect(hook.result.current.modifiedFields).toStrictEqual(initialModified)
     })
@@ -86,7 +86,7 @@ function tests (mode: FormMode) {
       act(() => hook.result.current.setTouched({ b: false }, { forceUpdate: true }))
       expect(hook.result.current.getTouched()).not.toStrictEqual(initialTouched)
       expect(hook.result.current.touchedFields).not.toStrictEqual(initialTouched)
-      act(() => hook.result.current.reset())
+      act(() => hook.result.current.resetValues())
       expect(hook.result.current.getTouched()).toStrictEqual(initialTouched)
       expect(hook.result.current.touchedFields).toStrictEqual(initialTouched)
     })
@@ -107,7 +107,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getValues()).toStrictEqual(initialValues)
       act(() => hook.result.current.setValues(nextValues))
       expect(hook.result.current.getValues()).toStrictEqual(nextValues)
-      act(() => hook.result.current.reset(['a', 'c']))
+      act(() => hook.result.current.resetValues(['a', 'c']))
       expect(hook.result.current.getValue('a')).toBe(initialValues.a)
       expect(hook.result.current.getValue('b')).toBe(nextValues.b)
       expect(hook.result.current.getValue('c')).toBe(initialValues.c)
@@ -131,7 +131,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.getErrors()).toStrictEqual(initialErrors)
       act(() => hook.result.current.setErrors(nextErrors))
       expect(hook.result.current.getErrors()).toStrictEqual(filterErrors(nextErrors))
-      act(() => hook.result.current.reset(['a', 'c']))
+      act(() => hook.result.current.resetValues(['a', 'c']))
       expect(hook.result.current.getError('a')).toBe(initialErrors.a)
       expect(hook.result.current.getError('b')).toBe(nextErrors.b)
       expect(hook.result.current.getError('c')).toBe(initialErrors.c)
@@ -157,7 +157,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isModified('a')).toBe(nextModified.a)
       expect(hook.result.current.isModified('b')).toBe(nextModified.b)
       expect(hook.result.current.isModified('c')).toBe(nextModified.c)
-      act(() => hook.result.current.reset(['a', 'c']))
+      act(() => hook.result.current.resetValues(['a', 'c']))
       expect(hook.result.current.isModified('a')).toBe(initialModified.a)
       expect(hook.result.current.isModified('b')).toBe(nextModified.b)
       expect(hook.result.current.isModified('c')).toBe(initialModified.c)
@@ -183,7 +183,7 @@ function tests (mode: FormMode) {
       expect(hook.result.current.isTouched('a')).toBe(nextTouched.a)
       expect(hook.result.current.isTouched('b')).toBe(nextTouched.b)
       expect(hook.result.current.isTouched('c')).toBe(nextTouched.c)
-      act(() => hook.result.current.reset(['a', 'c']))
+      act(() => hook.result.current.resetValues(['a', 'c']))
       expect(hook.result.current.isTouched('a')).toBe(initialTouched.a)
       expect(hook.result.current.isTouched('b')).toBe(nextTouched.b)
       expect(hook.result.current.isTouched('c')).toBe(initialTouched.c)
@@ -191,10 +191,10 @@ function tests (mode: FormMode) {
   })
 }
 
-describe('useForm({ mode: "controlled" }).reset()', () => {
+describe('useForm({ mode: "controlled" }).resetValues()', () => {
   tests('controlled')
 })
 
-describe('useForm({ mode: "uncontrolled" }).reset()', () => {
+describe('useForm({ mode: "uncontrolled" }).resetValues()', () => {
   tests('uncontrolled')
 })
