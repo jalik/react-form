@@ -8,12 +8,16 @@
 ![npm](https://img.shields.io/npm/dt/@jalik/react-form.svg)
 [![@jalik/react-form](https://snyk.io/advisor/npm-package/@jalik/react-form/badge.svg)](https://snyk.io/advisor/npm-package/@jalik/react-form)
 
-## Why using this lib ?
+## Why using this library ?
 
-There are other well established solutions like Formik, React-Hook-Form, Redux Form...  
-This lib aims to provide the **best experience for developers (DX) and users (UX)** when creating
-advanced forms in React (have a look at the features below).  
-If you feel concerned, then it's all for you :)
+There are other well-established solutions like Formik, React-Hook-Form, Redux Form, etc. and this
+one is another flavor in the jungle with minimal dependencies and "small" package size.
+
+It is mainly focused on providing a simple and intuitive API for developers while ensuring a smooth
+and user-friendly experience for end-users.
+
+The features are more oriented for SPA, but it still has added value on classic forms for
+initialization and validation.
 
 ## Features
 
@@ -59,13 +63,8 @@ yarn add @jalik/react-form
 ```tsx
 import { Button, Field, Form, useForm } from '@jalik/react-form'
 
-/**
- * Authenticates by username and password.
- * @param username
- * @param password
- */
 function authenticate (username, password) {
-  return fetch('https://www.mysite.com/auth', {
+  return fetch('https://www.mysite.com/api/auth', {
     method: 'POST',
     body: JSON.stringify({
       username,
@@ -81,49 +80,47 @@ function SignInForm () {
       username: '',
       password: ''
     },
-    // onSubmit needs to return a promise,
-    // so the form is aware of the submit state.
-    onSubmit: (values) => authenticate(values.username, values.password)
+    onSubmit: async (values) => authenticate(values.username, values.password)
   })
 
   return (
-    // Using the provided components allows writing code faster while keeping it very concise.
-    // <Field> and other components must be nested in a <Form> with the form context. 
     <Form context={form}>
       <Field name="username" />
-      <Field name="password" />
+      <Field name="password" type="password" />
       <Button type="submit">Sign in</Button>
     </Form>
   )
 }
 ```
 
-## Loading a form
+## Initializing values
 
-There are several ways to load a form:
-
-* Loading values inside or outside the form component ;
-* Loading values using the `load` option of `useForm()` ;
-
-### Loading values inside the form component
+### Initialize the form with dynamic values
 
 ```tsx
 import { Button, Field, Form, useForm } from '@jalik/react-form'
-import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
+
+async function useUserLoader (id) {
+  if (id != null) {
+    const data = await fetch(`/api/user/${id}`)
+    return data.json()
+  }
+  return null
+}
 
 function UserFormPage () {
   const params = useParams()
-  const [user, setUser] = useState(null)
-
-  // Load user and call setUser(user)...
+  const initialValues = useUserLoader(params.id)
 
   const form = useForm({
-    // initialValues must be null (or omitted) at first,
-    // so the form will understand that it will be initialized later.
-    initialValues: user,
+    initialValues,
+    // Update the form values when initialValues changes.
+    // It is usually wanted when loading dynamic values and if you want the form to be updated.
+    // IMPORTANT: when using reinitialize, make sure that initialValues is stable
+    // (loaded from an API or memoized) to avoid infinite rerenders.
     reinitialize: true,
-    onSubmit: async (values) => ({ saved: true }),
+    onSubmit: async (values) => ({ saved: true })
   })
 
   return (
@@ -136,26 +133,29 @@ function UserFormPage () {
 }
 ```
 
-### Loading values using the `load` option in `useForm()`
+### Initialize the form using a `load` function
+
+This is handy if you are not using a specific loading library.
 
 ```tsx
 import { Button, Field, Form, useForm } from '@jalik/react-form'
-import { useCallback } from 'react'
+import { useParams } from 'react-router'
 
-function loadUser (id) {
-  return fetch(`/api/user/${id}`).then((resp) => resp.json())
+async function loadUser (id) {
+  const data = await fetch(`/api/user/${id}`)
+  return data.json()
 }
 
 function UserFormPage (props) {
+  const params = useParams()
+
   const form = useForm({
-    // initialValues must be null (or omitted) at first,
-    // so the form will understand that it will be initialized later.
-    initialValues: null,
-    // WARNING: load is called every time it changes,
-    // in this case the form will be updated when the id changes.
-    // Note that all fields are disabled during loading.
-    load: useCallback(() => loadUser(1337), []),
-    onSubmit: async (values) => ({ saved: true }),
+    // initialValues: null,
+    // IMPORTANT: load is called every time the function changes.
+    // So make sure to wrap the function in useCallback() if necessary.
+    load: useCallback(() => loadUser(params.id), []),
+    reinitialize: true,
+    onSubmit: async (values) => ({ saved: true })
   })
 
   return (
@@ -172,9 +172,9 @@ function UserFormPage (props) {
 
 ### Validating using a schema
 
-Form validation using a schema needs a small amount of work.  
-Here we use `@jalik/schema` to validate the form using a schema, but it is possible to use any lib
-(yup, joi...).
+You can use any validation library, but you will need to create wrappers and the implementation
+depends on how the library works.  
+Here is an example using `@jalik/schema` to validate the form.
 
 ```tsx
 import { Button, Field, FieldError, Form, useForm } from '@jalik/react-form'
@@ -182,15 +182,24 @@ import Schema from '@jalik/schema'
 
 /**
  * Returns field props based on schema constraints.
+ * Handy when using classic HTML validation.
  * @param schema
  */
 export function createFieldInitializer (schema) {
   // function called by initializeField
   return (name) => {
-    const field = schema.getField(name)
-    return field ? {
-      required: field.isRequired()
-    } : null
+    try {
+      const field = schema.getField(name)
+      return {
+        id: `field-${name}`,
+        min: field.getMin(),
+        max: field.getMax(),
+        required: field.isRequired()
+      }
+    } catch (error) {
+      // field not found
+      return null
+    }
   }
 }
 
@@ -201,7 +210,14 @@ export function createFieldInitializer (schema) {
 export function createFieldValidator (schema) {
   // function called by validateField
   return async (name, value) => {
-    schema.getField(name).validate(value)
+    try {
+      schema.getField(name).validate(value)
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return error
+      }
+      return { [name]: new Error(`Field "${name}" is unknown`) }
+    }
   }
 }
 
@@ -214,7 +230,6 @@ export function createFormValidator (schema) {
   return async (values) => schema.getErrors(values)
 }
 
-// Prepare the form validation schema.
 const SignInFormSchema = new Schema({
   username: {
     type: 'string',
@@ -231,14 +246,14 @@ const SignInFormSchema = new Schema({
 function SignInForm () {
   const form = useForm({
     initialValues: {
-      username: null,
-      password: null
+      username: '',
+      password: ''
     },
-    // This function sets the fields props based on a schema.
+    // This function sets the fields props (min, max...) using a schema.
     initializeField: createFieldInitializer(SignInFormSchema),
-    // This function validates all fields (even missing ones) based on a schema.
+    // This function validates all fields (even the missing ones).
     validate: createFormValidator(SignInFormSchema),
-    // This function validates a single field based on a schema.
+    // This function validates a single field.
     validateField: createFieldValidator(SignInFormSchema),
     onSubmit: async (values) => ({ success: true })
   })
@@ -256,9 +271,10 @@ function SignInForm () {
 }
 ```
 
-## Form component linking
+## Linking form inputs to you form instance
 
-To link and initialize your components with a form instance, use `getButtonProps()`, `getFieldProps()` and `getFormProps()`.
+To link and initialize your components with a form instance, use `getButtonProps()`,
+`getFieldProps()` and `getFormProps()`.
 
 ```tsx
 import { useFormContext } from '@jalik/react-form'
